@@ -1,0 +1,142 @@
+import 'package:flutter/material.dart';
+import '../../../../core/theme/theme.dart';
+import '../../../../core/utils/constants.dart';
+import '../../../../widgets/ziena_button.dart';
+import '../../../../widgets/ziena_logo.dart';
+import 'onboarding_screen.dart';
+
+class LanguageSelectionScreen extends StatefulWidget {
+  static const String routeName = '/language';
+  const LanguageSelectionScreen({super.key});
+
+  @override
+  State<LanguageSelectionScreen> createState() => _LanguageSelectionScreenState();
+}
+
+class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
+  String _selectedLang = 'en';
+
+  void _onNext() {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => const OnboardingScreen()),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: ZienaColors.white,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Column(
+            children: [
+              SizedBox(height: MediaQuery.of(context).size.height * 0.1),
+              const ZienaLogo(size: 120),
+              const Spacer(),
+              Text(
+                AppStrings.selectLanguage,
+                style: Theme.of(context).textTheme.headlineMedium,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                AppStrings.selectLanguageHint,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: ZienaColors.textSecondary,
+                    ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 40),
+              _LanguageTile(
+                flag: '🇺🇸',
+                language: AppStrings.english,
+                isSelected: _selectedLang == 'en',
+                onTap: () => setState(() => _selectedLang = 'en'),
+              ),
+              const SizedBox(height: 12),
+              _LanguageTile(
+                flag: '🇸🇦',
+                language: AppStrings.arabic,
+                isSelected: _selectedLang == 'ar',
+                onTap: () => setState(() => _selectedLang = 'ar'),
+              ),
+              const Spacer(flex: 2),
+              ZienaButton(
+                text: AppStrings.next,
+                onTap: _onNext,
+              ),
+              const SizedBox(height: 32),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _LanguageTile extends StatelessWidget {
+  final String flag;
+  final String language;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _LanguageTile({
+    required this.flag,
+    required this.language,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        decoration: BoxDecoration(
+          color: isSelected ? ZienaColors.bg2 : ZienaColors.bg1,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: isSelected ? ZienaColors.primary : ZienaColors.greyBorder,
+            width: isSelected ? 1.5 : 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Text(flag, style: const TextStyle(fontSize: 24)),
+            const SizedBox(width: 16),
+            Text(
+              language,
+              style: TextStyle(
+                fontFamily: 'Poppins',
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                color: isSelected ? ZienaColors.primary : ZienaColors.textPrimary,
+              ),
+            ),
+            const Spacer(),
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              width: 22,
+              height: 22,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: isSelected ? ZienaColors.primary : Colors.transparent,
+                border: Border.all(
+                  color: isSelected ? ZienaColors.primary : ZienaColors.greyBorder,
+                  width: 2,
+                ),
+              ),
+              child: isSelected
+                  ? const Icon(Icons.check, color: Colors.white, size: 14)
+                  : null,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
