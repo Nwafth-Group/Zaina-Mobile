@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
+import 'package:zeina_app/core/utils/app_navigator.dart';
+import 'package:zeina_app/features/home/presentation/screens/home_screen.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../core/utils/constants.dart';
 import '../../../../widgets/ziena_button.dart';
@@ -222,7 +224,9 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
                     isOutlined: false,
                     backgroundColor: ZienaColors.bg3,
                     textColor: ZienaColors.primaryDark,
-                    onTap: () {},
+                    onTap: () {
+                      AppNavigator.pushAndRemoveUntil(HomeScreen());
+                    },
                   ),
                   const SizedBox(height: 32),
                 ],

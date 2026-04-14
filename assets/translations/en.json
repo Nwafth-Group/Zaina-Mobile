@@ -1,0 +1,54 @@
+{
+  "app_name": "ZIENA",
+  "next": "Next",
+  "submit": "Submit",
+  "done": "Done",
+  "log_in": "Log In",
+  "get_started": "Get Started",
+  "continue_google": "Continue with Google",
+  "continue_apple": "Continue with Apple",
+  "continue_guest": "Continue as Guest",
+  "agree_terms": "I agree Terms & Conditions",
+  "or_continue_with": "or Continue with",
+
+  "select_language": "Select Language",
+  "select_language_hint": "Please select the language you prefer.",
+  "english": "English",
+  "arabic": "العربية",
+  "search": "Search",
+  "service_categories": "Service Categories",
+  "upcoming_appointment": "Upcoming Appointment",
+  "popular_services": "Popular Services",
+  "see_all": "See All",
+  "home": "Home",
+  "bookings": "Bookings",
+  "wallet": "Wallet",
+  "more": "More",
+
+  "slide1_title": "Trusted home services,\nwhen you need them",
+  "slide1_desc": "Book cleaning and babysitting easily. Choose your time, location, and pay with clarity.",
+  "slide2_title": "Hourly or resident,\nyour choice",
+  "slide2_desc": "Book a single visit or multiple visits to fit your schedule, or subscribe for constant service when needed.",
+  "slide3_title": "Trusted home services,\nwhen you need them",
+  "slide3_desc": "Book cleaning and babysitting easily. Choose your time, location, and pay with clarity.",
+
+  "enter_phone": "Enter your phone number",
+  "enter_phone_hint": "Enter your phone number to log in or create a new account",
+  "phone_number": "Phone Number",
+
+  "verification_code": "Verification Code",
+  "verification_code_hint": "Please enter the verification code sent to your phone number",
+  "code_sent": "A code has been sent to your phone",
+  "resend": "Resend",
+
+  "success_title": "Success!",
+  "success_message": "You Have Successfully Registered",
+
+  "terms_title": "Terms & Conditions",
+  "clause": "Clause",
+
+  "err_agree_terms": "Please agree to Terms & Conditions",
+  "err_enter_phone": "Please enter a valid phone number",
+  "err_generic": "Something went wrong. Please try again.",
+  "err_invalid_otp": "Invalid code. Please try again."
+}

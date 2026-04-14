@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../core/utils/constants.dart';
@@ -17,6 +18,8 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
   String _selectedLang = 'en';
 
   void _onNext() {
+    lng = _selectedLang;
+    context.setLocale(Locale(lng));
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (_) => const OnboardingScreen()),

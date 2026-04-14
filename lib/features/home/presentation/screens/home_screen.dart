@@ -1,7 +1,12 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
+import 'package:zeina_app/core/utils/app_navigator.dart';
+import 'package:zeina_app/features/home/presentation/screens/search_screen.dart';
 import '../../../../core/theme/theme.dart';
+import '../../../../injection_container.dart';
+import '../cubit/search_cubit.dart';
 
 class HomeScreen extends StatefulWidget {
   static const String routeName = '/home';
@@ -141,54 +146,53 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildSearchBar() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Container(
-        height: 52,
-        decoration: BoxDecoration(
-          color: ZienaColors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: ZienaColors.greyBorder),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            const SizedBox(width: 16),
-            const Icon(Icons.search, color: ZienaColors.primary, size: 22),
-            const SizedBox(width: 10),
-            Expanded(
-              child: TextField(
-                decoration: InputDecoration(
-                  hintText: 'search'.tr(),
-                  hintStyle: const TextStyle(
+      child: GestureDetector(
+        onTap: () => AppNavigator.push(BlocProvider(
+          create: (_) => sl<SearchCubit>(),
+          child: const SearchScreen(),
+        )),
+        child: Container(
+          height: 52,
+          decoration: BoxDecoration(
+            color: ZienaColors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: ZienaColors.greyBorder),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.04),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              const SizedBox(width: 16),
+              const Icon(Icons.search, color: ZienaColors.primary, size: 22),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'search'.tr(),
+                  style: const TextStyle(
                     fontFamily: 'Poppins',
                     fontSize: 14,
                     color: ZienaColors.textHint,
                   ),
-                  border: InputBorder.none,
-                  filled: false,
-                  contentPadding: EdgeInsets.zero,
-                  isDense: true,
                 ),
-                style: const TextStyle(fontFamily: 'Poppins', fontSize: 14),
               ),
-            ),
-            Container(
-              margin: const EdgeInsets.only(right: 12),
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                color: ZienaColors.bg1,
-                borderRadius: BorderRadius.circular(10),
+              Container(
+                margin: const EdgeInsets.only(right: 12),
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: ZienaColors.bg1,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(Icons.tune_rounded,
+                    color: ZienaColors.textSecondary, size: 18),
               ),
-              child: const Icon(Icons.tune_rounded,
-                  color: ZienaColors.textSecondary, size: 18),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -317,7 +321,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Container(
-        height: 108,
+        height: 100,
         decoration: BoxDecoration(
           color: ZienaColors.white,
           borderRadius: BorderRadius.circular(18),
@@ -336,8 +340,8 @@ class _HomeScreenState extends State<HomeScreen> {
             ClipRRect(
               borderRadius: const BorderRadius.horizontal(left: Radius.circular(18)),
               child: Container(
-                width: 108,
-                height: 108,
+                width: 100,
+                height: 100,
                 color: ZienaColors.bg3,
                 child: const Icon(Icons.cleaning_services_rounded,
                     color: ZienaColors.primary, size: 44),
@@ -346,7 +350,7 @@ class _HomeScreenState extends State<HomeScreen> {
             // Details
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -371,14 +375,17 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                     const SizedBox(height: 6),
-                    Row(
-                      children: [
-                        _InfoChip(Icons.bookmark_outline_rounded, 'Upcoming'),
-                        const SizedBox(width: 8),
-                        _InfoChip(Icons.location_on_outlined, 'Home'),
-                        const SizedBox(width: 8),
-                        _InfoChip(Icons.access_time_rounded, '3 Hours'),
-                      ],
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          _InfoChip(Icons.bookmark_outline_rounded, 'Upcoming'),
+                          const SizedBox(width: 8),
+                          _InfoChip(Icons.location_on_outlined, 'Home'),
+                          const SizedBox(width: 8),
+                          _InfoChip(Icons.access_time_rounded, '3 Hours'),
+                        ],
+                      ),
                     ),
                   ],
                 ),

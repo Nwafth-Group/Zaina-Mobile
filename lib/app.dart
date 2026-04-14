@@ -1,6 +1,7 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:zeina_app/core/utils/app_navigator.dart';
 import 'app_router.dart';
 import 'core/theme/theme.dart';
 import 'features/auth/presentation/cubit/auth_cubit.dart';
@@ -20,9 +21,13 @@ class ZienaApp extends StatelessWidget {
       ],
       child: MaterialApp(
         title: 'Ziena',
+        navigatorKey: AppNavigator.navigatorKey,
         debugShowCheckedModeBanner: false,
         theme: ZienaTheme.lightTheme,
         onGenerateRoute: AppRouter.onGenerateRoute,
+        localizationsDelegates: context.localizationDelegates,
+        supportedLocales: context.supportedLocales,
+        locale: context.locale,
         home: const SplashScreen(),
       ),
     );
