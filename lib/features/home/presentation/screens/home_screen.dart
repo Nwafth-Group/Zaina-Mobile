@@ -134,8 +134,8 @@ class _HomeScreenState extends State<HomeScreen> {
               color: ZienaColors.bg2,
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.notifications_outlined,
-                color: ZienaColors.primary, size: 22),
+            child: Image.asset('assets/images/notifications.png',
+                color: ZienaColors.primary),
           ),
         ],
       ),
@@ -464,15 +464,15 @@ class _HomeScreenState extends State<HomeScreen> {
   // ── Bottom Nav ──────────────────────────────────────────────────────────────
   Widget _buildBottomNav() {
     final items = [
-      (Icons.home_rounded, Icons.home_outlined, 'home'),
-      (Icons.calendar_month_rounded, Icons.calendar_month_outlined, 'bookings'),
-      (Icons.wallet_rounded, Icons.wallet_outlined, 'wallet'),
-      (Icons.grid_view_rounded, Icons.grid_view_outlined, 'more'),
+      ('assets/images/active_home.png', 'assets/images/non_active_home.png', 'home'),
+      ('assets/images/active_bookings.png', 'assets/images/non_active_bookings.png', 'bookings'),
+      ('assets/images/active_wallet.png', 'assets/images/non_active_wallet.png', 'wallet'),
+      ('assets/images/active_more.png', 'assets/images/non_active_more.png', 'more'),
     ];
 
     return Container(
       decoration: BoxDecoration(
-        color: ZienaColors.white,
+        color: ZienaColors.bg4,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.08),
@@ -504,10 +504,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   child: Row(
                     children: [
-                      Icon(
+                      Image.asset(
                         isActive ? item.$1 : item.$2,
-                        color: isActive ? Colors.white : ZienaColors.textSecondary,
-                        size: 22,
+                        // color: isActive ? Colors.white : ZienaColors.textSecondary,
+                        // size: 22,
                       ),
                       if (isActive) ...[
                         const SizedBox(width: 8),
@@ -516,7 +516,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           style: const TextStyle(
                             fontFamily: 'Poppins',
                             fontSize: 14,
-                            fontWeight: FontWeight.w600,
+                            fontWeight: FontWeight.bold,
                             color: Colors.white,
                           ),
                         ),
