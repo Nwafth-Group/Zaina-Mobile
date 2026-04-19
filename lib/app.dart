@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:zeina_app/core/utils/app_navigator.dart';
+import 'package:zeina_app/features/home/presentation/cubit/home_cubti.dart';
 import 'app_router.dart';
 import 'core/theme/theme.dart';
 import 'features/auth/presentation/cubit/auth_cubit.dart';
@@ -17,6 +18,9 @@ class ZienaApp extends StatelessWidget {
       providers: [
         BlocProvider<AuthCubit>(
           create: (_) => sl<AuthCubit>(),
+        ),
+        BlocProvider<HomeCubit>(
+          create: (_) => sl<HomeCubit>(),
         ),
       ],
       child: MaterialApp(

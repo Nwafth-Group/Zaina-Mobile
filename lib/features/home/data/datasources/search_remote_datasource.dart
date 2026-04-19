@@ -21,7 +21,7 @@ class SearchRemoteDataSourceImpl implements SearchRemoteDataSource {
           'page': page,
         },
       );
-      return SearchResponse.fromJson(response.data as Map<String, dynamic>);
+      return SearchResponse.fromJson(response);
     } on DioException catch (e) {
       throw handleDioError(e);
     }

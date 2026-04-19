@@ -1,63 +1,212 @@
 import 'package:dio/dio.dart';
+import '../../features/auth/presentation/cubit/auth_cubit.dart';
+import '../../features/auth/presentation/screens/phone_auth_screen.dart';
+import '../utils/app_navigator.dart';
 import '../utils/constants.dart';
+import '../utils/helpers.dart';
+import '../utils/shared_pref_helper.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'dart:developer' as developer;
+
 
 class ApiClient {
-  static ApiClient? _instance;
-  late final Dio _dio;
-
-  ApiClient._() {
-    _dio = Dio(
-      BaseOptions(
-        baseUrl: AppConstants.baseUrl,
-        connectTimeout: const Duration(seconds: 30),
-        receiveTimeout: const Duration(seconds: 30),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-      ),
-    );
-
-    _dio.interceptors.add(
-      InterceptorsWrapper(
-        onRequest: (options, handler) {
-          // Add auth token if available
-          // final token = StorageService.getToken();
-          // if (token != null) {
-          //   options.headers['Authorization'] = 'Bearer $token';
-          // }
-          return handler.next(options);
-        },
-        onResponse: (response, handler) {
-          return handler.next(response);
-        },
-        onError: (DioException e, handler) {
-          return handler.next(e);
-        },
-      ),
-    );
-  }
-
-  static ApiClient get instance {
-    _instance ??= ApiClient._();
-    return _instance!;
-  }
-
+  late Dio _dio;
   Dio get dio => _dio;
 
-  Future<Response> post(String path, {dynamic data, Map<String, dynamic>? queryParameters}) async {
-    return await _dio.post(path, data: data, queryParameters: queryParameters);
+  ApiClient() {
+    _dio = Dio(BaseOptions(
+      baseUrl: AppConstants.baseUrl,
+      connectTimeout: const Duration(seconds: 30),
+      receiveTimeout: const Duration(seconds: 30),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Accept-Language': lng,
+      },
+    ));
+
+    _dio.interceptors.add(InterceptorsWrapper(
+      onRequest: (options, handler) async {
+        final token = await SharedPrefHelper.getToken();
+        if (token != null) {
+          options.headers['Authorization'] = 'Bearer $token';
+        }
+
+        // Print request details
+        developer.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        developer.log('📤 REQUEST', name: 'API');
+        developer.log('URL: ${options.baseUrl}${options.path}', name: 'API');
+        developer.log('Method: ${options.method}', name: 'API');
+        developer.log('Headers: ${options.headers}', name: 'API');
+        if (options.queryParameters.isNotEmpty) {
+          developer.log('Query Parameters: ${options.queryParameters}', name: 'API');
+        }
+        if (options.data != null) {
+          developer.log('Body: ${options.data}', name: 'API');
+        }
+        developer.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
+        return handler.next(options);
+      },
+      onResponse: (response, handler) {
+        // Print response details
+        developer.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        developer.log('📥 RESPONSE', name: 'API');
+        developer.log('URL: ${response.requestOptions.baseUrl}${response.requestOptions.path}', name: 'API');
+        developer.log('Status Code: ${response.statusCode}', name: 'API');
+        developer.log('Response Data: ${response.data}', name: 'API');
+        developer.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
+        return handler.next(response);
+      },
+      onError: (error, handler) {
+        // Print error details
+        developer.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        developer.log('❌ ERROR', name: 'API');
+        developer.log('URL: ${error.requestOptions.baseUrl}${error.requestOptions.path}', name: 'API');
+        developer.log('Method: ${error.requestOptions.method}', name: 'API');
+        developer.log('Status Code: ${error.response?.statusCode}', name: 'API');
+        developer.log('Error Type: ${error.type}', name: 'API');
+        developer.log('Error Message: ${error.message}', name: 'API');
+        if (error.response?.data != null) {
+          developer.log('Error Response: ${error.response?.data}', name: 'API');
+        }
+        developer.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
+        final code = error.response?.statusCode;
+        if (code == 401) {
+          developer.log('🚪 Logging out due to 401 Unauthorized', name: 'API');
+          AppNavigator.pushAndRemoveUntil(const PhoneAuthScreen());
+        }
+        return handler.next(error);
+      },
+    ));
   }
 
-  Future<Response> get(String path, {Map<String, dynamic>? queryParameters}) async {
-    return await _dio.get(path, queryParameters: queryParameters);
+  Future<Map<String, dynamic>> get(String endpoint, {Map<String, dynamic>? queryParameters, Map<String, dynamic>? data}) async {
+    try {
+      final token = SharedPrefHelper.getToken();
+      print("ttttt $token");
+
+      if (token != null) {
+        _dio.options.headers['Authorization'] = 'Bearer $token';
+      }
+      final response = await _dio.get(endpoint, queryParameters: queryParameters, data: data);
+      return response.data;
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
   }
 
-  Future<Response> put(String path, {dynamic data}) async {
-    return await _dio.put(path, data: data);
+  Future<Map<String, dynamic>> post(String endpoint, {dynamic data}) async {
+    try {
+      final token = SharedPrefHelper.getToken();
+      print("ttttt $token");
+      if (token != null) {
+        _dio.options.headers['Authorization'] = 'Bearer $token';
+      }
+      final response = await _dio.post(endpoint, data: data);
+      return response.data;
+    } on DioException catch (e) {
+      final message = _handleError(e);
+      Helpers.showError(message.toString());
+      throw _handleError(e);
+    }
   }
 
-  Future<Response> delete(String path) async {
-    return await _dio.delete(path);
+  Future<Map<String, dynamic>> put(String endpoint, {dynamic data}) async {
+    try {
+      final token = SharedPrefHelper.getToken();
+      if (token != null) {
+        _dio.options.headers['Authorization'] = 'Bearer $token';
+      }
+      final response = await _dio.put(endpoint, data: data);
+      return response.data;
+    } on DioException catch (e) {
+      developer.log('PUT Error: ${e.response}', name: 'API');
+      final message = _handleError(e);
+      Helpers.showError(message.toString());
+      throw _handleError(e);
+    }
+  }
+
+  Future<Map<String, dynamic>> patch(String endpoint, {dynamic data}) async {
+    try {
+      final token = SharedPrefHelper.getToken();
+      if (token != null) {
+        _dio.options.headers['Authorization'] = 'Bearer $token';
+      }
+      final response = await _dio.patch(endpoint, data: data);
+      return response.data;
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+  }
+
+  Future<Map<String, dynamic>> delete(String endpoint) async {
+    try {
+      final response = await _dio.delete(endpoint);
+      return response.data;
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+  }
+
+  Future<Response> postMultipart(
+      String endpoint, {
+        required FormData data,
+        ProgressCallback? onSendProgress,
+      }) async {
+    try {
+      final token = await SharedPrefHelper.getToken();
+      if (token != null) {
+        _dio.options.headers['Authorization'] = 'Bearer $token';
+      }
+
+      return await _dio.post(
+        endpoint,
+        data: data,
+        onSendProgress: onSendProgress,
+        options: Options(
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        ),
+      );
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+  }
+
+  String _handleError(DioException error) {
+    String message = 'An error occurred';
+
+    if (error.response != null) {
+      message = error.response?.data['message'] ?? error.message ?? message;
+
+      // Additional detailed error logging
+      developer.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      developer.log('🔍 ERROR DETAILS', name: 'API');
+      developer.log('Status: ${error.response?.statusCode}', name: 'API');
+      developer.log('Message: $message', name: 'API');
+      developer.log('Full Response: ${error.response?.data}', name: 'API');
+      if(error.response?.data['params'] != null){
+        (error.response?.data['params'] as Map<String, dynamic>).forEach((key, val){
+          Helpers.showError(val.toString());
+        });
+      }
+      developer.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    } else if (error.type == DioExceptionType.connectionTimeout) {
+      message = 'Connection timeout';
+      developer.log('⏱️ Connection Timeout', name: 'API');
+    } else if (error.type == DioExceptionType.receiveTimeout) {
+      message = 'Receive timeout';
+      developer.log('⏱️ Receive Timeout', name: 'API');
+    } else {
+      message = error.message ?? message;
+      developer.log('❌ Generic Error: $message', name: 'API');
+    }
+
+    return message;
   }
 }

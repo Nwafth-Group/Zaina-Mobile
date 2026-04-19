@@ -3,15 +3,18 @@ import 'core/network/api_client.dart';
 import 'features/auth/data/datasources/auth_remote_datasource.dart';
 import 'features/auth/data/repositories/auth_repository.dart';
 import 'features/auth/presentation/cubit/auth_cubit.dart';
+import 'features/home/data/datasources/home_datasource.dart';
 import 'features/home/data/datasources/search_remote_datasource.dart';
-import 'features/home/data/search_repository/search_repository.dart';
+import 'features/home/data/repository/home_repository.dart';
+import 'features/home/data/repository/search_repository.dart';
+import 'features/home/presentation/cubit/home_cubti.dart';
 import 'features/home/presentation/cubit/search_cubit.dart';
 
 final sl = GetIt.instance;
 
 void setupDependencies() {
   // Core
-  sl.registerLazySingleton<ApiClient>(() => ApiClient.instance);
+  sl.registerLazySingleton<ApiClient>(() => ApiClient());
 
   // Data Sources
   sl.registerLazySingleton<AuthRemoteDataSource>(
@@ -34,4 +37,21 @@ void setupDependencies() {
           () => SearchRepositoryImpl(sl<SearchRemoteDataSource>()));
   sl.registerFactory<SearchCubit>(() => SearchCubit(sl<SearchRepository>()));
 
+
+// --- Home Module ---
+
+// Data Sources
+  sl.registerLazySingleton<HomeRemoteDataSource>(
+        () => HomeRemoteDataSourceImpl(sl<ApiClient>()),
+  );
+
+// Repositories
+  sl.registerLazySingleton<HomeRepository>(
+        () => HomeRepositoryImpl(sl<HomeRemoteDataSource>()),
+  );
+
+// Cubits
+  sl.registerFactory<HomeCubit>(
+        () => HomeCubit(sl<HomeRepository>()),
+  );
 }

@@ -2,7 +2,7 @@ import '../../data/model/service_model.dart';
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/network/failure.dart';
-import '../../data/search_repository/search_repository.dart';
+import '../../data/repository/search_repository.dart';
 
 class SearchCubit extends Cubit<SearchState> {
   final SearchRepository _repo;
