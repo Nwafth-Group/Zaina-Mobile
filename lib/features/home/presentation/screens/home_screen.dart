@@ -120,8 +120,12 @@ class _HomeScreenState extends State<HomeScreen> {
           Container(
             width: 44,
             height: 44,
-            decoration: const BoxDecoration(color: ZienaColors.bg2, shape: BoxShape.circle),
-            child: const Icon(Icons.notifications_outlined, color: ZienaColors.primary, size: 22),
+            decoration: BoxDecoration(
+              color: ZienaColors.bg2,
+              shape: BoxShape.circle,
+            ),
+            child: Image.asset('assets/images/notifications.png',
+                color: ZienaColors.primary),
           ),
         ],
       ),
@@ -230,8 +234,73 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildBottomNav() {
-    // Keep your existing animated bottom nav implementation here
-    return Container(height: 60, color: Colors.white); // Simplified for space
+    final items = [
+      ('assets/images/active_home.png', 'assets/images/non_active_home.png', 'home'),
+      ('assets/images/active_bookings.png', 'assets/images/non_active_bookings.png', 'bookings'),
+      ('assets/images/active_wallet.png', 'assets/images/non_active_wallet.png', 'wallet'),
+      ('assets/images/active_more.png', 'assets/images/non_active_more.png', 'more'),
+    ];
+
+    return Container(
+      decoration: BoxDecoration(
+        color: ZienaColors.bg4,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 20,
+            offset: const Offset(0, -4),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: List.generate(items.length, (i) {
+              final isActive = _bottomNavIndex == i;
+              final item = items[i];
+              return GestureDetector(
+                onTap: () => setState(() => _bottomNavIndex = i),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 250),
+                  curve: Curves.easeInOut,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isActive ? 20 : 12,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isActive ? ZienaColors.primary : Colors.transparent,
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  child: Row(
+                    children: [
+                      Image.asset(
+                        isActive ? item.$1 : item.$2,
+                        // color: isActive ? Colors.white : ZienaColors.textSecondary,
+                        // size: 22,
+                      ),
+                      if (isActive) ...[
+                        const SizedBox(width: 8),
+                        Text(
+                          item.$3.tr(),
+                          style: const TextStyle(
+                            fontFamily: 'Poppins',
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              );
+            }),
+          ),
+        ),
+      ),
+    );
   }
 }
 
