@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:zeina_app/features/home/presentation/screens/service_screen.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../injection_container.dart';
+import '../../../../widgets/empty_data_widget.dart';
 import '../../data/model/service_model.dart';
 import '../cubit/service_cubit.dart';
 import '../widgets/service_result_card.dart';
@@ -109,6 +110,12 @@ class _PopularServicesScreenState extends State<PopularServicesScreen> {
               : <ServiceModel>[];
 
           final isLoadingMore = state is PopularServicesLoadingMore;
+
+          if (services.isEmpty && state is PopularServicesLoaded) {
+            return const EmptyDataWidget(
+              title: 'no_services_found',
+            );
+          }
 
           return RefreshIndicator(
             onRefresh: () => context

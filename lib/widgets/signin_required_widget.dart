@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:zeina_app/core/utils/app_navigator.dart';
 import '../../../../features/auth/presentation/screens/phone_auth_screen.dart';
 import '../../../../injection_container.dart';
 import '../../../../features/auth/presentation/cubit/auth_cubit.dart';
@@ -20,21 +21,11 @@ class SignInRequiredWidget extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Icon container
-            Container(
-              width: 110,
-              height: 110,
-              decoration: BoxDecoration(
-                color: ZienaColors.bg2,
-                shape: BoxShape.circle,
-              ),
-              child: Center(
-                child: Icon(
-                  _tabIcon(tabKey),
-                  size: 50,
-                  color: ZienaColors.primary,
-                ),
-              ),
+            // Image
+            Image.asset(
+              'assets/images/signin_required.png',
+              width: 200,
+              height: 200,
             ),
             const SizedBox(height: 28),
 
@@ -67,15 +58,7 @@ class SignInRequiredWidget extends StatelessWidget {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => BlocProvider(
-                        create: (_) => sl<AuthCubit>(),
-                        child: const PhoneAuthScreen(),
-                      ),
-                    ),
-                  );
+                  AppNavigator.pushAndRemoveUntil(PhoneAuthScreen());
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: ZienaColors.primary,
@@ -96,39 +79,9 @@ class SignInRequiredWidget extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 14),
-
-            // Continue as guest
-            TextButton(
-              onPressed: () {},
-              child: Text(
-                'continue_guest'.tr(),
-                style: const TextStyle(
-                  fontFamily: 'Poppins',
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: ZienaColors.textSecondary,
-                  decoration: TextDecoration.underline,
-                  decorationColor: ZienaColors.textSecondary,
-                ),
-              ),
-            ),
           ],
         ),
       ),
     );
-  }
-
-  IconData _tabIcon(String tab) {
-    switch (tab) {
-      case 'bookings':
-        return Icons.calendar_month_rounded;
-      case 'wallet':
-        return Icons.wallet_rounded;
-      case 'more':
-        return Icons.grid_view_rounded;
-      default:
-        return Icons.lock_outline_rounded;
-    }
   }
 }

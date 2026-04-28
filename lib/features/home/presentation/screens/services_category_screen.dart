@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:zeina_app/core/utils/app_navigator.dart';
 import 'package:zeina_app/features/home/presentation/screens/service_screen.dart';
 import '../../../../core/theme/theme.dart';
+import '../../../../widgets/empty_data_widget.dart';
 import '../../data/model/banner_model.dart';
 import '../../data/model/service_model.dart';
 import '../cubit/category_cubit.dart';
@@ -120,7 +121,9 @@ class _CategoryServicesScreenState extends State<CategoryServicesScreen> {
           final isLoadingMore = state is CategoryServicesLoadingMore;
 
           if (services.isEmpty && state is CategoryServicesLoaded) {
-            return _buildEmpty(context);
+            return const EmptyDataWidget(
+              title: 'no_services_found',
+            );
           }
 
           return RefreshIndicator(
@@ -152,36 +155,6 @@ class _CategoryServicesScreenState extends State<CategoryServicesScreen> {
             ),
           );
         },
-      ),
-    );
-  }
-
-  Widget _buildEmpty(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 90,
-            height: 90,
-            decoration: BoxDecoration(
-              color: ZienaColors.bg2,
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(Icons.home_repair_service_outlined,
-                color: ZienaColors.primary, size: 40),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'no_services_found'.tr(),
-            style: const TextStyle(
-              
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: ZienaColors.textPrimary,
-            ),
-          ),
-        ],
       ),
     );
   }

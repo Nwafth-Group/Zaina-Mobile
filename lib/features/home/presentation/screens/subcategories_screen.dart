@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../injection_container.dart';
+import '../../../../widgets/empty_data_widget.dart';
 import '../../data/model/banner_model.dart';
 import '../cubit/category_cubit.dart';
 import 'services_category_screen.dart';
@@ -125,7 +126,9 @@ class _SubcategoriesScreenViewState extends State<_SubcategoriesScreenView> {
           final isLoadingMore = state is SubcategoriesLoadingMore;
 
           if (categories.isEmpty && state is SubcategoriesLoaded) {
-            return _buildEmpty(context);
+            return const EmptyDataWidget(
+              title: 'no_subcategories_found',
+            );
           }
 
           return RefreshIndicator(
@@ -176,35 +179,6 @@ class _SubcategoriesScreenViewState extends State<_SubcategoriesScreenView> {
             ),
           );
         },
-      ),
-    );
-  }
-
-  Widget _buildEmpty(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 90,
-            height: 90,
-            decoration: BoxDecoration(
-              color: ZienaColors.bg2,
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(Icons.category_outlined,
-                color: ZienaColors.primary, size: 40),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'no_subcategories_found'.tr(),
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: ZienaColors.textPrimary,
-            ),
-          ),
-        ],
       ),
     );
   }

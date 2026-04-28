@@ -8,6 +8,7 @@ import 'package:zeina_app/features/home/presentation/screens/popular_services_sc
 import 'package:zeina_app/features/home/presentation/screens/service_categories_screen.dart';
 import 'package:zeina_app/features/home/presentation/screens/service_screen.dart';
 import 'package:zeina_app/features/home/presentation/screens/subcategories_screen.dart';
+import 'package:zeina_app/widgets/signin_required_widget.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../injection_container.dart';
 import '../../data/model/banner_model.dart';
@@ -45,28 +46,36 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: RefreshIndicator(
+      body: SafeArea(
+        child: _buildBody(),
+      ),
+      bottomNavigationBar: _buildBottomNav(),
+    );
+  }
+
+  Widget _buildBody() {
+    if (_bottomNavIndex == 0) {
+      return RefreshIndicator(
         onRefresh: () async {
           context.read<HomeCubit>().fetchHomeData();
         },
-        child: SafeArea(
-          child: BlocBuilder<HomeCubit, HomeState>(
-            builder: (context, state) {
-              if (state is HomeLoading) {
-                return const Center(child: CircularProgressIndicator(color: ZienaColors.primary));
-              }
+        child: BlocBuilder<HomeCubit, HomeState>(
+          builder: (context, state) {
+            if (state is HomeLoading) {
+              return const Center(child: CircularProgressIndicator(color: ZienaColors.primary));
+            }
 
-              if (state is HomeError) {
-                return Center(child: Text(state.message));
-              }
+            if (state is HomeError) {
+              return Center(child: Text(state.message));
+            }
 
-              if (state is HomeLoaded) {
-                final data = state.data;
-                return RefreshIndicator(
-                  onRefresh: () => context.read<HomeCubit>().fetchHomeData(),
-                  child: SingleChildScrollView(
-                    physics: const BouncingScrollPhysics(),
-                    child: Column(
+            if (state is HomeLoaded) {
+              final data = state.data;
+              return RefreshIndicator(
+                onRefresh: () => context.read<HomeCubit>().fetchHomeData(),
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const SizedBox(height: 20),
@@ -114,11 +123,18 @@ class _HomeScreenState extends State<HomeScreen> {
               return const SizedBox();
             },
           ),
-        ),
-      ),
-      bottomNavigationBar: _buildBottomNav(),
-    );
+        );
+    } else if (_bottomNavIndex == 1) {
+      return SignInRequiredWidget(tabKey: 'bookings');
+    } else if (_bottomNavIndex == 2) {
+      return SignInRequiredWidget(tabKey: 'wallet');
+    } else if (_bottomNavIndex == 3) {
+      return SignInRequiredWidget(tabKey: 'more');
+    }
+    return const SizedBox();
   }
+
+  // ── Navigation Body Builder ──────────────────────────────────────────────────
 
   // ── Header ─────────────────────────────────────────────────────────────────
   Widget _buildHeader() {
