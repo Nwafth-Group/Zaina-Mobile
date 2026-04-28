@@ -3,6 +3,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:zeina_app/features/home/presentation/screens/services_category_screen.dart';
+import 'package:zeina_app/features/home/presentation/screens/subcategories_screen.dart';
 import '../../../../core/theme/theme.dart';
 import '../../data/model/banner_model.dart';
 import '../cubit/category_cubit.dart';
@@ -130,13 +131,27 @@ class _ServiceCategoriesScreenState extends State<ServiceCategoriesScreen> {
                 }
                 return _CategoryCard(
                   category: categories[i],
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) =>  CategoryServicesScreen(
-                            category: categories[i]),
-                    ),
-                  ),
+                  onTap: () {
+                    if (categories[i].hasSubcategories == true) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => SubcategoriesScreen(
+                            category: categories[i],
+                          ),
+                        ),
+                      );
+                    } else {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => CategoryServicesScreen(
+                            category: categories[i],
+                          ),
+                        ),
+                      );
+                    }
+                  },
                 );
               },
             ),

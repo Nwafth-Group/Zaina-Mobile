@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:zeina_app/core/utils/shared_pref_helper.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../injection_container.dart';
 import '../../../auth/presentation/screens/phone_auth_screen.dart';
@@ -15,13 +16,11 @@ class ServiceDetailScreen extends StatefulWidget {
   final int serviceId;
   // Pass lightweight data for instant header render while loading
   final ServiceModel? preview;
-  final bool isLoggedIn;
 
   const ServiceDetailScreen({
     super.key,
     required this.serviceId,
     this.preview,
-    this.isLoggedIn = false,
   });
 
   @override
@@ -32,6 +31,17 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
   bool _agreedToTerms = false;
   int _selectedDuration = 2;
   int _workerCount = 1;
+  String? token;
+
+  @override
+  void initState() {
+    getLoggedIn();
+    super.initState();
+  }
+
+  Future<void> getLoggedIn()async{
+    token = await SharedPrefHelper.getToken();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -60,9 +70,8 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
 
   Scaffold _buildScaffold({required Widget child}) {
     return Scaffold(
-      backgroundColor: ZienaColors.white,
       appBar: AppBar(
-        backgroundColor: ZienaColors.white,
+        backgroundColor: Colors.black12,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new,
@@ -71,7 +80,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
         ),
         title: Text('service_details'.tr(),
             style: const TextStyle(
-                fontFamily: 'Poppins',
+                
                 fontSize: 17,
                 fontWeight: FontWeight.w700,
                 color: ZienaColors.textPrimary)),
@@ -90,7 +99,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
           const SizedBox(height: 16),
           Text(msg,
               style: const TextStyle(
-                  fontFamily: 'Poppins',
+                  
                   color: ZienaColors.textSecondary),
               textAlign: TextAlign.center),
           const SizedBox(height: 16),
@@ -106,7 +115,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
             ),
             child: Text('retry'.tr(),
                 style: const TextStyle(
-                    fontFamily: 'Poppins', color: Colors.white)),
+                     color: Colors.white)),
           ),
         ],
       ),
@@ -128,7 +137,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
               SliverAppBar(
                 expandedHeight: 260,
                 pinned: true,
-                backgroundColor: ZienaColors.white,
+                backgroundColor: Colors.black26,
                 elevation: 0,
                 leading: GestureDetector(
                   onTap: () => Navigator.pop(context),
@@ -145,7 +154,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                 title: Text(
                   'service_details'.tr(),
                   style: const TextStyle(
-                    fontFamily: 'Poppins',
+                    
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                     color: ZienaColors.white,
@@ -190,7 +199,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                           Text(
                             service.localizedCategory(lang),
                             style: const TextStyle(
-                              fontFamily: 'Poppins',
+                              
                               fontSize: 12,
                               color: ZienaColors.primary,
                               fontWeight: FontWeight.w500,
@@ -207,7 +216,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                       Text(
                         service.localizedName(lang),
                         style: const TextStyle(
-                          fontFamily: 'Poppins',
+                          
                           fontSize: 22,
                           fontWeight: FontWeight.w700,
                           color: ZienaColors.textPrimary,
@@ -220,7 +229,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                       Text(
                         service.localizedDescription(lang),
                         style: const TextStyle(
-                          fontFamily: 'Poppins',
+                          
                           fontSize: 13,
                           color: ZienaColors.textSecondary,
                           height: 1.55,
@@ -235,7 +244,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                             text:
                             '${service.price.pricePerHour.toStringAsFixed(0)} ${service.price.currency} ',
                             style: const TextStyle(
-                              fontFamily: 'Poppins',
+                              
                               fontSize: 20,
                               fontWeight: FontWeight.w700,
                               color: ZienaColors.primary,
@@ -244,7 +253,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                           TextSpan(
                             text: _priceLabel(service.type),
                             style: const TextStyle(
-                              fontFamily: 'Poppins',
+                              
                               fontSize: 13,
                               color: ZienaColors.textSecondary,
                             ),
@@ -331,7 +340,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                   Text(
                     'duration_workers'.tr(),
                     style: const TextStyle(
-                      fontFamily: 'Poppins',
+                      
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                       color: ZienaColors.textPrimary,
@@ -341,7 +350,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                   Text(
                     '$_selectedDuration hrs · $_workerCount worker',
                     style: const TextStyle(
-                      fontFamily: 'Poppins',
+                      
                       fontSize: 11,
                       color: ZienaColors.textSecondary,
                     ),
@@ -388,7 +397,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
               // Duration selector
               Text('select_duration'.tr(),
                   style: const TextStyle(
-                      fontFamily: 'Poppins',
+                      
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
                       color: ZienaColors.textPrimary)),
@@ -418,7 +427,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                       child: Text(
                         '$d hrs',
                         style: TextStyle(
-                          fontFamily: 'Poppins',
+                          
                           fontWeight: FontWeight.w600,
                           fontSize: 14,
                           color: selected
@@ -458,7 +467,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                   ),
                   child: Text('done'.tr(),
                       style: const TextStyle(
-                          fontFamily: 'Poppins',
+                          
                           fontWeight: FontWeight.w600,
                           fontSize: 15,
                           color: Colors.white)),
@@ -493,7 +502,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
           Text(
             'terms_conditions'.tr(),
             style: const TextStyle(
-              fontFamily: 'Poppins',
+              
               fontSize: 13,
               fontWeight: FontWeight.w500,
               color: ZienaColors.primary,
@@ -532,7 +541,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
           Text(
             'agree_terms_conditions'.tr(),
             style: const TextStyle(
-              fontFamily: 'Poppins',
+              
               fontSize: 13,
               color: ZienaColors.textSecondary,
             ),
@@ -556,7 +565,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
         ),
         child: Text('see_more_reviews'.tr(),
             style: const TextStyle(
-              fontFamily: 'Poppins',
+              
               fontSize: 14,
               fontWeight: FontWeight.w600,
               color: ZienaColors.primary,
@@ -588,14 +597,14 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
             children: [
               Text('total'.tr(),
                   style: const TextStyle(
-                    fontFamily: 'Poppins',
+                    
                     fontSize: 14,
                     color: ZienaColors.textSecondary,
                   )),
               Text(
                 '${total.toStringAsFixed(1)} ${service.price.currency}',
                 style: const TextStyle(
-                  fontFamily: 'Poppins',
+                  
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
                   color: ZienaColors.primary,
@@ -610,7 +619,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
               children: [
                 Text('booking_summary'.tr(),
                     style: const TextStyle(
-                      fontFamily: 'Poppins',
+                      
                       fontSize: 12,
                       color: ZienaColors.textSecondary,
                     )),
@@ -625,7 +634,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
             child: ElevatedButton(
               onPressed: _agreedToTerms
                   ? () {
-                if (!widget.isLoggedIn) {
+                if (token==null) {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -649,7 +658,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
               ),
               child: Text('book_now'.tr(),
                   style: const TextStyle(
-                    fontFamily: 'Poppins',
+                    
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                     color: Colors.white,
@@ -664,7 +673,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
   Widget _sectionTitle(String text) => Text(
     text,
     style: const TextStyle(
-      fontFamily: 'Poppins',
+      
       fontSize: 16,
       fontWeight: FontWeight.w700,
       color: ZienaColors.textPrimary,
@@ -702,7 +711,7 @@ class _FeatureRow extends StatelessWidget {
           Expanded(
             child: Text(label,
                 style: const TextStyle(
-                    fontFamily: 'Poppins',
+                    
                     fontSize: 14,
                     color: ZienaColors.textPrimary)),
           ),
@@ -728,7 +737,7 @@ class _ReviewCard extends StatelessWidget {
             children: [
               Text(review.name,
                   style: const TextStyle(
-                      fontFamily: 'Poppins',
+                      
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                       color: ZienaColors.textPrimary)),
@@ -744,7 +753,7 @@ class _ReviewCard extends StatelessWidget {
               const SizedBox(width: 8),
               Text(review.timeAgo,
                   style: const TextStyle(
-                      fontFamily: 'Poppins',
+                      
                       fontSize: 11,
                       color: ZienaColors.textSecondary)),
             ],
@@ -752,7 +761,7 @@ class _ReviewCard extends StatelessWidget {
           const SizedBox(height: 6),
           Text(review.comment,
               style: const TextStyle(
-                  fontFamily: 'Poppins',
+                  
                   fontSize: 13,
                   color: ZienaColors.textSecondary,
                   height: 1.4)),
@@ -784,7 +793,7 @@ class _CounterRow extends StatelessWidget {
       children: [
         Text(label,
             style: const TextStyle(
-                fontFamily: 'Poppins',
+                
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
                 color: ZienaColors.textPrimary)),
@@ -795,7 +804,7 @@ class _CounterRow extends StatelessWidget {
             const SizedBox(width: 16),
             Text('$value',
                 style: const TextStyle(
-                    fontFamily: 'Poppins',
+                    
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
                     color: ZienaColors.textPrimary)),

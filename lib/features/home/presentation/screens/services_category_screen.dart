@@ -2,6 +2,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:zeina_app/core/utils/app_navigator.dart';
+import 'package:zeina_app/features/home/presentation/screens/service_screen.dart';
 import '../../../../core/theme/theme.dart';
 import '../../data/model/banner_model.dart';
 import '../../data/model/service_model.dart';
@@ -143,13 +145,7 @@ class _CategoryServicesScreenState extends State<CategoryServicesScreen> {
                 return _ServiceListCard(
                   service: services[i],
                   onBookNow: () {
-                  //   Navigator.push(
-                  //   context,
-                  //   MaterialPageRoute(
-                  //     builder: (_) =>
-                  //         ServiceDetailScreen(service: services[i]),
-                  //   ),
-                  // );
+                    AppNavigator.push(ServiceDetailScreen(serviceId: services[i].id, preview: services[i],));
                   }
                 );
               },

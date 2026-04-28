@@ -1,15 +1,20 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
+import 'package:zeina_app/core/utils/app_navigator.dart';
+import 'package:zeina_app/features/home/presentation/screens/popular_services_screen.dart';
 import 'package:zeina_app/features/home/presentation/screens/service_categories_screen.dart';
+import 'package:zeina_app/features/home/presentation/screens/service_screen.dart';
+import 'package:zeina_app/features/home/presentation/screens/subcategories_screen.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../injection_container.dart';
 import '../../data/model/banner_model.dart';
 import '../../data/model/service_model.dart';
-import '../cubit/category_cubit.dart';
 import '../cubit/home_cubti.dart';
 import '../cubit/search_cubit.dart';
+import '../cubit/service_cubit.dart';
 import 'search_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -40,62 +45,75 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: BlocBuilder<HomeCubit, HomeState>(
-          builder: (context, state) {
-            if (state is HomeLoading) {
-              return const Center(child: CircularProgressIndicator(color: ZienaColors.primary));
-            }
+      body: RefreshIndicator(
+        onRefresh: () async {
+          context.read<HomeCubit>().fetchHomeData();
+        },
+        child: SafeArea(
+          child: BlocBuilder<HomeCubit, HomeState>(
+            builder: (context, state) {
+              if (state is HomeLoading) {
+                return const Center(child: CircularProgressIndicator(color: ZienaColors.primary));
+              }
 
-            if (state is HomeError) {
-              return Center(child: Text(state.message));
-            }
+              if (state is HomeError) {
+                return Center(child: Text(state.message));
+              }
 
-            if (state is HomeLoaded) {
-              final data = state.data;
-              return RefreshIndicator(
-                onRefresh: () => context.read<HomeCubit>().fetchHomeData(),
-                child: SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 20),
-                      _buildHeader(),
-                      const SizedBox(height: 20),
-                      _buildSearchBar(),
-                      const SizedBox(height: 20),
-                      _buildBannerCarousel(data.banners),
-                      const SizedBox(height: 24),
-                      _buildSectionHeader(
-                        'service_categories',
-                        'see_all',
-                        onSeeAll: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const ServiceCategoriesScreen()
+              if (state is HomeLoaded) {
+                final data = state.data;
+                return RefreshIndicator(
+                  onRefresh: () => context.read<HomeCubit>().fetchHomeData(),
+                  child: SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 20),
+                        _buildHeader(),
+                        const SizedBox(height: 20),
+                        _buildSearchBar(),
+                        const SizedBox(height: 20),
+                        _buildBannerCarousel(data.banners),
+                        const SizedBox(height: 24),
+                        _buildSectionHeader(
+                          'service_categories',
+                          'see_all',
+                          onSeeAll: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const ServiceCategoriesScreen()
+                            ),
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 14),
-                      _buildCategories(data.categories),
-                      // const SizedBox(height: 24),
-                      // _buildSectionHeader('upcoming_appointment', null),
-                      // const SizedBox(height: 14),
-                      // // Pass null or the actual appointment from API
-                      // _buildAppointmentCard(),
-                      const SizedBox(height: 24),
-                      _buildSectionHeader('popular_services', 'see_all'),
-                      const SizedBox(height: 14),
-                      _buildPopularServices(data.popularServices),
-                      const SizedBox(height: 100),
-                    ],
+                        const SizedBox(height: 14),
+                        _buildCategories(data.categories),
+                        // const SizedBox(height: 24),
+                        // _buildSectionHeader('upcoming_appointment', null),
+                        // const SizedBox(height: 14),
+                        // // Pass null or the actual appointment from API
+                        // _buildAppointmentCard(),
+                        const SizedBox(height: 24),
+                        _buildSectionHeader('popular_services', 'see_all', onSeeAll: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => BlocProvider(
+                              create: (_) => sl<PopularServicesCubit>(),
+                              child: const PopularServicesScreen(),
+                            ),
+                          ),
+                        ),),
+                        const SizedBox(height: 14),
+                        _buildPopularServices(data.popularServices),
+                        const SizedBox(height: 100),
+                      ],
+                    ),
                   ),
-                ),
-              );
-            }
-            return const SizedBox();
-          },
+                );
+              }
+              return const SizedBox();
+            },
+          ),
         ),
       ),
       bottomNavigationBar: _buildBottomNav(),
@@ -203,7 +221,11 @@ class _HomeScreenState extends State<HomeScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 20),
         itemCount: categories.length,
         separatorBuilder: (_, __) => const SizedBox(width: 12),
-        itemBuilder: (_, i) => _CategoryChip(category: categories[i]),
+        itemBuilder: (_, i) => InkWell(
+            onTap: () {
+              AppNavigator.push(SubcategoriesScreen(category: categories[i]));
+            },
+            child: _CategoryChip(category: categories[i])),
       ),
     );
   }
@@ -311,7 +333,6 @@ class _HomeScreenState extends State<HomeScreen> {
                         Text(
                           item.$3.tr(),
                           style: const TextStyle(
-                            fontFamily: 'Poppins',
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
@@ -367,17 +388,22 @@ class _CategoryChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final locale = context.locale.languageCode;
-    return Column(
-      children: [
-        Container(
-          width: 56,
-          height: 56,
-          decoration: BoxDecoration(color: ZienaColors.bg1, borderRadius: BorderRadius.circular(16)),
-          child: const Icon(Icons.category, color: ZienaColors.primary),
-        ),
-        const SizedBox(height: 4),
-        Text(locale == 'ar' ? category.nameAr : category.nameEn, style: const TextStyle(fontSize: 12)),
-      ],
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(color: ZienaColors.bg1, borderRadius: BorderRadius.circular(16), border: Border.all(color: ZienaColors.primary, width: 0.5)),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 45,
+            height: 45,
+            decoration: BoxDecoration(color: ZienaColors.bg2, shape: BoxShape.circle),
+            child: const Icon(Icons.category, color: ZienaColors.primary, size: 25,),
+          ),
+          const SizedBox(width: 4),
+          Text(locale == 'ar' ? category.nameAr : category.nameEn, style: const TextStyle(fontSize: 12, color: ZienaColors.black)),
+        ],
+      ),
     );
   }
 }
@@ -389,22 +415,45 @@ class _ServiceCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final locale = context.locale.languageCode;
-    return Container(
-      width: 155,
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: ZienaColors.greyBorder),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(child: Container(color: ZienaColors.bg3, child: const Center(child: Icon(Icons.image)))),
-          const SizedBox(height: 8),
-          Text(locale == 'ar' ? service.nameAr : service.nameEn, style: const TextStyle(fontWeight: FontWeight.bold)),
-          Text("${service.price.basePrice} ${service.price.currency}", style: const TextStyle(color: ZienaColors.primary)),
-        ],
+    return InkWell(
+      onTap: () {
+        AppNavigator.push(ServiceDetailScreen(serviceId: service.id, preview: service,));
+      },
+      child: Container(
+        width: 155,
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: ZienaColors.greyBorder),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+
+            ClipRRect(
+                        borderRadius: BorderRadius.circular(18),
+                        child: service.image != null
+              ? CachedNetworkImage(
+            imageUrl: service.image!,
+            width: double.infinity,
+            height: 100,
+            fit: BoxFit.cover,
+            placeholder: (_, __) => Container(
+                width: double.infinity,
+                height: 100,
+                color: ZienaColors.bg3),
+            errorWidget: (_, __, ___) => Container(color: ZienaColors.bg3, child: const Center(child: Icon(Icons.image))),
+                        )
+              : Container(
+              width: double.infinity,
+              height: 100, color: ZienaColors.bg3, child: const Center(child: Icon(Icons.image))),
+                      ),
+            const SizedBox(height: 8),
+            Text(locale == 'ar' ? service.nameAr : service.nameEn, style: const TextStyle(fontWeight: FontWeight.bold)),
+            Text("${service.price.basePrice} ${service.price.currency}", style: const TextStyle(color: ZienaColors.primary)),
+          ],
+        ),
       ),
     );
   }

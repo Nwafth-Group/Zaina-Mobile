@@ -52,7 +52,7 @@ class CategoriesCubit extends Cubit<CategoriesState> {
         currentPage: _currentPage,
         lastPage: _lastPage,
       ));
-    } on Failure catch (e) {
+    } on Failure catch (_) {
       emit(CategoriesLoaded(
         categories: List.from(_items),
         currentPage: _currentPage,
@@ -132,6 +132,64 @@ class CategoryServicesCubit extends Cubit<CategoryServicesState> {
   }
 }
 
+class SubcategoriesCubit extends Cubit<SubcategoriesState> {
+  final CategoriesRepository _repo;
+  SubcategoriesCubit(this._repo) : super(SubcategoriesInitial());
+
+  List<CategoryModel> _items = [];
+  int _currentPage = 1;
+  int _lastPage = 1;
+  bool _loadingMore = false;
+
+  Future<void> fetchSubcategories(int categoryId, {bool refresh = false}) async {
+    if (refresh) {
+      _items = [];
+      _currentPage = 1;
+    }
+    emit(SubcategoriesLoading());
+    try {
+      final res = await _repo.getCategorySubcategories(categoryId, page: 1);
+      _items = res.items;
+      _currentPage = res.currentPage;
+      _lastPage = res.lastPage;
+      emit(SubcategoriesLoaded(
+        categories: List.from(_items),
+        currentPage: _currentPage,
+        lastPage: _lastPage,
+      ));
+    } on Failure catch (e) {
+      emit(SubcategoriesError(e.message));
+    } catch (e) {
+      emit(SubcategoriesError('Something went wrong'));
+    }
+  }
+
+  Future<void> loadMore(int categoryId) async {
+    if (_loadingMore || _currentPage >= _lastPage) return;
+    _loadingMore = true;
+    emit(SubcategoriesLoadingMore(List.from(_items)));
+    try {
+      final res = await _repo.getCategorySubcategories(categoryId, page: _currentPage + 1);
+      _currentPage = res.currentPage;
+      _lastPage = res.lastPage;
+      _items.addAll(res.items);
+      emit(SubcategoriesLoaded(
+        categories: List.from(_items),
+        currentPage: _currentPage,
+        lastPage: _lastPage,
+      ));
+    } on Failure {
+      emit(SubcategoriesLoaded(
+        categories: List.from(_items),
+        currentPage: _currentPage,
+        lastPage: _lastPage,
+      ));
+    } finally {
+      _loadingMore = false;
+    }
+  }
+}
+
 abstract class CategoriesState {}
 
 class CategoriesInitial extends CategoriesState {}
@@ -179,4 +237,30 @@ class CategoryServicesLoaded extends CategoryServicesState {
 class CategoryServicesError extends CategoryServicesState {
   final String message;
   CategoryServicesError(this.message);
+}
+
+abstract class SubcategoriesState {}
+
+class SubcategoriesInitial extends SubcategoriesState {}
+class SubcategoriesLoading extends SubcategoriesState {}
+class SubcategoriesLoadingMore extends SubcategoriesState {
+  final List<CategoryModel> current;
+  SubcategoriesLoadingMore(this.current);
+}
+class SubcategoriesLoaded extends SubcategoriesState {
+  final List<CategoryModel> categories;
+  final int currentPage;
+  final int lastPage;
+
+  SubcategoriesLoaded({
+    required this.categories,
+    required this.currentPage,
+    required this.lastPage,
+  });
+
+  bool get hasMore => currentPage < lastPage;
+}
+class SubcategoriesError extends SubcategoriesState {
+  final String message;
+  SubcategoriesError(this.message);
 }

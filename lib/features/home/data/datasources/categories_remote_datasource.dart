@@ -7,6 +7,8 @@ abstract class CategoriesRemoteDataSource {
   Future<PaginatedCategories> getCategories({int page = 1});
   Future<Map<String, dynamic>> getCategoryServices(int categoryId,
       {int page = 1});
+  Future<PaginatedCategories> getCategorySubcategories(int categoryId,
+      {int page = 1});
 }
 
 class CategoriesRemoteDataSourceImpl implements CategoriesRemoteDataSource {
@@ -35,6 +37,20 @@ class CategoriesRemoteDataSourceImpl implements CategoriesRemoteDataSource {
         queryParameters: {'page': page},
       );
       return res;
+    } on DioException catch (e) {
+      throw handleDioError(e);
+    }
+  }
+
+  @override
+  Future<PaginatedCategories> getCategorySubcategories(int categoryId,
+      {int page = 1}) async {
+    try {
+      final res = await _api.get(
+        'customer/categories/$categoryId/sub',
+        queryParameters: {'page': page},
+      );
+      return PaginatedCategories.fromJson(res);
     } on DioException catch (e) {
       throw handleDioError(e);
     }

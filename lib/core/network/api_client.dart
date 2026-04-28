@@ -85,8 +85,7 @@ class ApiClient {
 
   Future<Map<String, dynamic>> get(String endpoint, {Map<String, dynamic>? queryParameters, Map<String, dynamic>? data}) async {
     try {
-      final token = SharedPrefHelper.getToken();
-      print("ttttt $token");
+      final token = await SharedPrefHelper.getToken();
 
       if (token != null) {
         _dio.options.headers['Authorization'] = 'Bearer $token';
@@ -100,7 +99,7 @@ class ApiClient {
 
   Future<Map<String, dynamic>> post(String endpoint, {dynamic data}) async {
     try {
-      final token = SharedPrefHelper.getToken();
+      final token =await  SharedPrefHelper.getToken();
       print("ttttt $token");
       if (token != null) {
         _dio.options.headers['Authorization'] = 'Bearer $token';

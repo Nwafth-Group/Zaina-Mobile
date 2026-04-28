@@ -6,6 +6,8 @@ abstract class CategoriesRepository {
   Future<PaginatedCategories> getCategories({int page = 1});
   Future<Map<String, dynamic>> getCategoryServices(int categoryId,
       {int page = 1});
+  Future<PaginatedCategories> getCategorySubcategories(int categoryId,
+      {int page = 1});
 }
 
 class CategoriesRepositoryImpl implements CategoriesRepository {
@@ -26,6 +28,16 @@ class CategoriesRepositoryImpl implements CategoriesRepository {
       {int page = 1}) async {
     try {
       return await _remote.getCategoryServices(categoryId, page: page);
+    } on Failure {
+      rethrow;
+    }
+  }
+
+  @override
+  Future<PaginatedCategories> getCategorySubcategories(int categoryId,
+      {int page = 1}) async {
+    try {
+      return await _remote.getCategorySubcategories(categoryId, page: page);
     } on Failure {
       rethrow;
     }

@@ -24,6 +24,7 @@ class CategoryModel {
   final String nameAr;
   final String nameEn;
   final String? image;
+  final bool? hasSubcategories;
   final String status;
 
   const CategoryModel({
@@ -31,6 +32,7 @@ class CategoryModel {
     required this.nameAr,
     required this.nameEn,
     this.image,
+    this.hasSubcategories,
     required this.status,
   });
 
@@ -40,6 +42,7 @@ class CategoryModel {
       nameAr: json['name_ar'] ?? '',
       nameEn: json['name_en'] ?? '',
       image: json['image'],
+      hasSubcategories: json['has_subcategories'],
       status: json['status'] ?? 'active',
     );
   }
