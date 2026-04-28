@@ -7,6 +7,7 @@ import 'app_router.dart';
 import 'core/theme/theme.dart';
 import 'features/auth/presentation/cubit/auth_cubit.dart';
 import 'features/auth/presentation/screens/splash_screen.dart';
+import 'features/home/presentation/cubit/category_cubit.dart';
 import 'injection_container.dart';
 
 class ZienaApp extends StatelessWidget {
@@ -21,6 +22,12 @@ class ZienaApp extends StatelessWidget {
         ),
         BlocProvider<HomeCubit>(
           create: (_) => sl<HomeCubit>(),
+        ),
+        BlocProvider<CategoriesCubit>(
+          create: (_) => sl<CategoriesCubit>(),
+        ),
+        BlocProvider<CategoryServicesCubit>(
+          create: (_) => sl<CategoryServicesCubit>(),
         ),
       ],
       child: MaterialApp(

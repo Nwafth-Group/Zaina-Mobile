@@ -3,10 +3,13 @@ import 'core/network/api_client.dart';
 import 'features/auth/data/datasources/auth_remote_datasource.dart';
 import 'features/auth/data/repositories/auth_repository.dart';
 import 'features/auth/presentation/cubit/auth_cubit.dart';
+import 'features/home/data/datasources/categories_remote_datasource.dart';
 import 'features/home/data/datasources/home_datasource.dart';
 import 'features/home/data/datasources/search_remote_datasource.dart';
+import 'features/home/data/repository/category_repo.dart';
 import 'features/home/data/repository/home_repository.dart';
 import 'features/home/data/repository/search_repository.dart';
+import 'features/home/presentation/cubit/category_cubit.dart';
 import 'features/home/presentation/cubit/home_cubti.dart';
 import 'features/home/presentation/cubit/search_cubit.dart';
 
@@ -54,4 +57,14 @@ void setupDependencies() {
   sl.registerFactory<HomeCubit>(
         () => HomeCubit(sl<HomeRepository>()),
   );
+
+  sl.registerLazySingleton<CategoriesRemoteDataSource>(
+          () => CategoriesRemoteDataSourceImpl(sl<ApiClient>()));
+  sl.registerLazySingleton<CategoriesRepository>(
+          () => CategoriesRepositoryImpl(sl<CategoriesRemoteDataSource>()));
+  sl.registerFactory<CategoriesCubit>(
+          () => CategoriesCubit(sl<CategoriesRepository>()));
+  sl.registerFactory<CategoryServicesCubit>(
+          () => CategoryServicesCubit(sl<CategoriesRepository>()));
+
 }

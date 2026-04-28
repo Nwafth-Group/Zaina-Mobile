@@ -2,10 +2,12 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
+import 'package:zeina_app/features/home/presentation/screens/service_categories_screen.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../injection_container.dart';
 import '../../data/model/banner_model.dart';
 import '../../data/model/service_model.dart';
+import '../cubit/category_cubit.dart';
 import '../cubit/home_cubti.dart';
 import '../cubit/search_cubit.dart';
 import 'search_screen.dart';
@@ -65,14 +67,23 @@ class _HomeScreenState extends State<HomeScreen> {
                       const SizedBox(height: 20),
                       _buildBannerCarousel(data.banners),
                       const SizedBox(height: 24),
-                      _buildSectionHeader('service_categories', 'see_all'),
+                      _buildSectionHeader(
+                        'service_categories',
+                        'see_all',
+                        onSeeAll: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const ServiceCategoriesScreen()
+                          ),
+                        ),
+                      ),
                       const SizedBox(height: 14),
                       _buildCategories(data.categories),
-                      const SizedBox(height: 24),
-                      _buildSectionHeader('upcoming_appointment', null),
-                      const SizedBox(height: 14),
-                      // Pass null or the actual appointment from API
-                      _buildAppointmentCard(),
+                      // const SizedBox(height: 24),
+                      // _buildSectionHeader('upcoming_appointment', null),
+                      // const SizedBox(height: 14),
+                      // // Pass null or the actual appointment from API
+                      // _buildAppointmentCard(),
                       const SizedBox(height: 24),
                       _buildSectionHeader('popular_services', 'see_all'),
                       const SizedBox(height: 14),
@@ -212,14 +223,29 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // Helper for Section Headers
-  Widget _buildSectionHeader(String titleKey, String? actionKey) {
+  Widget _buildSectionHeader(String titleKey, String? actionKey,
+      {VoidCallback? onSeeAll}) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(titleKey.tr(), style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
-          if (actionKey != null) Text(actionKey.tr(), style: const TextStyle(color: ZienaColors.primary, fontSize: 13)),
+          Text(titleKey.tr(),
+              style: const TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.w700,
+                color: ZienaColors.textPrimary,
+              )),
+          if (actionKey != null)
+            GestureDetector(
+              onTap: onSeeAll,
+              child: Text(actionKey.tr(),
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: ZienaColors.primary,
+                  )),
+            ),
         ],
       ),
     );

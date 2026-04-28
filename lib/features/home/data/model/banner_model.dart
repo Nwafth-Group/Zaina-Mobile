@@ -24,15 +24,55 @@ class CategoryModel {
   final String nameAr;
   final String nameEn;
   final String? image;
+  final String status;
 
-  CategoryModel({required this.id, required this.nameAr, required this.nameEn, this.image});
+  const CategoryModel({
+    required this.id,
+    required this.nameAr,
+    required this.nameEn,
+    this.image,
+    required this.status,
+  });
 
   factory CategoryModel.fromJson(Map<String, dynamic> json) {
     return CategoryModel(
       id: json['id'],
-      nameAr: json['name_ar'],
-      nameEn: json['name_en'],
+      nameAr: json['name_ar'] ?? '',
+      nameEn: json['name_en'] ?? '',
       image: json['image'],
+      status: json['status'] ?? 'active',
+    );
+  }
+
+  String localizedName(String langCode) =>
+      langCode == 'ar' ? nameAr : nameEn;
+}
+
+class PaginatedCategories {
+  final List<CategoryModel> items;
+  final int currentPage;
+  final int lastPage;
+  final int total;
+
+  const PaginatedCategories({
+    required this.items,
+    required this.currentPage,
+    required this.lastPage,
+    required this.total,
+  });
+
+  bool get hasMore => currentPage < lastPage;
+
+  factory PaginatedCategories.fromJson(Map<String, dynamic> json) {
+    final data = json['data'] as Map<String, dynamic>;
+    final meta = data['meta'] as Map<String, dynamic>? ?? {};
+    return PaginatedCategories(
+      items: (data['items'] as List<dynamic>? ?? [])
+          .map((e) => CategoryModel.fromJson(e))
+          .toList(),
+      currentPage: meta['current_page'] ?? 1,
+      lastPage: meta['last_page'] ?? 1,
+      total: meta['total'] ?? 0,
     );
   }
 }
