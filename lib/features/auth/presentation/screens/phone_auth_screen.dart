@@ -7,6 +7,7 @@ import '../../../../core/theme/theme.dart';
 import '../../../../core/utils/constants.dart';
 import '../../../../widgets/ziena_button.dart';
 import '../../../../widgets/ziena_logo.dart';
+import '../../../main_screen.dart';
 import '../cubit/auth_cubit.dart';
 import 'otp_screen.dart';
 import 'terms_screen.dart';
@@ -225,7 +226,7 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
                     backgroundColor: ZienaColors.bg3,
                     textColor: ZienaColors.primaryDark,
                     onTap: () {
-                      AppNavigator.pushAndRemoveUntil(HomeScreen());
+                      AppNavigator.pushAndRemoveUntil(MainScreen());
                     },
                   ),
                   const SizedBox(height: 32),

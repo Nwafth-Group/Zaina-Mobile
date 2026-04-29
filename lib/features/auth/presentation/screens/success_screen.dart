@@ -4,6 +4,7 @@ import 'package:zeina_app/features/home/presentation/screens/home_screen.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../core/utils/constants.dart';
 import '../../../../widgets/ziena_button.dart';
+import '../../../main_screen.dart';
 
 class SuccessScreen extends StatefulWidget {
   static const String routeName = '/success';
@@ -94,7 +95,7 @@ class _SuccessScreenState extends State<SuccessScreen> with SingleTickerProvider
                 text: AppStrings.done,
                 onTap: () {
                   // Navigate to home screen
-                  AppNavigator.pushAndRemoveUntil(HomeScreen());
+                  AppNavigator.pushAndRemoveUntil(MainScreen());
                 },
               ),
               const SizedBox(height: 32),

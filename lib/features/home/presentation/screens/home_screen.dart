@@ -46,95 +46,77 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: _buildBody(),
-      ),
-      bottomNavigationBar: _buildBottomNav(),
-    );
-  }
-
-  Widget _buildBody() {
-    if (_bottomNavIndex == 0) {
-      return RefreshIndicator(
+      body: RefreshIndicator(
         onRefresh: () async {
-          context.read<HomeCubit>().fetchHomeData();
-        },
-        child: BlocBuilder<HomeCubit, HomeState>(
-          builder: (context, state) {
-            if (state is HomeLoading) {
-              return const Center(child: CircularProgressIndicator(color: ZienaColors.primary));
-            }
+      context.read<HomeCubit>().fetchHomeData();
+    },
+    child: BlocBuilder<HomeCubit, HomeState>(
+    builder: (context, state) {
+    if (state is HomeLoading) {
+    return const Center(child: CircularProgressIndicator(color: ZienaColors.primary));
+    }
 
-            if (state is HomeError) {
-              return Center(child: Text(state.message));
-            }
+    if (state is HomeError) {
+    return Center(child: Text(state.message));
+    }
 
-            if (state is HomeLoaded) {
-              final data = state.data;
-              return RefreshIndicator(
-                onRefresh: () => context.read<HomeCubit>().fetchHomeData(),
-                child: SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 20),
-                        _buildHeader(),
-                        const SizedBox(height: 20),
-                        _buildSearchBar(),
-                        const SizedBox(height: 20),
-                        _buildBannerCarousel(data.banners),
-                        const SizedBox(height: 24),
-                        _buildSectionHeader(
-                          'service_categories',
-                          'see_all',
-                          onSeeAll: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const ServiceCategoriesScreen()
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 14),
-                        _buildCategories(data.categories),
-                        // const SizedBox(height: 24),
-                        // _buildSectionHeader('upcoming_appointment', null),
-                        // const SizedBox(height: 14),
-                        // // Pass null or the actual appointment from API
-                        // _buildAppointmentCard(),
-                        const SizedBox(height: 24),
-                        _buildSectionHeader('popular_services', 'see_all', onSeeAll: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => BlocProvider(
-                              create: (_) => sl<PopularServicesCubit>(),
-                              child: const PopularServicesScreen(),
-                            ),
-                          ),
-                        ),),
-                        const SizedBox(height: 14),
-                        _buildPopularServices(data.popularServices),
-                        const SizedBox(height: 100),
-                      ],
-                    ),
-                  ),
-                );
-              }
-              return const SizedBox();
-            },
-          ),
-        );
-    } else if (_bottomNavIndex == 1) {
-      return SignInRequiredWidget(tabKey: 'bookings');
-    } else if (_bottomNavIndex == 2) {
-      return SignInRequiredWidget(tabKey: 'wallet');
-    } else if (_bottomNavIndex == 3) {
-      return SignInRequiredWidget(tabKey: 'more');
+    if (state is HomeLoaded) {
+    final data = state.data;
+    return RefreshIndicator(
+    onRefresh: () => context.read<HomeCubit>().fetchHomeData(),
+    child: SingleChildScrollView(
+    physics: const BouncingScrollPhysics(),
+    child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+    const SizedBox(height: 20),
+    _buildHeader(),
+    const SizedBox(height: 20),
+    _buildSearchBar(),
+    const SizedBox(height: 20),
+    _buildBannerCarousel(data.banners),
+    const SizedBox(height: 24),
+    _buildSectionHeader(
+    'service_categories',
+    'see_all',
+    onSeeAll: () => Navigator.push(
+    context,
+    MaterialPageRoute(
+    builder: (_) => const ServiceCategoriesScreen()
+    ),
+    ),
+    ),
+    const SizedBox(height: 14),
+    _buildCategories(data.categories),
+    // const SizedBox(height: 24),
+    // _buildSectionHeader('upcoming_appointment', null),
+    // const SizedBox(height: 14),
+    // // Pass null or the actual appointment from API
+    // _buildAppointmentCard(),
+    const SizedBox(height: 24),
+    _buildSectionHeader('popular_services', 'see_all', onSeeAll: () => Navigator.push(
+    context,
+    MaterialPageRoute(
+    builder: (_) => BlocProvider(
+    create: (_) => sl<PopularServicesCubit>(),
+    child: const PopularServicesScreen(),
+    ),
+    ),
+    ),),
+    const SizedBox(height: 14),
+    _buildPopularServices(data.popularServices),
+    const SizedBox(height: 100),
+    ],
+    ),
+    ),
+    );
     }
     return const SizedBox();
+    },
+    ),
+    )
+    );
   }
-
-  // ── Navigation Body Builder ──────────────────────────────────────────────────
 
   // ── Header ─────────────────────────────────────────────────────────────────
   Widget _buildHeader() {
@@ -285,83 +267,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   )),
             ),
         ],
-      ),
-    );
-  }
-
-  // Appointment Card (Placeholder for now)
-  Widget _buildAppointmentCard() {
-    return const Padding(
-      padding: EdgeInsets.symmetric(horizontal: 20),
-      child: Text("No upcoming appointments"),
-    );
-  }
-
-  Widget _buildBottomNav() {
-    final items = [
-      ('assets/images/active_home.png', 'assets/images/non_active_home.png', 'home'),
-      ('assets/images/active_bookings.png', 'assets/images/non_active_bookings.png', 'bookings'),
-      ('assets/images/active_wallet.png', 'assets/images/non_active_wallet.png', 'wallet'),
-      ('assets/images/active_more.png', 'assets/images/non_active_more.png', 'more'),
-    ];
-
-    return Container(
-      decoration: BoxDecoration(
-        color: ZienaColors.bg4,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 20,
-            offset: const Offset(0, -4),
-          ),
-        ],
-      ),
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: List.generate(items.length, (i) {
-              final isActive = _bottomNavIndex == i;
-              final item = items[i];
-              return GestureDetector(
-                onTap: () => setState(() => _bottomNavIndex = i),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 250),
-                  curve: Curves.easeInOut,
-                  padding: EdgeInsets.symmetric(
-                    horizontal: isActive ? 20 : 12,
-                    vertical: 10,
-                  ),
-                  decoration: BoxDecoration(
-                    color: isActive ? ZienaColors.primary : Colors.transparent,
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                  child: Row(
-                    children: [
-                      Image.asset(
-                        isActive ? item.$1 : item.$2,
-                        // color: isActive ? Colors.white : ZienaColors.textSecondary,
-                        // size: 22,
-                      ),
-                      if (isActive) ...[
-                        const SizedBox(width: 8),
-                        Text(
-                          item.$3.tr(),
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-              );
-            }),
-          ),
-        ),
       ),
     );
   }
