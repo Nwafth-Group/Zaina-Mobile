@@ -43,7 +43,7 @@ class ZienaColors {
 class ZienaTheme {
   static ThemeData get lightTheme => ThemeData(
     useMaterial3: true,
-    fontFamily: 'Poppins',
+    
     colorScheme: ColorScheme.fromSeed(
       seedColor: ZienaColors.primary,
       primary: ZienaColors.primary,
@@ -59,7 +59,7 @@ class ZienaTheme {
       centerTitle: true,
       iconTheme: IconThemeData(color: ZienaColors.textPrimary),
       titleTextStyle: TextStyle(
-        fontFamily: 'Poppins',
+        
         fontSize: 18,
         fontWeight: FontWeight.w600,
         color: ZienaColors.textPrimary,
@@ -75,7 +75,7 @@ class ZienaTheme {
         ),
         elevation: 0,
         textStyle: const TextStyle(
-          fontFamily: 'Poppins',
+          
           fontSize: 16,
           fontWeight: FontWeight.w600,
         ),
@@ -90,7 +90,7 @@ class ZienaTheme {
           borderRadius: BorderRadius.circular(14),
         ),
         textStyle: const TextStyle(
-          fontFamily: 'Poppins',
+          
           fontSize: 15,
           fontWeight: FontWeight.w500,
         ),
@@ -117,7 +117,7 @@ class ZienaTheme {
       ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       hintStyle: const TextStyle(
-        fontFamily: 'Poppins',
+        
         color: ZienaColors.textHint,
         fontSize: 14,
       ),

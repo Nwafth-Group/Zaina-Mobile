@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:zeina_app/core/utils/app_navigator.dart';
 import 'package:zeina_app/features/home/presentation/screens/home_screen.dart';
 import '../../../../core/theme/theme.dart';
@@ -73,7 +74,7 @@ class _SuccessScreenState extends State<SuccessScreen> with SingleTickerProvider
                 child: Column(
                   children: [
                     Text(
-                      AppStrings.success,
+                      'success_title'.tr(),
                       style: Theme.of(context).textTheme.headlineLarge?.copyWith(
                             color: ZienaColors.primary,
                             fontWeight: FontWeight.w700,
@@ -81,7 +82,7 @@ class _SuccessScreenState extends State<SuccessScreen> with SingleTickerProvider
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      AppStrings.successMessage,
+                      'success_message'.tr(),
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                             color: ZienaColors.textSecondary,
                           ),
@@ -92,7 +93,7 @@ class _SuccessScreenState extends State<SuccessScreen> with SingleTickerProvider
               ),
               const Spacer(),
               ZienaButton(
-                text: AppStrings.done,
+                text: 'done'.tr(),
                 onTap: () {
                   // Navigate to home screen
                   AppNavigator.pushAndRemoveUntil(MainScreen());

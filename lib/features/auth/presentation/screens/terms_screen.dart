@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../core/utils/constants.dart';
 import '../../../../widgets/ziena_button.dart';
@@ -16,7 +17,7 @@ class TermsScreen extends StatelessWidget {
           icon: const Icon(Icons.arrow_back_ios_new, size: 20),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(AppStrings.termsAndConditions),
+        title: Text('terms_title'.tr()),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
@@ -30,7 +31,7 @@ class TermsScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Clause ${i + 1}',
+                      'clause'.tr() + ' ${i + 1}',
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                             color: ZienaColors.primary,
                             fontWeight: FontWeight.w700,
@@ -63,7 +64,7 @@ class TermsScreen extends StatelessWidget {
           ],
         ),
         child: ZienaButton(
-          text: AppStrings.done,
+          text: 'done'.tr(),
           onTap: () => Navigator.pop(context),
         ),
       ),

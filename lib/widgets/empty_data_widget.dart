@@ -41,7 +41,7 @@ class EmptyDataWidget extends StatelessWidget {
               Text(
                 title!.tr(),
                 style: const TextStyle(
-                  fontFamily: 'Poppins',
+                  
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
                   color: ZienaColors.textPrimary,
@@ -55,7 +55,7 @@ class EmptyDataWidget extends StatelessWidget {
               Text(
                 message!.tr(),
                 style: const TextStyle(
-                  fontFamily: 'Poppins',
+                  
                   fontSize: 14,
                   color: ZienaColors.textSecondary,
                   height: 1.6,
@@ -82,7 +82,7 @@ class EmptyDataWidget extends StatelessWidget {
                   child: Text(
                     'retry'.tr(),
                     style: const TextStyle(
-                      fontFamily: 'Poppins',
+                      
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                     ),

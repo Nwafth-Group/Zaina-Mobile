@@ -54,7 +54,7 @@ class _PopularServicesScreenState extends State<PopularServicesScreen> {
         ),
         title: Text('popular_services'.tr(),
             style: const TextStyle(
-              fontFamily: 'Poppins',
+              
               fontSize: 18,
               fontWeight: FontWeight.w700,
               color: ZienaColors.textPrimary,
@@ -80,7 +80,7 @@ class _PopularServicesScreenState extends State<PopularServicesScreen> {
                   const SizedBox(height: 16),
                   Text(state.message,
                       style: const TextStyle(
-                          fontFamily: 'Poppins',
+                          
                           color: ZienaColors.textSecondary)),
                   const SizedBox(height: 16),
                   ElevatedButton(
@@ -95,7 +95,7 @@ class _PopularServicesScreenState extends State<PopularServicesScreen> {
                     ),
                     child: Text('retry'.tr(),
                         style: const TextStyle(
-                            fontFamily: 'Poppins',
+                            
                             color: Colors.white)),
                   ),
                 ],
@@ -217,7 +217,7 @@ class _PopularServiceCard extends StatelessWidget {
                     Text(
                       service.localizedCategory(lang),
                       style: const TextStyle(
-                        fontFamily: 'Poppins',
+                        
                         fontSize: 11,
                         color: ZienaColors.primary,
                         fontWeight: FontWeight.w500,
@@ -227,7 +227,7 @@ class _PopularServiceCard extends StatelessWidget {
                     Text(
                       service.localizedName(lang),
                       style: const TextStyle(
-                        fontFamily: 'Poppins',
+                        
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
                         color: ZienaColors.textPrimary,
@@ -244,7 +244,7 @@ class _PopularServiceCard extends StatelessWidget {
                           text:
                           '${service.price.pricePerHour.toStringAsFixed(0)} ${service.price.currency} ',
                           style: const TextStyle(
-                            fontFamily: 'Poppins',
+                            
                             fontSize: 15,
                             fontWeight: FontWeight.w700,
                             color: ZienaColors.primary,
@@ -253,7 +253,7 @@ class _PopularServiceCard extends StatelessWidget {
                         TextSpan(
                           text: _priceLabel(service.type),
                           style: const TextStyle(
-                            fontFamily: 'Poppins',
+                            
                             fontSize: 11,
                             color: ZienaColors.textSecondary,
                           ),
@@ -277,7 +277,7 @@ class _PopularServiceCard extends StatelessWidget {
                         ),
                         child: Text('book_now'.tr(),
                             style: const TextStyle(
-                                fontFamily: 'Poppins',
+                                
                                 fontSize: 13,
                                 fontWeight: FontWeight.w600,
                                 color: Colors.white)),

@@ -51,7 +51,7 @@ class _ServiceCategoriesScreenState extends State<ServiceCategoriesScreen> {
         title: Text(
           'service_categories'.tr(),
           style: const TextStyle(
-            fontFamily: 'Poppins',
+            
             fontSize: 18,
             fontWeight: FontWeight.w700,
             color: ZienaColors.textPrimary,
@@ -80,7 +80,7 @@ class _ServiceCategoriesScreenState extends State<ServiceCategoriesScreen> {
                   const SizedBox(height: 16),
                   Text(state.message,
                       style: const TextStyle(
-                          fontFamily: 'Poppins',
+                          
                           color: ZienaColors.textSecondary)),
                   const SizedBox(height: 16),
                   ElevatedButton(
@@ -94,7 +94,7 @@ class _ServiceCategoriesScreenState extends State<ServiceCategoriesScreen> {
                     ),
                     child: Text('retry'.tr(),
                         style: const TextStyle(
-                            fontFamily: 'Poppins', color: Colors.white)),
+                             color: Colors.white)),
                   ),
                 ],
               ),
@@ -215,7 +215,7 @@ class _CategoryCard extends StatelessWidget {
                     Text(
                       category.localizedName(lang),
                       style: const TextStyle(
-                        fontFamily: 'Poppins',
+                        
                         fontSize: 17,
                         fontWeight: FontWeight.w700,
                         color: Colors.white,

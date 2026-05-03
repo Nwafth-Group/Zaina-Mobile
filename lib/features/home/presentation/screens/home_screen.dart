@@ -139,7 +139,7 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Hello, Amer', style: TextStyle(fontFamily: 'Poppins', fontSize: 18, fontWeight: FontWeight.bold)),
+                Text('Hello, Amer', style: TextStyle( fontSize: 18, fontWeight: FontWeight.bold)),
                 Text('Cairo, Egypt', style: TextStyle(fontSize: 12, color: ZienaColors.textSecondary)),
               ],
             ),

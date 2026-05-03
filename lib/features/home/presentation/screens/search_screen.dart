@@ -109,7 +109,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     return Center(
                       child: Text(state.message,
                           style: const TextStyle(
-                              fontFamily: 'Poppins',
+                              
                               color: ZienaColors.textSecondary)),
                     );
                   }
@@ -200,7 +200,7 @@ class _SearchScreenState extends State<SearchScreen> {
           Text(
             'suggestions'.tr(),
             style: const TextStyle(
-              fontFamily: 'Poppins',
+              
               fontSize: 15,
               fontWeight: FontWeight.w600,
               color: ZienaColors.textPrimary,
@@ -270,7 +270,6 @@ class _SearchScreenState extends State<SearchScreen> {
             Text(
               'no_services_found'.tr(),
               style: const TextStyle(
-                fontFamily: 'Poppins',
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
                 color: ZienaColors.textPrimary,
@@ -280,7 +279,6 @@ class _SearchScreenState extends State<SearchScreen> {
             Text(
               'try_different_search'.tr(),
               style: const TextStyle(
-                fontFamily: 'Poppins',
                 fontSize: 13,
                 color: ZienaColors.textSecondary,
                 height: 1.5,
@@ -348,7 +346,7 @@ class _SuggestionChip extends StatelessWidget {
         child: Text(
           label,
           style: const TextStyle(
-            fontFamily: 'Poppins',
+            
             fontSize: 13,
             fontWeight: FontWeight.w500,
             color: ZienaColors.textPrimary,

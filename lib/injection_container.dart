@@ -3,6 +3,8 @@ import 'core/network/api_client.dart';
 import 'features/auth/data/datasources/auth_remote_datasource.dart';
 import 'features/auth/data/repositories/auth_repository.dart';
 import 'features/auth/presentation/cubit/auth_cubit.dart';
+import 'features/bookings/presentation/cubit/booking_flow_cubit.dart';
+import 'features/bookings/presentation/cubit/bookings_cubit.dart';
 import 'features/home/data/datasources/categories_remote_datasource.dart';
 import 'features/home/data/datasources/home_datasource.dart';
 import 'features/home/data/datasources/search_remote_datasource.dart';
@@ -73,5 +75,9 @@ void setupDependencies() {
           () => ServiceDetailCubit(sl<ApiClient>()));
   sl.registerFactory<PopularServicesCubit>(
           () => PopularServicesCubit(sl<ApiClient>()));
+  sl.registerFactory<BookingsCubit>(() => BookingsCubit(sl<ApiClient>()));
+  sl.registerFactory<BookingDetailCubit>(
+          () => BookingDetailCubit(sl<ApiClient>()));
+  sl.registerFactory<BookingFlowCubit>(() => BookingFlowCubit(sl<ApiClient>()));
 
 }

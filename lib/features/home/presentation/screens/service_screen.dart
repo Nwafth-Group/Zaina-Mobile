@@ -7,6 +7,9 @@ import '../../../../core/theme/theme.dart';
 import '../../../../injection_container.dart';
 import '../../../auth/presentation/screens/phone_auth_screen.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
+import '../../../bookings/data/model/booking_flow_model.dart';
+import '../../../bookings/presentation/cubit/booking_flow_cubit.dart';
+import '../../../bookings/presentation/screens/booking_flow_screen.dart';
 import '../../data/model/service_detail_model.dart';
 import '../../data/model/service_model.dart';
 import '../cubit/service_cubit.dart';
@@ -645,6 +648,28 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                     ),
                   );
                 }
+                final flow = BookingFlowData(
+                  serviceId: widget.serviceId,
+                  serviceName: service.localizedName(
+                      context.locale.languageCode),
+                  serviceImage: service.image,
+                  pricePerHour: service.price.pricePerHour,
+                  currency: service.price.currency,
+                  type: service.type,
+                  allowedDurations: service.duration?.allowedDurations ??
+                      [2, 4, 6, 8],
+                  selectedDurationHours: _selectedDuration,
+                  selectedWorkerCount: _workerCount,
+                );
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => BlocProvider(
+                      create: (_) => sl<BookingFlowCubit>(),
+                      child: BookingFlowScreen(initialData: flow),
+                    ),
+                  ),
+                );
               }
                   : null,
               style: ElevatedButton.styleFrom(

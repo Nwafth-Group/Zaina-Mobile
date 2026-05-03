@@ -77,7 +77,7 @@ class ZienaButton extends StatelessWidget {
           Text(
             text,
             style: TextStyle(
-              fontFamily: 'Poppins',
+              
               fontSize: 15,
               fontWeight: FontWeight.w500,
               color: textColor ?? (isOutlined ? ZienaColors.textPrimary : ZienaColors.white),
@@ -89,7 +89,7 @@ class ZienaButton extends StatelessWidget {
     return Text(
       text,
       style: TextStyle(
-        fontFamily: 'Poppins',
+        
         fontSize: 16,
         fontWeight: FontWeight.w600,
         color: textColor ?? (isOutlined ? ZienaColors.textPrimary : ZienaColors.white),

@@ -32,7 +32,6 @@ class SignInRequiredWidget extends StatelessWidget {
             Text(
               'signin_required_title'.tr(),
               style: const TextStyle(
-                fontFamily: 'Poppins',
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
                 color: ZienaColors.textPrimary,
@@ -44,7 +43,6 @@ class SignInRequiredWidget extends StatelessWidget {
             Text(
               'signin_required_desc_$tabKey'.tr(),
               style: const TextStyle(
-                fontFamily: 'Poppins',
                 fontSize: 14,
                 color: ZienaColors.textSecondary,
                 height: 1.6,
@@ -72,7 +70,7 @@ class SignInRequiredWidget extends StatelessWidget {
                 child: Text(
                   'log_in'.tr(),
                   style: const TextStyle(
-                    fontFamily: 'Poppins',
+                    
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                   ),

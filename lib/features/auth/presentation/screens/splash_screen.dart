@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:zeina_app/core/utils/app_navigator.dart';
+import 'package:zeina_app/core/utils/shared_pref_helper.dart';
+import 'package:zeina_app/features/main_screen.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../widgets/ziena_logo.dart';
 import '../screens/language_selection_screen.dart';
@@ -32,12 +35,11 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     );
 
     _controller.forward().then((_) {
-      Future.delayed(const Duration(milliseconds: 800), () {
+      Future.delayed(const Duration(milliseconds: 800), ()async {
+        String? token = await SharedPrefHelper.getToken();
         if (mounted) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => const LanguageSelectionScreen()),
-          );
+          if(token == null) {AppNavigator.pushAndRemoveUntil(LanguageSelectionScreen());}
+          else {AppNavigator.pushAndRemoveUntil(MainScreen());}
         }
       });
     });

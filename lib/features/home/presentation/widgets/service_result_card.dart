@@ -64,7 +64,7 @@ class ServiceResultCard extends StatelessWidget {
                     Text(
                       categoryName,
                       style: const TextStyle(
-                        fontFamily: 'Poppins',
+                        
                         fontSize: 11,
                         color: ZienaColors.primary,
                         fontWeight: FontWeight.w500,
@@ -75,7 +75,7 @@ class ServiceResultCard extends StatelessWidget {
                     Text(
                       name,
                       style: const TextStyle(
-                        fontFamily: 'Poppins',
+                        
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
                         color: ZienaColors.textPrimary,
@@ -95,7 +95,7 @@ class ServiceResultCard extends StatelessWidget {
                             text:
                             '${service.price.pricePerHour.toStringAsFixed(0)} ${service.price.currency} ',
                             style: const TextStyle(
-                              fontFamily: 'Poppins',
+                              
                               fontSize: 14,
                               fontWeight: FontWeight.w700,
                               color: ZienaColors.primary,
@@ -104,7 +104,7 @@ class ServiceResultCard extends StatelessWidget {
                           TextSpan(
                             text: _priceLabel(service.type),
                             style: const TextStyle(
-                              fontFamily: 'Poppins',
+                              
                               fontSize: 11,
                               color: ZienaColors.textSecondary,
                             ),
@@ -183,7 +183,7 @@ class StarRating extends StatelessWidget {
           Text(
             rating.toStringAsFixed(1),
             style: TextStyle(
-              fontFamily: 'Poppins',
+              
               fontSize: size * 0.75,
               fontWeight: FontWeight.w600,
               color: ZienaColors.textSecondary,

@@ -232,7 +232,7 @@ class _CategoryCard extends StatelessWidget {
                     Text(
                       category.localizedName(lang),
                       style: const TextStyle(
-                        fontFamily: 'Poppins',
+                        
                         fontSize: 17,
                         fontWeight: FontWeight.w700,
                         color: Colors.white,

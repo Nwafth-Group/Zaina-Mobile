@@ -39,13 +39,13 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
               const ZienaLogo(size: 120),
               const Spacer(),
               Text(
-                AppStrings.selectLanguage,
+                'select_language'.tr(),
                 style: Theme.of(context).textTheme.headlineMedium,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 12),
               Text(
-                AppStrings.selectLanguageHint,
+                'select_language_hint'.tr(),
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: ZienaColors.textSecondary,
                     ),
@@ -54,20 +54,20 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
               const SizedBox(height: 40),
               _LanguageTile(
                 flag: '🇺🇸',
-                language: AppStrings.english,
+                language: 'english'.tr(),
                 isSelected: _selectedLang == 'en',
                 onTap: () => setState(() => _selectedLang = 'en'),
               ),
               const SizedBox(height: 12),
               _LanguageTile(
                 flag: '🇸🇦',
-                language: AppStrings.arabic,
+                language: 'arabic'.tr(),
                 isSelected: _selectedLang == 'ar',
                 onTap: () => setState(() => _selectedLang = 'ar'),
               ),
               const Spacer(flex: 2),
               ZienaButton(
-                text: AppStrings.next,
+                text: 'next'.tr(),
                 onTap: _onNext,
               ),
               const SizedBox(height: 32),
@@ -114,7 +114,6 @@ class _LanguageTile extends StatelessWidget {
             Text(
               language,
               style: TextStyle(
-                fontFamily: 'Poppins',
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
                 color: isSelected ? ZienaColors.primary : ZienaColors.textPrimary,

@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:zeina_app/core/utils/app_navigator.dart';
-import 'package:zeina_app/features/home/presentation/screens/home_screen.dart';
 import '../../../../core/theme/theme.dart';
-import '../../../../core/utils/constants.dart';
 import '../../../../widgets/ziena_button.dart';
 import '../../../../widgets/ziena_logo.dart';
 import '../../../main_screen.dart';
 import '../cubit/auth_cubit.dart';
 import 'otp_screen.dart';
 import 'terms_screen.dart';
+import 'dart:ui' as ui;
+
 
 class PhoneAuthScreen extends StatefulWidget {
   static const String routeName = '/phone-auth';
@@ -28,8 +29,8 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
   void _onLogin() {
     if (!_agreeTerms) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please agree to Terms & Conditions'),
+        SnackBar(
+          content: Text('err_agree_terms'.tr()),
           backgroundColor: ZienaColors.primaryDark,
         ),
       );
@@ -37,8 +38,8 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
     }
     if (_completePhone.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter a valid phone number'),
+        SnackBar(
+          content: Text('err_enter_phone'.tr()),
           backgroundColor: ZienaColors.primaryDark,
         ),
       );
@@ -84,17 +85,17 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
                   Center(child: ZienaLogo(size: 80)),
                   const SizedBox(height: 40),
                   Text(
-                    AppStrings.enterPhone,
+                    'enter_phone'.tr(),
                     style: Theme.of(context).textTheme.headlineMedium,
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    AppStrings.enterPhoneHint,
+                    'enter_phone_hint'.tr(),
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                   const SizedBox(height: 28),
                   Text(
-                    AppStrings.phoneNumber,
+                    'phone_number'.tr(),
                     style: Theme.of(context).textTheme.labelLarge?.copyWith(
                           fontWeight: FontWeight.w600,
                         ),
@@ -121,13 +122,14 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
                     ),
                     initialCountryCode: 'EG',
                     onChanged: (phone) {
-                      _completePhone = phone.completeNumber;
+                      // _completePhone = phone.completeNumber;
+                      _completePhone = phone.number;
                     },
                     flagsButtonPadding: const EdgeInsets.only(left: 12),
                     dropdownIconPosition: IconPosition.trailing,
                     dropdownIcon: const Icon(Icons.keyboard_arrow_down, color: ZienaColors.textSecondary),
                     style: const TextStyle(
-                      fontFamily: 'Poppins',
+                      
                       fontSize: 15,
                       color: ZienaColors.textPrimary,
                     ),
@@ -162,10 +164,10 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
                               MaterialPageRoute(builder: (_) => const TermsScreen()),
                             );
                           },
-                          child: const Text(
-                            AppStrings.agreeTerms,
-                            style: TextStyle(
-                              fontFamily: 'Poppins',
+                          child: Text(
+                            'agree_terms'.tr(),
+                            style: const TextStyle(
+                              
                               fontSize: 13,
                               color: ZienaColors.primary,
                               decoration: TextDecoration.underline,
@@ -179,7 +181,7 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
                   BlocBuilder<AuthCubit, AuthState>(
                     builder: (context, state) {
                       return ZienaButton(
-                        text: AppStrings.logIn,
+                        text: 'log_in'.tr(),
                         onTap: _onLogin,
                         isLoading: state is AuthLoading,
                       );
@@ -193,7 +195,7 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 12),
                         child: Text(
-                          AppStrings.orContinueWith,
+                          'or_continue_with'.tr(),
                           style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 12),
                         ),
                       ),
@@ -203,7 +205,7 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
                   const SizedBox(height: 20),
                   // Social buttons
                   ZienaButton(
-                    text: AppStrings.continueWithGoogle,
+                    text: 'continue_google'.tr(),
                     isOutlined: true,
                     onTap: () {},
                     prefixIcon: Container(
@@ -214,14 +216,14 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
                   ),
                   const SizedBox(height: 12),
                   ZienaButton(
-                    text: AppStrings.continueWithApple,
+                    text: 'continue_apple'.tr(),
                     isOutlined: true,
                     onTap: () {},
                     prefixIcon: const Icon(Icons.apple, size: 22, color: ZienaColors.textPrimary),
                   ),
                   const SizedBox(height: 12),
                   ZienaButton(
-                    text: AppStrings.continueAsGuest,
+                    text: 'continue_guest'.tr(),
                     isOutlined: false,
                     backgroundColor: ZienaColors.bg3,
                     textColor: ZienaColors.primaryDark,
@@ -265,7 +267,7 @@ class _GooglePainter extends CustomPainter {
           color: Color(0xFF4285F4),
         ),
       ),
-      textDirection: TextDirection.ltr,
+      textDirection: ui.TextDirection.ltr,
     );
     textPainter.layout();
     textPainter.paint(

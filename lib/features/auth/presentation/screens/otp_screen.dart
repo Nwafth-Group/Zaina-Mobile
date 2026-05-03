@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../core/utils/constants.dart';
 import '../../../../widgets/ziena_button.dart';
@@ -97,13 +98,13 @@ class _OtpScreenState extends State<OtpScreen> {
               children: [
                 const SizedBox(height: 16),
                 Text(
-                  AppStrings.verificationCode,
+                  'verification_code'.tr(),
                   style: Theme.of(context).textTheme.headlineMedium,
                 ),
                 const SizedBox(height: 10),
                 RichText(
                   text: TextSpan(
-                    text: AppStrings.verificationCodeHint + ' ',
+                    text: 'verification_code_hint'.tr() + ' ',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(height: 1.5),
                     children: [
                       TextSpan(
@@ -152,7 +153,7 @@ class _OtpScreenState extends State<OtpScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      AppStrings.codeSent,
+                      'code_sent'.tr(),
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 13),
                     ),
                     const SizedBox(width: 8),
@@ -166,7 +167,7 @@ class _OtpScreenState extends State<OtpScreen> {
                         child: Text(
                           _timerText,
                           style: const TextStyle(
-                            fontFamily: 'Poppins',
+                            
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
                             color: ZienaColors.primary,
@@ -179,10 +180,10 @@ class _OtpScreenState extends State<OtpScreen> {
                           _startTimer();
                           context.read<AuthCubit>().sendOtp(widget.mobileNumber);
                         },
-                        child: const Text(
-                          'Resend',
+                        child: Text(
+                          'resend'.tr(),
                           style: TextStyle(
-                            fontFamily: 'Poppins',
+                            
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
                             color: ZienaColors.primary,
@@ -195,7 +196,7 @@ class _OtpScreenState extends State<OtpScreen> {
                 const Spacer(),
                 BlocBuilder<AuthCubit, AuthState>(
                   builder: (context, state) => ZienaButton(
-                    text: AppStrings.submit,
+                    text: 'submit'.tr(),
                     onTap: _onSubmit,
                     isLoading: state is AuthLoading,
                   ),
