@@ -8,14 +8,16 @@ import 'package:zeina_app/features/home/presentation/screens/popular_services_sc
 import 'package:zeina_app/features/home/presentation/screens/service_categories_screen.dart';
 import 'package:zeina_app/features/home/presentation/screens/service_screen.dart';
 import 'package:zeina_app/features/home/presentation/screens/subcategories_screen.dart';
-import 'package:zeina_app/widgets/signin_required_widget.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../injection_container.dart';
 import '../../data/model/banner_model.dart';
 import '../../data/model/service_model.dart';
+import '../cubit/address_cubit.dart';
 import '../cubit/home_cubti.dart';
 import '../cubit/search_cubit.dart';
 import '../cubit/service_cubit.dart';
+import 'add_edit_address_screen.dart';
+import 'my_addresses_screen.dart';
 import 'search_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -27,7 +29,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int _bottomNavIndex = 0;
   final PageController _bannerCtrl = PageController();
 
   @override
@@ -35,6 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     // Fetch data when screen opens
     context.read<HomeCubit>().fetchHomeData();
+    context.read<AddressCubit>().fetchAddresses(); // ← fetch addresses
   }
 
   @override
@@ -118,6 +120,15 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Widget _addressSkeleton() {
+    return Container(
+      width: 140, height: 10,
+      decoration: BoxDecoration(
+          color: ZienaColors.greyBorder,
+          borderRadius: BorderRadius.circular(5)),
+    );
+  }
+
   // ── Header ─────────────────────────────────────────────────────────────────
   Widget _buildHeader() {
     return Padding(
@@ -135,15 +146,119 @@ class _HomeScreenState extends State<HomeScreen> {
             child: const ClipOval(child: Icon(Icons.person, size: 30, color: ZienaColors.primary)),
           ),
           const SizedBox(width: 12),
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Hello, Amer', style: TextStyle( fontSize: 18, fontWeight: FontWeight.bold)),
-                Text('Cairo, Egypt', style: TextStyle(fontSize: 12, color: ZienaColors.textSecondary)),
+                // Greeting
+                Text('hello_name'.tr(args: ['Amer']),
+                    style: const TextStyle(
+                       fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: ZienaColors.textPrimary,
+                    )),
+                const SizedBox(height: 2),
+
+                // Address row — dynamic
+                BlocBuilder<AddressCubit, AddressState>(
+                  builder: (ctx, addrState) {
+                    // Still loading
+                    if (addrState is AddressLoading ||
+                        addrState is AddressInitial) {
+                      return _addressSkeleton();
+                    }
+
+                    final cubit = ctx.read<AddressCubit>();
+                    final hasAddress = cubit.list.isNotEmpty;
+
+                    // ── No address → "Add Address" tap ─────────────────────
+                    if (!hasAddress) {
+                      return GestureDetector(
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => BlocProvider.value(
+                              value: cubit,
+                              child: const AddEditAddressScreen(),
+                            ),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: ZienaColors.bg2,
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                    color: ZienaColors.primary.withOpacity(0.3)),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(Icons.add_location_alt_outlined,
+                                      size: 13, color: ZienaColors.primary),
+                                  const SizedBox(width: 5),
+                                  Text('add_address'.tr(),
+                                      style: const TextStyle(
+                                         fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: ZienaColors.primary,
+                                      )),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+
+                    // ── Has address → show default ──────────────────────────
+                    final def = cubit.defaultAddress;
+                    final lang = ctx.locale.languageCode;
+                    return GestureDetector(
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => BlocProvider.value(
+                            value: cubit,
+                            child: const MyAddressesScreen(),
+                          ),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.location_on_outlined,
+                              size: 13, color: ZienaColors.primary),
+                          const SizedBox(width: 4),
+                          Flexible(
+                            child: Text(
+                              def != null
+                                  ? '${def.shortAddress(lang)}, ${def.oneLiner}'
+                                  : '',
+                              style: const TextStyle(
+                                 fontSize: 12,
+                                color: ZienaColors.textSecondary,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(width: 2),
+                          const Icon(Icons.chevron_right,
+                              size: 14, color: ZienaColors.primary),
+                        ],
+                      ),
+                    );
+                  },
+                ),
               ],
             ),
           ),
+          const SizedBox(width: 6),
           Container(
             width: 44,
             height: 44,

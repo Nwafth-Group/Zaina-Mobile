@@ -2,9 +2,6 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:zeina_app/core/utils/app_navigator.dart';
 import '../../../../features/auth/presentation/screens/phone_auth_screen.dart';
-import '../../../../injection_container.dart';
-import '../../../../features/auth/presentation/cubit/auth_cubit.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../core/theme/theme.dart';
 

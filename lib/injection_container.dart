@@ -11,6 +11,7 @@ import 'features/home/data/datasources/search_remote_datasource.dart';
 import 'features/home/data/repository/category_repo.dart';
 import 'features/home/data/repository/home_repository.dart';
 import 'features/home/data/repository/search_repository.dart';
+import 'features/home/presentation/cubit/address_cubit.dart';
 import 'features/home/presentation/cubit/category_cubit.dart';
 import 'features/home/presentation/cubit/home_cubti.dart';
 import 'features/home/presentation/cubit/search_cubit.dart';
@@ -79,5 +80,7 @@ void setupDependencies() {
   sl.registerFactory<BookingDetailCubit>(
           () => BookingDetailCubit(sl<ApiClient>()));
   sl.registerFactory<BookingFlowCubit>(() => BookingFlowCubit(sl<ApiClient>()));
+  sl.registerLazySingleton<AddressCubit>(() => AddressCubit(sl<ApiClient>()));
+
 
 }
