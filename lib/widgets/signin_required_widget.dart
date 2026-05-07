@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:zeina_app/core/utils/app_navigator.dart';
 import '../../../../features/auth/presentation/screens/phone_auth_screen.dart';
+import '../../../../widgets/ziena_button.dart';
 
 import '../core/theme/theme.dart';
 
@@ -49,30 +50,11 @@ class SignInRequiredWidget extends StatelessWidget {
             const SizedBox(height: 36),
 
             // Sign In button
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  AppNavigator.pushAndRemoveUntil(PhoneAuthScreen());
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: ZienaColors.primary,
-                  foregroundColor: Colors.white,
-                  minimumSize: const Size(double.infinity, 52),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  elevation: 0,
-                ),
-                child: Text(
-                  'log_in'.tr(),
-                  style: const TextStyle(
-                    
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
+            ZienaButton(
+              text: 'log_in'.tr(),
+              onTap: () {
+                AppNavigator.pushAndRemoveUntil(PhoneAuthScreen());
+              },
             ),
           ],
         ),

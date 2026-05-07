@@ -12,6 +12,10 @@ class CustomTextField extends StatelessWidget {
   final Widget? suffixIcon;
   final int? maxLines;
   final double border;
+  final double borderRadius;
+  final Color? fillColor;
+  final Color? borderColor;
+  final EdgeInsetsGeometry? contentPadding;
   final int? maxLength;
   final bool enabled;
   final bool readOnly;
@@ -31,6 +35,10 @@ class CustomTextField extends StatelessWidget {
     this.suffixIcon,
     this.maxLines = 1,
     this.border = 1,
+    this.borderRadius = 50,
+    this.fillColor,
+    this.borderColor,
+    this.contentPadding,
     this.maxLength,
     this.enabled = true,
     this.readOnly = false,
@@ -41,7 +49,7 @@ class CustomTextField extends StatelessWidget {
 
   OutlineInputBorder _border(Color color, {double width = 1}) {
     return OutlineInputBorder(
-      borderRadius: BorderRadius.circular(50),
+      borderRadius: BorderRadius.circular(borderRadius),
       borderSide: BorderSide(
         color: color,
         width: width,
@@ -65,17 +73,17 @@ class CustomTextField extends StatelessWidget {
       onTap: onTap,
       decoration: InputDecoration(
         labelText: labelText,
-        hintText: hintText!=null?"Ex: $hintText":null,
+        hintText: hintText,
         prefixIcon: prefixIcon,
         suffixIcon: suffixIcon,
         counterText: maxLength != null ? null : '',
         filled: true,
-        fillColor: Colors.white,
+        fillColor: fillColor ?? Colors.white,
         // ✅ NORMAL
-        enabledBorder: _border(ZienaColors.primary, width: 0.5),
+        enabledBorder: _border(borderColor ?? ZienaColors.primary, width: 0.5),
 
         // ✅ FOCUSED
-        focusedBorder: _border(ZienaColors.primary, width: border),
+        focusedBorder: _border(borderColor ?? ZienaColors.primary, width: border),
 
         // ✅ ERROR (keeps same radius)
         errorBorder: _border(Colors.red, width: border),
@@ -84,7 +92,7 @@ class CustomTextField extends StatelessWidget {
         focusedErrorBorder: _border(Colors.red, width: border),
         labelStyle: const TextStyle(color: Colors.black),
         hintStyle: TextStyle(color: Colors.grey.shade400),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        contentPadding: contentPadding ?? const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       ),
     );
   }

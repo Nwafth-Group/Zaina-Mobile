@@ -4,6 +4,7 @@ import '../../../../core/theme/theme.dart';
 import '../../data/model/booking_model.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../injection_container.dart';
+import '../../../../widgets/ziena_button.dart';
 import '../cubit/bookings_cubit.dart';
 import '../widgets/bokking_card.dart';
 import 'booking_details_screen.dart';
@@ -211,19 +212,11 @@ class _BookingsScreenState extends State<BookingsScreen> {
             style: const TextStyle(
                 color: ZienaColors.textSecondary)),
         const SizedBox(height: 16),
-        ElevatedButton(
-          onPressed: () => context
+        ZienaButton(
+          text: 'retry'.tr(),
+          onTap: () => context
               .read<BookingsCubit>()
               .fetchBookings(filter: _filter, refresh: true),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: ZienaColors.primary,
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12)),
-            elevation: 0,
-          ),
-          child: Text('retry'.tr(),
-              style: const TextStyle(
-                   color: Colors.white)),
         ),
       ],
     ),
@@ -256,20 +249,9 @@ class _BookingsScreenState extends State<BookingsScreen> {
               ),
               textAlign: TextAlign.center),
           const SizedBox(height: 36),
-          ElevatedButton(
-            onPressed: () {},
-            style: ElevatedButton.styleFrom(
-              backgroundColor: ZienaColors.primary,
-              minimumSize: const Size(double.infinity, 52),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14)),
-              elevation: 0,
-            ),
-            child: Text('log_in'.tr(),
-                style: const TextStyle(
-                   fontSize: 16,
-                  fontWeight: FontWeight.w600, color: Colors.white,
-                )),
+          ZienaButton(
+            text: 'log_in'.tr(),
+            onTap: () {},
           ),
         ],
       ),

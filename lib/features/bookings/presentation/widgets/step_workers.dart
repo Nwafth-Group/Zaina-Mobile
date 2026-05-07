@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/theme.dart';
+import '../../../../widgets/ziena_button.dart';
 import '../../data/model/booking_flow_model.dart';
 import '../cubit/booking_flow_cubit.dart';
 
@@ -102,22 +103,11 @@ class _StepWorkersState extends State<StepWorkers> {
               child: Container(
                 padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
                 color: ZienaColors.white,
-                child: ElevatedButton(
-                  onPressed: _selectedWorkerId != null ? _onNext : null,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: ZienaColors.primary,
-                    disabledBackgroundColor:
-                    ZienaColors.primary.withOpacity(0.4),
-                    minimumSize: const Size(double.infinity, 52),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14)),
-                    elevation: 0,
-                  ),
-                  child: Text('next'.tr(),
-                      style: const TextStyle(
-                        fontFamily: 'Poppins', fontSize: 16,
-                        fontWeight: FontWeight.w600, color: Colors.white,
-                      )),
+                child: ZienaButton(
+                  text: 'next'.tr(),
+                  onTap: _selectedWorkerId != null ? _onNext : null,
+                  disabledBackgroundColor:
+                      ZienaColors.primary.withOpacity(0.4),
                 ),
               ),
             ),

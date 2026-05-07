@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 
 import '../core/theme/theme.dart';
+import 'ziena_button.dart';
 
 class SuccessDialog extends StatelessWidget {
   final IconData icon;
@@ -53,20 +54,9 @@ class SuccessDialog extends StatelessWidget {
               ),
               textAlign: TextAlign.center),
           const SizedBox(height: 24),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: ZienaColors.primary,
-              minimumSize: const Size(double.infinity, 50),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14)),
-              elevation: 0,
-            ),
-            child: const Text('Done!',
-                style: TextStyle(
-                   fontSize: 15,
-                  fontWeight: FontWeight.w600, color: Colors.white,
-                )),
+          ZienaButton(
+            text: 'Done!',
+            onTap: () => Navigator.pop(context),
           ),
         ]),
       ),

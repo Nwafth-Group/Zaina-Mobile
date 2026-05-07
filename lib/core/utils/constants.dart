@@ -4,6 +4,7 @@ class AppConstants {
   // Auth Endpoints
   static const String sendOtp = 'customer/auth/send-otp';
   static const String verifyOtp = 'customer/auth/verify-otp';
+  static const String logout = 'customer/auth/logout';
 
   // Storage keys
   static const String tokenKey = 'auth_token';

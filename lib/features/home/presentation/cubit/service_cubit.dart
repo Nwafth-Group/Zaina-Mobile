@@ -21,6 +21,7 @@ class ServiceDetailCubit extends Cubit<ServiceDetailState> {
     } on DioException catch (e) {
       emit(ServiceDetailError(handleDioError(e).message));
     } catch (e) {
+      print("eeeeeee $e");
       emit(ServiceDetailError('Something went wrong'));
     }
   }

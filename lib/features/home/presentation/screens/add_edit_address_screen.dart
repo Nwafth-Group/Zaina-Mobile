@@ -2,6 +2,8 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/theme.dart';
+import '../../../../widgets/custom_text_form_field.dart';
+import '../../../../widgets/ziena_button.dart';
 import '../../data/model/address_model.dart';
 import '../cubit/address_cubit.dart';
 import 'map_picker_screen.dart';
@@ -337,27 +339,11 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
   Widget _saveButton() {
     return SizedBox(
       width: double.infinity,
-      child: ElevatedButton(
-        onPressed: _isSaving ? null : _save,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: ZienaColors.primary,
-          disabledBackgroundColor: ZienaColors.primary.withOpacity(0.4),
-          minimumSize: const Size(double.infinity, 52),
-          shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14)),
-          elevation: 0,
-        ),
-        child: _isSaving
-            ? const SizedBox(
-            width: 22, height: 22,
-            child: CircularProgressIndicator(
-                color: Colors.white, strokeWidth: 2))
-            : Text(
-            _isEdit ? 'save'.tr() : 'save_address'.tr(),
-            style: const TextStyle(
-              fontFamily: 'Poppins', fontSize: 16,
-              fontWeight: FontWeight.w600, color: Colors.white,
-            )),
+      child: ZienaButton(
+        text: _isEdit ? 'save'.tr() : 'save_address'.tr(),
+        onTap: _isSaving ? null : _save,
+        isLoading: _isSaving,
+        disabledBackgroundColor: ZienaColors.primary.withOpacity(0.4),
       ),
     );
   }
@@ -422,46 +408,19 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
                       color: ZienaColors.error, fontSize: 13)),
           ]),
           const SizedBox(height: 8),
-          TextFormField(
+          CustomTextField(
             controller: ctrl,
             maxLines: maxLines,
             keyboardType: keyboardType,
-            style: const TextStyle(
-                fontFamily: 'Poppins', fontSize: 14,
-                color: ZienaColors.textPrimary),
-            decoration: InputDecoration(
-              hintText: hint,
-              hintStyle: const TextStyle(
-                  fontFamily: 'Poppins', fontSize: 13,
-                  color: ZienaColors.textHint),
-              filled: true,
-              fillColor: ZienaColors.bg1,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(14),
-                borderSide: const BorderSide(color: ZienaColors.greyBorder),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(14),
-                borderSide: const BorderSide(
-                    color: ZienaColors.greyBorder, width: 0.8),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(14),
-                borderSide: const BorderSide(
-                    color: ZienaColors.primary, width: 1.5),
-              ),
-              errorBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(14),
-                borderSide: const BorderSide(color: ZienaColors.error),
-              ),
-              contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 14, vertical: 14),
-              isDense: true,
-            ),
+            hintText: hint,
+            fillColor: ZienaColors.bg1,
+            borderColor: ZienaColors.greyBorder,
+            contentPadding: const EdgeInsets.symmetric(
+                horizontal: 14, vertical: 14),
             validator: required
                 ? (v) => (v == null || v.trim().isEmpty)
-                ? 'this_field_required'.tr()
-                : null
+                    ? 'this_field_required'.tr()
+                    : null
                 : null,
           ),
         ],

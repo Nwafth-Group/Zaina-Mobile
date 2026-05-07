@@ -25,10 +25,15 @@ class HomeCubit extends Cubit<HomeState> {
     emit(HomeLoading());
     try {
       final data = await _repo.getHomeData();
+      print("fffffff home $data");
       emit(HomeLoaded(data));
     } on Failure catch (e) {
+      print("fffffff ee $e");
+
       emit(HomeError(e.message));
     } catch (e) {
+      print("fffffff home $e");
+
       emit(HomeError("An unexpected error occurred"));
     }
   }

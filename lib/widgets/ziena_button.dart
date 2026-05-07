@@ -9,7 +9,9 @@ class ZienaButton extends StatelessWidget {
   final bool isLoading;
   final bool isOutlined;
   final Color? backgroundColor;
+  final Color? disabledBackgroundColor;
   final Color? textColor;
+  final Color? disabledTextColor;
   final Widget? prefixIcon;
   final double? width;
   final double height;
@@ -22,7 +24,9 @@ class ZienaButton extends StatelessWidget {
     this.isLoading = false,
     this.isOutlined = false,
     this.backgroundColor,
+    this.disabledBackgroundColor,
     this.textColor,
+    this.disabledTextColor,
     this.prefixIcon,
     this.width,
     this.height = 52,
@@ -50,7 +54,11 @@ class ZienaButton extends StatelessWidget {
               onPressed: isLoading ? null : onTap,
               style: ElevatedButton.styleFrom(
                 backgroundColor: backgroundColor ?? ZienaColors.primary,
+                disabledBackgroundColor: disabledBackgroundColor ??
+                    (isOutlined ? Colors.transparent : ZienaColors.greyBorder),
                 foregroundColor: textColor ?? ZienaColors.white,
+                disabledForegroundColor: disabledTextColor ??
+                    (isOutlined ? ZienaColors.textPrimary : ZienaColors.white),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(borderRadius),
                 ),

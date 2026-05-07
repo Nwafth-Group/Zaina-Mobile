@@ -18,11 +18,10 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
     try {
       final response = await _api.get('customer/home');
       final data = response['data'];
-
       return HomeData(
-        banners: (data['banners'] as List).map((e) => BannerModel.fromJson(e)).toList(),
-        categories: (data['categories'] as List).map((e) => CategoryModel.fromJson(e)).toList(),
-        popularServices: (data['popular_services'] as List).map((e) => ServiceModel.fromJson(e)).toList(),
+        banners: List.of(data['banners'] ?? []).map((e) => BannerModel.fromJson(e)).toList(),
+        categories: List.of(data['categories'] ?? []).map((e) => CategoryModel.fromJson(e)).toList(),
+        popularServices: List.of(data['popular_services']??[]).map((e) => ServiceModel.fromJson(e)).toList(),
       );
     } on DioException catch (e) {
       throw handleDioError(e);

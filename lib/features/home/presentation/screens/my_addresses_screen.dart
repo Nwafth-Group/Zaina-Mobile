@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/theme.dart';
+import '../../../../widgets/ziena_button.dart';
 import '../../data/model/address_model.dart';
 import '../cubit/address_cubit.dart';
 import 'add_edit_address_screen.dart';
@@ -200,20 +201,13 @@ class MyAddressesScreen extends StatelessWidget {
                     
                     color: ZienaColors.textSecondary)),
           ),
-          ElevatedButton(
-            onPressed: () {
+          ZienaButton(
+            text: 'delete'.tr(),
+            onTap: () {
               Navigator.pop(context);
               context.read<AddressCubit>().deleteAddress(address.id);
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: ZienaColors.error,
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10)),
-            ),
-            child: Text('delete'.tr(),
-                style: const TextStyle(
-                     color: Colors.white)),
+            backgroundColor: ZienaColors.error,
           ),
         ],
       ),

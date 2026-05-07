@@ -16,6 +16,11 @@ class OtpVerifySuccess extends AuthState {
   OtpVerifySuccess(this.data);
 }
 
+class AuthLogoutSuccess extends AuthState {
+  final Map<String, dynamic> data;
+  AuthLogoutSuccess(this.data);
+}
+
 class AuthError extends AuthState {
   final String message;
   AuthError(this.message);

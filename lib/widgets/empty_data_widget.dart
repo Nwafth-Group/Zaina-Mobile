@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'ziena_button.dart';
 import '../core/theme/theme.dart';
 
 class EmptyDataWidget extends StatelessWidget {
@@ -68,25 +69,9 @@ class EmptyDataWidget extends StatelessWidget {
             if (showRetryButton && onRetry != null)
               SizedBox(
                 width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: onRetry,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: ZienaColors.primary,
-                    foregroundColor: Colors.white,
-                    minimumSize: const Size(double.infinity, 48),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    elevation: 0,
-                  ),
-                  child: Text(
-                    'retry'.tr(),
-                    style: const TextStyle(
-                      
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+                child: ZienaButton(
+                  text: 'retry'.tr(),
+                  onTap: onRetry,
                 ),
               ),
           ],

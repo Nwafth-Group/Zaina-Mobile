@@ -6,6 +6,7 @@ import 'package:zeina_app/features/home/presentation/screens/service_screen.dart
 import '../../../../core/theme/theme.dart';
 import '../../../../injection_container.dart';
 import '../../../../widgets/empty_data_widget.dart';
+import '../../../../widgets/ziena_button.dart';
 import '../../data/model/service_model.dart';
 import '../cubit/service_cubit.dart';
 import '../widgets/service_result_card.dart';
@@ -83,20 +84,11 @@ class _PopularServicesScreenState extends State<PopularServicesScreen> {
                           
                           color: ZienaColors.textSecondary)),
                   const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () => context
+                  ZienaButton(
+                    text: 'retry'.tr(),
+                    onTap: () => context
                         .read<PopularServicesCubit>()
                         .fetchServices(refresh: true),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: ZienaColors.primary,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12)),
-                      elevation: 0,
-                    ),
-                    child: Text('retry'.tr(),
-                        style: const TextStyle(
-                            
-                            color: Colors.white)),
                   ),
                 ],
               ),
@@ -263,24 +255,11 @@ class _PopularServiceCard extends StatelessWidget {
                     const SizedBox(height: 10),
                     SizedBox(
                       width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: onTap,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: ZienaColors.primary,
-                          minimumSize:
-                          const Size(double.infinity, 38),
-                          shape: RoundedRectangleBorder(
-                              borderRadius:
-                              BorderRadius.circular(10)),
-                          elevation: 0,
-                          padding: EdgeInsets.zero,
-                        ),
-                        child: Text('book_now'.tr(),
-                            style: const TextStyle(
-                                
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.white)),
+                      child: ZienaButton(
+                        text: 'book_now'.tr(),
+                        onTap: onTap,
+                        height: 38,
+                        borderRadius: 10,
                       ),
                     ),
                   ],

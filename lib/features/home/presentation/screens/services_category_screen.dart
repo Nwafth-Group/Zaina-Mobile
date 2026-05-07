@@ -6,6 +6,7 @@ import 'package:zeina_app/core/utils/app_navigator.dart';
 import 'package:zeina_app/features/home/presentation/screens/service_screen.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../widgets/empty_data_widget.dart';
+import '../../../../widgets/ziena_button.dart';
 import '../../data/model/banner_model.dart';
 import '../../data/model/service_model.dart';
 import '../cubit/category_cubit.dart';
@@ -94,18 +95,11 @@ class _CategoryServicesScreenState extends State<CategoryServicesScreen> {
                           
                           color: ZienaColors.textSecondary)),
                   const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () => context
+                  ZienaButton(
+                    text: 'retry'.tr(),
+                    onTap: () => context
                         .read<CategoryServicesCubit>()
                         .fetchServices(widget.category.id, refresh: true),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: ZienaColors.primary,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12)),
-                    ),
-                    child: Text('retry'.tr(),
-                        style: const TextStyle(
-                             color: Colors.white)),
                   ),
                 ],
               ),

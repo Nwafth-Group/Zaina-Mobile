@@ -9,6 +9,8 @@ class BannerModel {
   BannerModel({required this.id, required this.title, required this.description, this.image});
 
   factory BannerModel.fromJson(Map<String, dynamic> json) {
+    print("jjjjj ");
+
     return BannerModel(
       id: json['id'],
       title: json['title'],
@@ -37,6 +39,8 @@ class CategoryModel {
   });
 
   factory CategoryModel.fromJson(Map<String, dynamic> json) {
+    print("cccccc ");
+
     return CategoryModel(
       id: json['id'],
       nameAr: json['name_ar'] ?? '',
@@ -67,6 +71,7 @@ class PaginatedCategories {
   bool get hasMore => currentPage < lastPage;
 
   factory PaginatedCategories.fromJson(Map<String, dynamic> json) {
+    print("yyyyy ");
     final data = json['data'] as Map<String, dynamic>;
     final meta = data['meta'] as Map<String, dynamic>? ?? {};
     return PaginatedCategories(

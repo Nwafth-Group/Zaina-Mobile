@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/theme.dart';
+import '../../../../widgets/ziena_button.dart';
 import '../../data/model/booking_flow_model.dart';
 import '../cubit/booking_flow_cubit.dart';
 
@@ -110,7 +111,7 @@ class _StepDateTimeState extends State<StepDateTime> {
               const SizedBox(width: 10),
               Expanded(child: Text(_displayDate,
                   style: const TextStyle(
-                    fontFamily: 'Poppins', fontSize: 14,
+                     fontSize: 14,
                     fontWeight: FontWeight.w500,
                     color: ZienaColors.textPrimary,
                   ))),
@@ -142,7 +143,7 @@ class _StepDateTimeState extends State<StepDateTime> {
                   ),
                   child: Text('no_shifts_available'.tr(),
                       style: const TextStyle(
-                        fontFamily: 'Poppins', fontSize: 13,
+                         fontSize: 13,
                         color: ZienaColors.textSecondary,
                       )),
                 );
@@ -176,7 +177,7 @@ class _StepDateTimeState extends State<StepDateTime> {
                         const SizedBox(width: 10),
                         Expanded(child: Text(shift.dropdownLabel,
                             style: TextStyle(
-                              fontFamily: 'Poppins', fontSize: 13,
+                               fontSize: 13,
                               fontWeight: FontWeight.w500,
                               color: selected
                                   ? ZienaColors.primary
@@ -230,7 +231,7 @@ class _StepDateTimeState extends State<StepDateTime> {
                   ),
                   child: Center(child: Text(h,
                       style: TextStyle(
-                        fontFamily: 'Poppins', fontSize: 13,
+                         fontSize: 13,
                         fontWeight: FontWeight.w600,
                         color: sel
                             ? Colors.white
@@ -269,7 +270,7 @@ class _StepDateTimeState extends State<StepDateTime> {
                 ),
                 child: Text('$d hrs',
                     style: TextStyle(
-                      fontFamily: 'Poppins', fontSize: 14,
+                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                       color: sel ? Colors.white : ZienaColors.textPrimary,
                     )),
@@ -293,21 +294,10 @@ class _StepDateTimeState extends State<StepDateTime> {
         // ── Next ─────────────────────────────────────────────────────────────
         SizedBox(
           width: double.infinity,
-          child: ElevatedButton(
-            onPressed: _canNext ? _onNext : null,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: ZienaColors.primary,
-              disabledBackgroundColor: ZienaColors.primary.withOpacity(0.4),
-              minimumSize: const Size(double.infinity, 52),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14)),
-              elevation: 0,
-            ),
-            child: Text('next'.tr(),
-                style: const TextStyle(
-                  fontFamily: 'Poppins', fontSize: 16,
-                  fontWeight: FontWeight.w600, color: Colors.white,
-                )),
+          child: ZienaButton(
+            text: 'next'.tr(),
+            onTap: _canNext ? _onNext : null,
+            disabledBackgroundColor: ZienaColors.primary.withOpacity(0.4),
           ),
         ),
       ]),
@@ -316,7 +306,7 @@ class _StepDateTimeState extends State<StepDateTime> {
 
   Widget _sectionTitle(String t) => Text(t,
       style: const TextStyle(
-        fontFamily: 'Poppins', fontSize: 14,
+         fontSize: 14,
         fontWeight: FontWeight.w700, color: ZienaColors.textPrimary,
       ));
 }
@@ -347,7 +337,7 @@ class _CounterRow extends StatelessWidget {
         children: [
           Text('$value Worker${value > 1 ? 's' : ''}',
               style: const TextStyle(
-                fontFamily: 'Poppins', fontSize: 14,
+                 fontSize: 14,
                 fontWeight: FontWeight.w500,
                 color: ZienaColors.textPrimary,
               )),
@@ -358,7 +348,7 @@ class _CounterRow extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text('$value',
                   style: const TextStyle(
-                    fontFamily: 'Poppins', fontSize: 18,
+                     fontSize: 18,
                     fontWeight: FontWeight.w700,
                     color: ZienaColors.textPrimary,
                   )),

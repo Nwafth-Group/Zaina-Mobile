@@ -6,6 +6,7 @@ import 'package:zeina_app/features/bookings/presentation/screens/report_sheet.da
 import 'package:zeina_app/features/bookings/presentation/screens/reschedule_sheet.dart';
 import 'package:zeina_app/features/bookings/presentation/screens/review_sheet.dart';
 import '../../../../core/theme/theme.dart';
+import '../../../../widgets/ziena_button.dart';
 import '../../data/model/booking_model.dart';
 import '../cubit/bookings_cubit.dart';
 
@@ -43,19 +44,11 @@ class BookingDetailScreen extends StatelessWidget {
                         
                         color: ZienaColors.textSecondary)),
                 const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: () => context
+                ZienaButton(
+                  text: 'retry'.tr(),
+                  onTap: () => context
                       .read<BookingDetailCubit>()
                       .fetchDetail(bookingId),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: ZienaColors.primary,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
-                    elevation: 0,
-                  ),
-                  child: Text('retry'.tr(),
-                      style: const TextStyle(
-                           color: Colors.white)),
                 ),
               ],
             ),
@@ -422,8 +415,9 @@ class BookingDetailScreen extends StatelessWidget {
       ),
       child: Row(children: [
         if (isUpcoming) ...[
-          Expanded(child: ElevatedButton(
-            onPressed: () => showModalBottomSheet(
+          Expanded(child: ZienaButton(
+            text: 'reschedule'.tr(),
+            onTap: () => showModalBottomSheet(
               context: context,
               isScrollControlled: true,
               backgroundColor: Colors.transparent,
@@ -432,18 +426,6 @@ class BookingDetailScreen extends StatelessWidget {
                 child: RescheduleSheet(bookingId: b.id),
               ),
             ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: ZienaColors.primary,
-              minimumSize: const Size(double.infinity, 50),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14)),
-              elevation: 0,
-            ),
-            child: Text('reschedule'.tr(),
-                style: const TextStyle(
-                   fontSize: 15,
-                  fontWeight: FontWeight.w600, color: Colors.white,
-                )),
           )),
           const SizedBox(width: 12),
           Expanded(child: OutlinedButton(
@@ -463,8 +445,9 @@ class BookingDetailScreen extends StatelessWidget {
           )),
         ],
         if (isInService)
-          Expanded(child: ElevatedButton(
-            onPressed: () => showModalBottomSheet(
+          Expanded(child: ZienaButton(
+            text: 'report'.tr(),
+            onTap: () => showModalBottomSheet(
               context: context,
               isScrollControlled: true,
               backgroundColor: Colors.transparent,
@@ -473,22 +456,11 @@ class BookingDetailScreen extends StatelessWidget {
                 child: ReportSheet(bookingId: b.id),
               ),
             ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: ZienaColors.primary,
-              minimumSize: const Size(double.infinity, 50),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14)),
-              elevation: 0,
-            ),
-            child: Text('report'.tr(),
-                style: const TextStyle(
-                   fontSize: 15,
-                  fontWeight: FontWeight.w600, color: Colors.white,
-                )),
           )),
         if (isCompleted) ...[
-          Expanded(child: ElevatedButton(
-            onPressed: () => showModalBottomSheet(
+          Expanded(child: ZienaButton(
+            text: 'report'.tr(),
+            onTap: () => showModalBottomSheet(
               context: context,
               isScrollControlled: true,
               backgroundColor: Colors.transparent,
@@ -497,23 +469,13 @@ class BookingDetailScreen extends StatelessWidget {
                 child: ReportSheet(bookingId: b.id),
               ),
             ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: ZienaColors.bg2,
-              foregroundColor: ZienaColors.primary,
-              minimumSize: const Size(double.infinity, 50),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14)),
-              elevation: 0,
-            ),
-            child: Text('report'.tr(),
-                style: const TextStyle(
-                   fontSize: 15,
-                  fontWeight: FontWeight.w600, color: ZienaColors.primary,
-                )),
+            backgroundColor: ZienaColors.bg2,
+            textColor: ZienaColors.primary,
           )),
           const SizedBox(width: 12),
-          Expanded(child: ElevatedButton(
-            onPressed: () => showModalBottomSheet(
+          Expanded(child: ZienaButton(
+            text: 'rate'.tr(),
+            onTap: () => showModalBottomSheet(
               context: context,
               isScrollControlled: true,
               backgroundColor: Colors.transparent,
@@ -522,18 +484,6 @@ class BookingDetailScreen extends StatelessWidget {
                 child: ReviewSheet(booking: b),
               ),
             ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: ZienaColors.primary,
-              minimumSize: const Size(double.infinity, 50),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14)),
-              elevation: 0,
-            ),
-            child: Text('rate'.tr(),
-                style: const TextStyle(
-                   fontSize: 15,
-                  fontWeight: FontWeight.w600, color: Colors.white,
-                )),
           )),
         ],
       ]),
@@ -590,20 +540,10 @@ class BookingDetailScreen extends StatelessWidget {
                 ),
                 textAlign: TextAlign.center),
             const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: () => Navigator.pop(context),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: ZienaColors.primary,
-                minimumSize: const Size(double.infinity, 50),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14)),
-                elevation: 0,
-              ),
-              child: Text('confirm_button'.tr(),
-                  style: const TextStyle(
-                     fontSize: 15,
-                    fontWeight: FontWeight.w600, color: Colors.white,
-                  )),
+            ZienaButton(
+              text: 'confirm_button'.tr(),
+              onTap: () => Navigator.pop(context),
+              height: 50,
             ),
             const SizedBox(height: 10),
             OutlinedButton(

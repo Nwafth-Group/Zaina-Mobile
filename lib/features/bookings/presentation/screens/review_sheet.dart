@@ -2,7 +2,9 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/theme.dart';
+import '../../../../widgets/custom_text_form_field.dart';
 import '../../../../widgets/success_dialog.dart';
+import '../../../../widgets/ziena_button.dart';
 import '../../data/model/booking_model.dart';
 import '../cubit/bookings_cubit.dart';
 
@@ -174,28 +176,11 @@ class _ReviewSheetState extends State<ReviewSheet> {
               BlocBuilder<BookingDetailCubit, BookingDetailState>(
                 builder: (_, state) {
                   final loading = state is BookingActionLoading;
-                  return SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: (_serviceRating > 0 && !loading) ? _submit : null,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: ZienaColors.primary,
-                        disabledBackgroundColor:
-                        ZienaColors.primary.withOpacity(0.4),
-                        minimumSize: const Size(double.infinity, 52),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14)),
-                        elevation: 0,
-                      ),
-                      child: loading
-                          ? const CircularProgressIndicator(
-                          color: Colors.white, strokeWidth: 2)
-                          : Text('submit_review'.tr(),
-                          style: const TextStyle(
-                             fontSize: 16,
-                            fontWeight: FontWeight.w600, color: Colors.white,
-                          )),
-                    ),
+                  return ZienaButton(
+                    text: 'submit_review'.tr(),
+                    onTap: (_serviceRating > 0 && !loading) ? _submit : null,
+                    disabledBackgroundColor: ZienaColors.primary.withOpacity(0.4),
+                    disabledTextColor: Colors.white,
                   );
                 },
               ),
@@ -282,23 +267,13 @@ class _FeedbackField extends StatelessWidget {
         borderRadius: BorderRadius.circular(10),
         border: Border.all(color: ZienaColors.greyBorder),
       ),
-      child: TextField(
+      child: CustomTextField(
         controller: ctrl,
         maxLines: 2,
-        style: const TextStyle(
-           fontSize: 12,
-          color: ZienaColors.textPrimary,
-        ),
-        decoration: InputDecoration(
-          hintText: 'write_feedback_optional'.tr(),
-          hintStyle: const TextStyle(
-             fontSize: 12,
-            color: ZienaColors.textHint,
-          ),
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.all(10),
-          filled: false,
-        ),
+        hintText: 'write_feedback_optional'.tr(),
+        fillColor: ZienaColors.white,
+        borderColor: ZienaColors.greyBorder,
+        contentPadding: const EdgeInsets.all(10),
       ),
     );
   }

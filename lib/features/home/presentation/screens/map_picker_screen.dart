@@ -1,6 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/theme/theme.dart';
+import '../../../../widgets/custom_text_form_field.dart';
+import '../../../../widgets/ziena_button.dart';
 
 class MapPickerScreen extends StatefulWidget {
   const MapPickerScreen({super.key});
@@ -88,19 +90,12 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
                 const SizedBox(width: 14),
                 const Icon(Icons.search, color: ZienaColors.primary, size: 20),
                 const SizedBox(width: 8),
-                Expanded(child: TextField(
+                Expanded(child: CustomTextField(
                   controller: _searchCtrl,
-                  style: const TextStyle(
-                      fontSize: 14, color: ZienaColors.textPrimary),
-                  decoration: InputDecoration(
-                    hintText: 'search_location'.tr(),
-                    hintStyle: const TextStyle(
-                        fontSize: 14, color: ZienaColors.textHint),
-                    border: InputBorder.none,
-                    filled: false,
-                    contentPadding: EdgeInsets.zero,
-                    isDense: true,
-                  ),
+                  hintText: 'search_location'.tr(),
+                  border: 0,
+                  fillColor: Colors.transparent,
+                  contentPadding: EdgeInsets.zero,
                 )),
               ]),
             ),
@@ -132,20 +127,9 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
             child: Container(
               padding: const EdgeInsets.fromLTRB(16, 14, 16, 30),
               color: ZienaColors.white,
-              child: ElevatedButton(
-                onPressed: _onContinue,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: ZienaColors.primary,
-                  minimumSize: const Size(double.infinity, 52),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14)),
-                  elevation: 0,
-                ),
-                child: Text('continue'.tr(),
-                    style: const TextStyle(
-                       fontSize: 16,
-                      fontWeight: FontWeight.w600, color: Colors.white,
-                    )),
+              child: ZienaButton(
+                text: 'continue'.tr(),
+                onTap: _onContinue,
               ),
             ),
           ),

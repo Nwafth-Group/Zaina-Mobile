@@ -2,7 +2,9 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/theme.dart';
+import '../../../../widgets/custom_text_form_field.dart';
 import '../../../../widgets/success_dialog.dart';
+import '../../../../widgets/ziena_button.dart';
 import '../cubit/bookings_cubit.dart';
 
 class ReportSheet extends StatefulWidget {
@@ -109,25 +111,17 @@ class _ReportSheetState extends State<ReportSheet> {
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(color: ZienaColors.greyBorder),
               ),
-              child: TextField(
+              child: CustomTextField(
                 controller: _descCtrl,
                 maxLines: 3,
-                style: const TextStyle(
-                   fontSize: 13,
-                  color: ZienaColors.textPrimary,
-                ),
-                decoration: InputDecoration(
-                  hintText: 'describe_issue_optional'.tr(),
-                  hintStyle: const TextStyle(
-                     fontSize: 13,
-                    color: ZienaColors.textHint,
-                  ),
-                  border: InputBorder.none,
-                  contentPadding: const EdgeInsets.all(14),
-                  filled: false,
+                hintText: 'describe_issue_optional'.tr(),
+                border: 0,
+                borderRadius: 14,
+                fillColor: ZienaColors.bg1,
+                contentPadding: const EdgeInsets.all(16),
                 ),
               ),
-            ),
+
             const SizedBox(height: 20),
 
             BlocBuilder<BookingDetailCubit, BookingDetailState>(
@@ -135,23 +129,12 @@ class _ReportSheetState extends State<ReportSheet> {
                 final loading = state is BookingActionLoading;
                 return SizedBox(
                   width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: loading ? null : _submit,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: ZienaColors.primary,
-                      minimumSize: const Size(double.infinity, 52),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14)),
-                      elevation: 0,
-                    ),
-                    child: loading
-                        ? const CircularProgressIndicator(
-                        color: Colors.white, strokeWidth: 2)
-                        : Text('submit_report'.tr(),
-                        style: const TextStyle(
-                           fontSize: 16,
-                          fontWeight: FontWeight.w600, color: Colors.white,
-                        )),
+                  child: ZienaButton(
+                    text: 'submit_report'.tr(),
+                    onTap: loading ? null : _submit,
+                    isLoading: loading,
+                    disabledBackgroundColor:
+                        ZienaColors.primary.withOpacity(0.4),
                   ),
                 );
               },

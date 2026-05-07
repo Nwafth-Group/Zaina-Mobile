@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../injection_container.dart';
 import '../../../../widgets/empty_data_widget.dart';
+import '../../../../widgets/ziena_button.dart';
 import '../../data/model/banner_model.dart';
 import '../cubit/category_cubit.dart';
 import 'services_category_screen.dart';
@@ -100,18 +101,12 @@ class _SubcategoriesScreenViewState extends State<_SubcategoriesScreenView> {
                       style: const TextStyle(
                           color: ZienaColors.textSecondary)),
                   const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () => context
+                  ZienaButton(
+                    text: 'retry'.tr(),
+                    onTap: () => context
                         .read<SubcategoriesCubit>()
                         .fetchSubcategories(widget.category.id,
                             refresh: true),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: ZienaColors.primary,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12)),
-                    ),
-                    child: Text('retry'.tr(),
-                        style: const TextStyle(color: Colors.white)),
                   ),
                 ],
               ),

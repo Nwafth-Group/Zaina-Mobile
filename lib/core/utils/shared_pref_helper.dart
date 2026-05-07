@@ -52,8 +52,6 @@ class SharedPrefHelper {
   }
 
   static Future<void> logout() async {
-    await _prefs.remove(_tokenKey);
-    await _prefs.remove(_userKey);
-    await _prefs.setBool(_isLoggedInKey, false);
+    await clearAll();
   }
 }

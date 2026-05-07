@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/theme.dart';
+import '../../../../widgets/ziena_button.dart';
 import '../../data/model/booking_flow_model.dart';
 import '../cubit/booking_flow_cubit.dart';
 import '../widgets/step_date_time.dart';
@@ -184,24 +185,13 @@ class _BookingFlowScreenState extends State<BookingFlowScreen> {
                 ),
                 textAlign: TextAlign.center),
             const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: () {
+            ZienaButton(
+              text: 'done'.tr(),
+              onTap: () {
                 Navigator.pop(context); // dialog
                 Navigator.pop(context); // flow
                 Navigator.pop(context); // detail
               },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: ZienaColors.primary,
-                minimumSize: const Size(double.infinity, 50),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14)),
-                elevation: 0,
-              ),
-              child: Text('done'.tr(),
-                  style: const TextStyle(
-                    fontFamily: 'Poppins', fontSize: 15,
-                    fontWeight: FontWeight.w600, color: Colors.white,
-                  )),
             ),
           ]),
         ),

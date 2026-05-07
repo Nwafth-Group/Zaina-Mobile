@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:zeina_app/core/utils/shared_pref_helper.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../injection_container.dart';
+import '../../../../widgets/ziena_button.dart';
 import '../../../auth/presentation/screens/phone_auth_screen.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../bookings/data/model/booking_flow_model.dart';
@@ -106,19 +107,11 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                   color: ZienaColors.textSecondary),
               textAlign: TextAlign.center),
           const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: () => context
+          ZienaButton(
+            text: 'retry'.tr(),
+            onTap: () => context
                 .read<ServiceDetailCubit>()
                 .fetchServiceDetail(widget.serviceId),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: ZienaColors.primary,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
-              elevation: 0,
-            ),
-            child: Text('retry'.tr(),
-                style: const TextStyle(
-                     color: Colors.white)),
           ),
         ],
       ),
@@ -634,8 +627,9 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
           const SizedBox(height: 12),
           SizedBox(
             width: double.infinity,
-            child: ElevatedButton(
-              onPressed: _agreedToTerms
+            child: ZienaButton(
+              text: 'book_now'.tr(),
+              onTap: _agreedToTerms
                   ? () {
                 if (token==null) {
                   Navigator.push(
@@ -672,22 +666,9 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                 );
               }
                   : null,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: ZienaColors.primary,
-                disabledBackgroundColor:
+              isLoading: false,
+              disabledBackgroundColor:
                 ZienaColors.primary.withOpacity(0.4),
-                minimumSize: const Size(double.infinity, 52),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14)),
-                elevation: 0,
-              ),
-              child: Text('book_now'.tr(),
-                  style: const TextStyle(
-                    
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  )),
             ),
           ),
         ],

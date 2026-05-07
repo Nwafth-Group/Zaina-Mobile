@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../widgets/success_dialog.dart';
+import '../../../../widgets/ziena_button.dart';
 import '../cubit/bookings_cubit.dart';
 
 class RescheduleSheet extends StatefulWidget {
@@ -182,29 +183,12 @@ class _RescheduleSheetState extends State<RescheduleSheet> {
             BlocBuilder<BookingDetailCubit, BookingDetailState>(
               builder: (_, state) {
                 final loading = state is BookingActionLoading;
-                return SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: (_selectedStartTime != null && !loading)
-                        ? _onConfirm : null,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: ZienaColors.primary,
-                      disabledBackgroundColor:
-                      ZienaColors.primary.withOpacity(0.4),
-                      minimumSize: const Size(double.infinity, 52),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14)),
-                      elevation: 0,
-                    ),
-                    child: loading
-                        ? const CircularProgressIndicator(
-                        color: Colors.white, strokeWidth: 2)
-                        : Text('select'.tr(),
-                        style: const TextStyle(
-                           fontSize: 16,
-                          fontWeight: FontWeight.w600, color: Colors.white,
-                        )),
-                  ),
+                return ZienaButton(
+                  text: 'select'.tr(),
+                  onTap: (_selectedStartTime != null && !loading)
+                      ? _onConfirm : null,
+                  disabledBackgroundColor: ZienaColors.primary.withOpacity(0.4),
+                  disabledTextColor: Colors.white,
                 );
               },
             ),

@@ -2,6 +2,8 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/theme.dart';
+import '../../../../widgets/custom_text_form_field.dart';
+import '../../../../widgets/ziena_button.dart';
 import '../../data/model/booking_flow_model.dart';
 import '../cubit/booking_flow_cubit.dart';
 
@@ -236,56 +238,31 @@ class _StepSummaryState extends State<StepSummary> {
   Widget _buildCouponField() {
     return Row(children: [
       Expanded(
-        child: Container(
-          height: 50,
-          decoration: BoxDecoration(
-            color: ZienaColors.bg1,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: ZienaColors.greyBorder),
-          ),
-          child: Row(children: [
-            const SizedBox(width: 12),
-            const Icon(Icons.local_offer_outlined,
-                color: ZienaColors.primary, size: 18),
-            const SizedBox(width: 8),
-            Expanded(
-              child: TextField(
-                controller: _couponCtrl,
-                style: const TextStyle(
-                    fontFamily: 'Poppins', fontSize: 14,
-                    color: ZienaColors.textPrimary),
-                decoration: InputDecoration(
-                  hintText: 'enter_coupon'.tr(),
-                  hintStyle: const TextStyle(
-                    fontFamily: 'Poppins', fontSize: 13,
-                    color: ZienaColors.textHint,
-                  ),
-                  border: InputBorder.none,
-                  filled: false,
-                  contentPadding: EdgeInsets.zero,
-                  isDense: true,
-                ),
-              ),
+        child: Expanded(
+          child: CustomTextField(
+            controller: _couponCtrl,
+            hintText: 'enter_coupon'.tr(),
+            fillColor: ZienaColors.bg1,
+            borderColor: ZienaColors.greyBorder,
+            contentPadding: EdgeInsets.zero,
+            maxLines: 1,
+            borderRadius: 15,
+            prefixIcon: const Padding(
+              padding: EdgeInsets.only(left: 12, right: 8),
+              child: Icon(Icons.local_offer_outlined,
+                  color: ZienaColors.primary, size: 18),
             ),
-          ]),
+          ),
         ),
       ),
       const SizedBox(width: 10),
-      ElevatedButton(
-        onPressed: _couponApplied ? null : _applyCoupon,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: ZienaColors.primary,
-          disabledBackgroundColor: ZienaColors.greyBorder,
-          minimumSize: const Size(80, 50),
-          shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14)),
-          elevation: 0,
-        ),
-        child: Text('apply'.tr(),
-            style: const TextStyle(
-              fontFamily: 'Poppins', fontSize: 13,
-              fontWeight: FontWeight.w600, color: Colors.white,
-            )),
+      ZienaButton(
+        text: 'apply'.tr(),
+        onTap: _couponApplied ? null : _applyCoupon,
+        width: 100,
+        height: 50,
+        disabledBackgroundColor: ZienaColors.greyBorder,
+        disabledTextColor: Colors.white,
       ),
     ]);
   }
@@ -321,27 +298,11 @@ class _StepSummaryState extends State<StepSummary> {
         _PriceRow('total'.tr(),
             '${flow.total.toStringAsFixed(0)} ${flow.currency}', true),
         const SizedBox(height: 14),
-        SizedBox(
-          width: double.infinity,
-          child: ElevatedButton(
-            onPressed: loading ? null : _onBook,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: ZienaColors.primary,
-              disabledBackgroundColor: ZienaColors.primary.withOpacity(0.5),
-              minimumSize: const Size(double.infinity, 52),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14)),
-              elevation: 0,
-            ),
-            child: loading
-                ? const CircularProgressIndicator(
-                color: Colors.white, strokeWidth: 2)
-                : Text('book_now'.tr(),
-                style: const TextStyle(
-                  fontFamily: 'Poppins', fontSize: 16,
-                  fontWeight: FontWeight.w600, color: Colors.white,
-                )),
-          ),
+        ZienaButton(
+          text: 'book_now'.tr(),
+          onTap: loading ? null : _onBook,
+          disabledBackgroundColor: ZienaColors.primary.withOpacity(0.5),
+          disabledTextColor: Colors.white,
         ),
       ]),
     );

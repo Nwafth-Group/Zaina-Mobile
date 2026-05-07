@@ -180,6 +180,7 @@ class ServiceDetailModel {
 
   factory ServiceDetailModel.fromJson(Map<String, dynamic> json) {
     final data = json['data'] as Map<String, dynamic>? ?? json;
+    print("dddddd $data");
     return ServiceDetailModel(
       id: data['id'],
       category: ServiceCategory.fromJson(data['category']),
@@ -204,7 +205,7 @@ class ServiceDetailModel {
           .map((c) => ServiceCoverage.fromJson(c))
           .toList(),
       image: data['image'],
-      price: ServicePrice.fromJson(data['price']),
+      price: ServicePrice.fromJson(data['price_details']),
       schedules: (data['schedules'] as List<dynamic>? ?? [])
           .map((s) => ServiceSchedule.fromJson(s))
           .toList(),
