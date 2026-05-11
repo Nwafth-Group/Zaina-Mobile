@@ -22,7 +22,7 @@ class SharedPrefHelper {
     await _prefs.setString(_lng, val);
   }
 
-  static Future<String?> getToken() async {
+  static String? getToken() {
     return _prefs.getString(_tokenKey);
   }
 
@@ -43,8 +43,9 @@ class SharedPrefHelper {
   //   return null;
   // }
 
-  static Future<bool> isLoggedIn() async {
-    return _prefs.getBool(_isLoggedInKey) ?? false;
+  static bool isLoggedIn() {
+    // return _prefs.getBool(_isLoggedInKey) ?? false;
+    return getToken() != null;
   }
 
   static Future<void> clearAll() async {

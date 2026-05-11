@@ -1,6 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:zeina_app/core/utils/shared_pref_helper.dart';
 import 'package:zeina_app/features/bookings/presentation/screens/bookings_screen.dart';
+import 'package:zeina_app/features/wallet/presentation/screens/wallet_screen.dart';
 import 'package:zeina_app/widgets/signin_required_widget.dart';
 
 import '../core/theme/theme.dart';
@@ -18,9 +20,8 @@ class _MainScreenState extends State<MainScreen> {
   // Your existing HomeScreen is the first item in this list
   final List<Widget> _pages = [
     HomeScreen(),
-    // Scaffold(body: SignInRequiredWidget(tabKey: 'bookings'),),
-    BookingsScreen(isLoggedIn: true),
-    Scaffold(body: SignInRequiredWidget(tabKey: 'wallet'),),
+    BookingsScreen(isLoggedIn: SharedPrefHelper.isLoggedIn()),
+    WalletScreen(isLoggedIn: SharedPrefHelper.isLoggedIn()),
     Scaffold(body: SignInRequiredWidget(tabKey: 'more'),),
   ];
 

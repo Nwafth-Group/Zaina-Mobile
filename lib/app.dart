@@ -10,6 +10,7 @@ import 'features/auth/presentation/screens/splash_screen.dart';
 import 'features/bookings/presentation/cubit/bookings_cubit.dart';
 import 'features/home/presentation/cubit/address_cubit.dart';
 import 'features/home/presentation/cubit/category_cubit.dart';
+import 'features/wallet/presentation/cubit/cubit.dart';
 import 'injection_container.dart';
 
 class ZienaApp extends StatelessWidget {
@@ -36,6 +37,9 @@ class ZienaApp extends StatelessWidget {
         ),
         BlocProvider<CategoryServicesCubit>(
           create: (_) => sl<CategoryServicesCubit>(),
+        ),
+        BlocProvider<WalletCubit>(
+          create: (_) => sl<WalletCubit>(),
         ),
       ],
       child: MaterialApp(

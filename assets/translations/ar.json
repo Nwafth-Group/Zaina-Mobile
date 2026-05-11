@@ -182,5 +182,21 @@
   "are_you_sure_cancel": "هل أنت متأكد؟",
   "do_you_want_cancel_order": "هل تريد إلغاء طلبك؟",
   "confirm_button": "تأكيد",
-  "address": "العنوان"
+  "address": "العنوان",
+  "available_balance": "الرصيد المتاح",
+  "add_money": "إضافة رصيد",
+  "transactions": "المعاملات",
+  "filter_by_date": "تصفية حسب التاريخ",
+  "custom_range": "نطاق مخصص",
+  "rating": "التقييم",
+  "try_different_filter": "جرب فلتراً مختلفاً لعرض المعاملات.",
+  "or_enter_amount": "أو أدخل المبلغ",
+  "add_card": "إضافة بطاقة",
+  "cardholder_name": "اسم حامل البطاقة",
+  "card_number": "رقم البطاقة",
+  "expiration_date": "تاريخ الانتهاء",
+  "cvc": "CVC",
+  "invalid_card_number": "يرجى إدخال رقم بطاقة صحيح",
+  "wallet_topped_up": "تم شحن محفظتك بنجاح",
+  "to": "إلى"
 }

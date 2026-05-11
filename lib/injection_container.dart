@@ -16,6 +16,7 @@ import 'features/home/presentation/cubit/category_cubit.dart';
 import 'features/home/presentation/cubit/home_cubti.dart';
 import 'features/home/presentation/cubit/search_cubit.dart';
 import 'features/home/presentation/cubit/service_cubit.dart';
+import 'features/wallet/presentation/cubit/cubit.dart';
 
 final sl = GetIt.instance;
 
@@ -81,6 +82,8 @@ void setupDependencies() {
           () => BookingDetailCubit(sl<ApiClient>()));
   sl.registerFactory<BookingFlowCubit>(() => BookingFlowCubit(sl<ApiClient>()));
   sl.registerLazySingleton<AddressCubit>(() => AddressCubit(sl<ApiClient>()));
-
+  sl.registerFactory<WalletCubit>(() => WalletCubit(sl<ApiClient>()));
+  sl.registerFactory<CardsCubit>(() => CardsCubit(sl<ApiClient>()));
+  sl.registerFactory<TopUpCubit>(() => TopUpCubit(sl<ApiClient>()));
 
 }

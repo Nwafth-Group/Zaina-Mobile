@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:zeina_app/core/utils/app_navigator.dart';
+import 'package:zeina_app/core/utils/shared_pref_helper.dart';
 import 'package:zeina_app/features/home/presentation/screens/popular_services_screen.dart';
 import 'package:zeina_app/features/home/presentation/screens/service_categories_screen.dart';
 import 'package:zeina_app/features/home/presentation/screens/service_screen.dart';
@@ -36,7 +37,13 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     // Fetch data when screen opens
     context.read<HomeCubit>().fetchHomeData();
-    context.read<AddressCubit>().fetchAddresses(); // ← fetch addresses
+    callInit();
+  }
+
+  void callInit()async{
+    if(await SharedPrefHelper.isLoggedIn()) {
+      await context.read<AddressCubit>().fetchAddresses(); // ← fetch addresses
+    }
   }
 
   @override
@@ -163,16 +170,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 BlocBuilder<AddressCubit, AddressState>(
                   builder: (ctx, addrState) {
                     // Still loading
-                    if (addrState is AddressLoading ||
-                        addrState is AddressInitial) {
-                      return _addressSkeleton();
-                    }
-
                     final cubit = ctx.read<AddressCubit>();
                     final hasAddress = cubit.list.isNotEmpty;
-
-                    // ── No address → "Add Address" tap ─────────────────────
-                    if (!hasAddress) {
+                    if (addrState is AddressLoading ||
+                        addrState is AddressInitial ||
+                        !hasAddress) {
                       return GestureDetector(
                         onTap: () => Navigator.push(
                           context,
@@ -203,7 +205,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   const SizedBox(width: 5),
                                   Text('add_address'.tr(),
                                       style: const TextStyle(
-                                         fontSize: 12,
+                                        fontSize: 12,
                                         fontWeight: FontWeight.w600,
                                         color: ZienaColors.primary,
                                       )),
@@ -214,6 +216,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       );
                     }
+
 
                     // ── Has address → show default ──────────────────────────
                     final def = cubit.defaultAddress;
@@ -346,7 +349,7 @@ class _HomeScreenState extends State<HomeScreen> {
   // ── Popular Services (UPDATED) ─────────────────────────────────────────────
   Widget _buildPopularServices(List<ServiceModel> services) {
     return SizedBox(
-      height: 190,
+      height: 192,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 20),

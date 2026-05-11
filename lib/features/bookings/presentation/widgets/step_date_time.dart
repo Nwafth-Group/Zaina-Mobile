@@ -17,15 +17,25 @@ class StepDateTime extends StatefulWidget {
 class _StepDateTimeState extends State<StepDateTime> {
   DateTime _selectedDate = DateTime.now().add(const Duration(days: 1));
   ShiftModel? _selectedShift;
-  String? _selectedHour;
-  int _selectedDuration = 2;
+  String? _selectedStartHour;
+  String? _selectedEndHour;
   int _workerCount = 1;
 
-  String get _apiDate =>
-      '${_selectedDate.year}-${_selectedDate.month.toString().padLeft(2, '0')}-${_selectedDate.day.toString().padLeft(2, '0')}';
+  // ── Computed duration from selected start/end ─────────────────────────────
+  int? get _calculatedDuration {
+    if (_selectedStartHour == null || _selectedEndHour == null) return null;
+    final start = int.parse(_selectedStartHour!.split(':')[0]);
+    final end   = int.parse(_selectedEndHour!.split(':')[0]);
+    final diff  = end - start;
+    return diff > 0 ? diff : null;
+  }
 
-  String get _displayDate =>
-      DateFormat('dd MMM yyyy').format(_selectedDate);
+  String get _apiDate =>
+      '${_selectedDate.year}-'
+          '${_selectedDate.month.toString().padLeft(2, '0')}-'
+          '${_selectedDate.day.toString().padLeft(2, '0')}';
+
+  String get _displayDate => DateFormat('dd MMM yyyy').format(_selectedDate);
 
   @override
   void initState() {
@@ -33,9 +43,8 @@ class _StepDateTimeState extends State<StepDateTime> {
     _loadShifts();
   }
 
-  void _loadShifts() {
-    context.read<BookingFlowCubit>().fetchShifts(_apiDate);
-  }
+  void _loadShifts() =>
+      context.read<BookingFlowCubit>().fetchShifts(_apiDate);
 
   Future<void> _pickDate() async {
     final d = await showDatePicker(
@@ -46,271 +55,452 @@ class _StepDateTimeState extends State<StepDateTime> {
       builder: (ctx, child) => Theme(
         data: Theme.of(ctx).copyWith(
           colorScheme: const ColorScheme.light(
-              primary: ZienaColors.primary, onPrimary: Colors.white),
+            primary: ZienaColors.primary,
+            onPrimary: Colors.white,
+          ),
         ),
         child: child!,
       ),
     );
     if (d != null) {
       setState(() {
-        _selectedDate = d;
-        _selectedShift = null;
-        _selectedHour = null;
+        _selectedDate    = d;
+        _selectedShift   = null;
+        _selectedStartHour = null;
+        _selectedEndHour   = null;
       });
       context.read<BookingFlowCubit>().fetchShifts(_apiDate);
     }
   }
 
+  /// Hours that can be selected as start (all available hours except the last)
+  List<String> get _startHours {
+    if (_selectedShift == null) return [];
+    final hours = _selectedShift!.availableHours;
+    // Start can be any hour except the very last (need at least 1h gap for end)
+    return hours.length > 1 ? hours.sublist(0, hours.length - 1) : [];
+  }
+
+  /// Hours that can be selected as end — must be after start
+  List<String> get _endHours {
+    if (_selectedShift == null || _selectedStartHour == null) return [];
+    final hours = _selectedShift!.availableHours;
+    final startIdx = hours.indexOf(_selectedStartHour!);
+    if (startIdx == -1) return [];
+    // End can be any hour after start
+    return hours.sublist(startIdx + 1);
+  }
+
+  bool get _canNext =>
+      _selectedShift != null &&
+          _selectedStartHour != null &&
+          _selectedEndHour != null &&
+          _calculatedDuration != null &&
+          _calculatedDuration! > 0;
+
   void _onNext() {
-    if (_selectedShift == null || _selectedHour == null) return;
-    final endHour = int.parse(_selectedHour!.split(':')[0]) + _selectedDuration;
-    final endTime = '${endHour.toString().padLeft(2, '0')}:00';
+    if (!_canNext) return;
+
+    final endTime =
+        '${_selectedEndHour!.split(':')[0].padLeft(2, '0')}:00';
 
     final cubit = context.read<BookingFlowCubit>();
     cubit.updateFlow(cubit.flow.copyWith(
-      selectedDate: _apiDate,
-      selectedStartTime: _selectedHour,
-      selectedEndTime: endTime,
-      selectedDurationHours: _selectedDuration,
-      selectedWorkerCount: _workerCount,
-      selectedShiftLabel: _selectedShift!.dropdownLabel,
+      selectedDate:          _apiDate,
+      selectedStartTime:     _selectedStartHour,
+      selectedEndTime:       endTime,
+      selectedDurationHours: _calculatedDuration,
+      selectedWorkerCount:   _workerCount,
+      selectedShiftLabel:    _selectedShift!.dropdownLabel,
     ));
 
-    // Fetch workers for next step
     cubit.fetchWorkers(
-      date: _apiDate,
-      startTime: _selectedHour!,
-      durationHours: _selectedDuration,
+      date:          _apiDate,
+      startTime:     _selectedStartHour!,
+      durationHours: _calculatedDuration!,
     );
+
     widget.onNext();
   }
 
-  bool get _canNext => _selectedShift != null && _selectedHour != null;
-
   @override
   Widget build(BuildContext context) {
-    final flow = context.read<BookingFlowCubit>().flow;
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        // ── Date picker ──────────────────────────────────────────────────────
-        _sectionTitle('select_date'.tr()),
-        const SizedBox(height: 10),
-        GestureDetector(
-          onTap: _pickDate,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            decoration: BoxDecoration(
-              color: ZienaColors.bg1,
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: ZienaColors.greyBorder),
-            ),
-            child: Row(children: [
-              const Icon(Icons.calendar_today_rounded,
-                  size: 18, color: ZienaColors.primary),
-              const SizedBox(width: 10),
-              Expanded(child: Text(_displayDate,
-                  style: const TextStyle(
-                     fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: ZienaColors.textPrimary,
-                  ))),
-              const Icon(Icons.keyboard_arrow_down,
-                  color: ZienaColors.textSecondary),
-            ]),
-          ),
-        ),
-        const SizedBox(height: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
 
-        // ── Shifts ────────────────────────────────────────────────────────────
-        _sectionTitle('select_time_slot'.tr()),
-        const SizedBox(height: 10),
-        BlocBuilder<BookingFlowCubit, BookingFlowState>(
-          builder: (context, state) {
-            if (state is BookingFlowShiftsLoading) {
-              return const Center(child: CircularProgressIndicator(
-                  color: ZienaColors.primary, strokeWidth: 2));
-            }
-            if (state is BookingFlowShiftsLoaded) {
-              final shifts = state.shifts;
-              if (shifts.isEmpty) {
-                return Container(
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: ZienaColors.bg1,
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: ZienaColors.greyBorder),
-                  ),
-                  child: Text('no_shifts_available'.tr(),
-                      style: const TextStyle(
-                         fontSize: 13,
-                        color: ZienaColors.textSecondary,
-                      )),
+          // ── Date ───────────────────────────────────────────────────────────
+          _sectionTitle('select_date'.tr()),
+          const SizedBox(height: 10),
+          _DateTile(display: _displayDate, onTap: _pickDate),
+          const SizedBox(height: 20),
+
+          // ── Shift ───────────────────────────────────────────────────────────
+          _sectionTitle('select_time_slot'.tr()),
+          const SizedBox(height: 10),
+          BlocBuilder<BookingFlowCubit, BookingFlowState>(
+            builder: (context, state) {
+              if (state is BookingFlowShiftsLoading) {
+                return const Center(
+                  child: CircularProgressIndicator(
+                      color: ZienaColors.primary, strokeWidth: 2),
                 );
               }
-              return Column(
-                children: shifts.map((shift) {
-                  final selected = _selectedShift?.id == shift.id;
-                  return GestureDetector(
-                    onTap: () => setState(() {
-                      _selectedShift = shift;
-                      _selectedHour = null;
-                    }),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      margin: const EdgeInsets.only(bottom: 10),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 14),
-                      decoration: BoxDecoration(
-                        color: selected ? ZienaColors.bg2 : ZienaColors.bg1,
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(
-                          color: selected
-                              ? ZienaColors.primary
-                              : ZienaColors.greyBorder,
-                          width: selected ? 1.5 : 0.8,
-                        ),
-                      ),
-                      child: Row(children: [
-                        const Icon(Icons.wb_sunny_outlined,
-                            color: ZienaColors.primary, size: 18),
-                        const SizedBox(width: 10),
-                        Expanded(child: Text(shift.dropdownLabel,
-                            style: TextStyle(
-                               fontSize: 13,
-                              fontWeight: FontWeight.w500,
-                              color: selected
-                                  ? ZienaColors.primary
-                                  : ZienaColors.textPrimary,
-                            ))),
-                        if (selected)
-                          const Icon(Icons.check_circle,
-                              color: ZienaColors.primary, size: 18),
-                      ]),
-                    ),
-                  );
-                }).toList(),
-              );
-            }
-            return const SizedBox();
-          },
-        ),
-        const SizedBox(height: 20),
-
-        // ── Available hours (shown after shift selection) ────────────────────
-        if (_selectedShift != null) ...[
-          _sectionTitle('select_start_hour'.tr()),
-          const SizedBox(height: 10),
-          Wrap(
-            spacing: 10, runSpacing: 10,
-            children: _selectedShift!.availableHours.map((h) {
-              final sel = _selectedHour == h;
-              // Check if enough hours remain for duration
-              final idx = _selectedShift!.availableHours.indexOf(h);
-              final remaining = _selectedShift!.availableHours.length - idx;
-              final available = remaining >= _selectedDuration;
-              return GestureDetector(
-                onTap: available ? () => setState(() => _selectedHour = h) : null,
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 180),
-                  width: 74, height: 42,
-                  decoration: BoxDecoration(
-                    color: sel
-                        ? ZienaColors.primary
-                        : available
-                        ? ZienaColors.bg1
-                        : ZienaColors.greyLight,
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(
-                      color: sel
-                          ? ZienaColors.primary
-                          : available
-                          ? ZienaColors.greyBorder
-                          : ZienaColors.greyBorder,
-                    ),
-                  ),
-                  child: Center(child: Text(h,
-                      style: TextStyle(
-                         fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: sel
-                            ? Colors.white
-                            : available
-                            ? ZienaColors.textPrimary
-                            : ZienaColors.textHint,
-                      ))),
-                ),
-              );
-            }).toList(),
+              if (state is BookingFlowShiftsLoaded) {
+                if (state.shifts.isEmpty) {
+                  return _EmptyBox(label: 'no_shifts_available'.tr());
+                }
+                return Column(
+                  children: state.shifts.map((shift) {
+                    final selected = _selectedShift?.id == shift.id;
+                    return _ShiftTile(
+                      shift: shift,
+                      isSelected: selected,
+                      onTap: () => setState(() {
+                        _selectedShift     = shift;
+                        _selectedStartHour = null;
+                        _selectedEndHour   = null;
+                      }),
+                    );
+                  }).toList(),
+                );
+              }
+              return const SizedBox();
+            },
           ),
-          const SizedBox(height: 20),
-        ],
 
-        // ── Duration ──────────────────────────────────────────────────────────
-        _sectionTitle('select_duration'.tr()),
-        const SizedBox(height: 10),
-        Wrap(
-          spacing: 10, runSpacing: 10,
-          children: flow.allowedDurations.map((d) {
-            final sel = _selectedDuration == d;
-            return GestureDetector(
-              onTap: () => setState(() {
-                _selectedDuration = d;
-                _selectedHour = null; // reset hour on duration change
+          // ── Start hour ──────────────────────────────────────────────────────
+          if (_selectedShift != null) ...[
+            const SizedBox(height: 20),
+            _sectionTitle('select_start_hour'.tr()),
+            const SizedBox(height: 10),
+            _startHours.isEmpty
+                ? _EmptyBox(label: 'no_hours_available'.tr())
+                : _HourGrid(
+              hours:        _startHours,
+              selectedHour: _selectedStartHour,
+              disabledHours: const [],
+              onSelect: (h) => setState(() {
+                _selectedStartHour = h;
+                _selectedEndHour   = null; // reset end when start changes
               }),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 180),
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 20, vertical: 10),
-                decoration: BoxDecoration(
-                  color: sel ? ZienaColors.primary : ZienaColors.bg1,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                      color: sel ? ZienaColors.primary : ZienaColors.greyBorder),
-                ),
-                child: Text('$d hrs',
-                    style: TextStyle(
-                       fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: sel ? Colors.white : ZienaColors.textPrimary,
-                    )),
-              ),
-            );
-          }).toList(),
-        ),
-        const SizedBox(height: 20),
+            ),
+          ],
 
-        // ── Workers count ─────────────────────────────────────────────────────
-        _sectionTitle('number_of_workers'.tr()),
-        const SizedBox(height: 10),
-        _CounterRow(
-          value: _workerCount,
-          min: 1, max: 5,
-          onDecrement: () => setState(() => _workerCount--),
-          onIncrement: () => setState(() => _workerCount++),
-        ),
-        const SizedBox(height: 32),
+          // ── End hour ────────────────────────────────────────────────────────
+          if (_selectedStartHour != null) ...[
+            const SizedBox(height: 20),
+            _sectionTitle('select_end_hour'.tr()),
+            const SizedBox(height: 10),
+            _endHours.isEmpty
+                ? _EmptyBox(label: 'no_end_hours_available'.tr())
+                : _HourGrid(
+              hours:        _endHours,
+              selectedHour: _selectedEndHour,
+              disabledHours: const [],
+              onSelect: (h) => setState(() => _selectedEndHour = h),
+            ),
+          ],
 
-        // ── Next ─────────────────────────────────────────────────────────────
-        SizedBox(
-          width: double.infinity,
-          child: ZienaButton(
-            text: 'next'.tr(),
-            onTap: _canNext ? _onNext : null,
-            disabledBackgroundColor: ZienaColors.primary.withOpacity(0.4),
+          // ── Duration summary (auto-calculated) ──────────────────────────────
+          if (_calculatedDuration != null) ...[
+            const SizedBox(height: 20),
+            _DurationSummary(
+              startHour: _selectedStartHour!,
+              endHour:   _selectedEndHour!,
+              duration:  _calculatedDuration!,
+            ),
+          ],
+
+          const SizedBox(height: 20),
+
+          // ── Workers ─────────────────────────────────────────────────────────
+          _sectionTitle('number_of_workers'.tr()),
+          const SizedBox(height: 10),
+          _CounterRow(
+            value:       _workerCount,
+            min:         1,
+            max:         5,
+            onDecrement: () => setState(() => _workerCount--),
+            onIncrement: () => setState(() => _workerCount++),
           ),
-        ),
-      ]),
+          const SizedBox(height: 32),
+
+          // ── Next ────────────────────────────────────────────────────────────
+          SizedBox(
+            width: double.infinity,
+            child: ZienaButton(
+              text: 'next'.tr(),
+              onTap: _canNext ? _onNext : null,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
   Widget _sectionTitle(String t) => Text(t,
       style: const TextStyle(
-         fontSize: 14,
-        fontWeight: FontWeight.w700, color: ZienaColors.textPrimary,
+        fontSize: 14,
+        fontWeight: FontWeight.w700,
+        color: ZienaColors.textPrimary,
       ));
 }
 
+// ── Date tile ─────────────────────────────────────────────────────────────────
+class _DateTile extends StatelessWidget {
+  final String display;
+  final VoidCallback onTap;
+  const _DateTile({required this.display, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding:
+        const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          color: ZienaColors.bg1,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: ZienaColors.greyBorder),
+        ),
+        child: Row(children: [
+          const Icon(Icons.calendar_today_rounded,
+              size: 18, color: ZienaColors.primary),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(display,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: ZienaColors.textPrimary,
+                )),
+          ),
+          const Icon(Icons.keyboard_arrow_down,
+              color: ZienaColors.textSecondary),
+        ]),
+      ),
+    );
+  }
+}
+
+// ── Shift tile ────────────────────────────────────────────────────────────────
+class _ShiftTile extends StatelessWidget {
+  final ShiftModel shift;
+  final bool isSelected;
+  final VoidCallback onTap;
+  const _ShiftTile({
+    required this.shift,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        margin: const EdgeInsets.only(bottom: 10),
+        padding:
+        const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          color: isSelected ? ZienaColors.bg2 : ZienaColors.bg1,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: isSelected
+                ? ZienaColors.primary
+                : ZienaColors.greyBorder,
+            width: isSelected ? 1.5 : 0.8,
+          ),
+        ),
+        child: Row(children: [
+          const Icon(Icons.wb_sunny_outlined,
+              color: ZienaColors.primary, size: 18),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(shift.dropdownLabel,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: isSelected
+                      ? ZienaColors.primary
+                      : ZienaColors.textPrimary,
+                )),
+          ),
+          if (isSelected)
+            const Icon(Icons.check_circle,
+                color: ZienaColors.primary, size: 18),
+        ]),
+      ),
+    );
+  }
+}
+
+// ── Hour grid — shared by start & end ────────────────────────────────────────
+class _HourGrid extends StatelessWidget {
+  final List<String> hours;
+  final String? selectedHour;
+  final List<String> disabledHours;
+  final ValueChanged<String> onSelect;
+
+  const _HourGrid({
+    required this.hours,
+    required this.selectedHour,
+    required this.disabledHours,
+    required this.onSelect,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: 10,
+      runSpacing: 10,
+      children: hours.map((h) {
+        final sel      = selectedHour == h;
+        final disabled = disabledHours.contains(h);
+        return GestureDetector(
+          onTap: disabled ? null : () => onSelect(h),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            width: 74,
+            height: 42,
+            decoration: BoxDecoration(
+              color: sel
+                  ? ZienaColors.primary
+                  : disabled
+                  ? ZienaColors.greyLight
+                  : ZienaColors.bg1,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: sel
+                    ? ZienaColors.primary
+                    : ZienaColors.greyBorder,
+                width: sel ? 1.5 : 0.8,
+              ),
+            ),
+            child: Center(
+              child: Text(h,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: sel
+                        ? Colors.white
+                        : disabled
+                        ? ZienaColors.textHint
+                        : ZienaColors.textPrimary,
+                  )),
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+}
+
+// ── Duration summary card ─────────────────────────────────────────────────────
+class _DurationSummary extends StatelessWidget {
+  final String startHour;
+  final String endHour;
+  final int duration;
+
+  const _DurationSummary({
+    required this.startHour,
+    required this.endHour,
+    required this.duration,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: ZienaColors.bg2,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+            color: ZienaColors.primary.withOpacity(0.3), width: 1),
+      ),
+      child: Row(children: [
+        Container(
+          width: 40, height: 40,
+          decoration: BoxDecoration(
+            color: ZienaColors.primary.withOpacity(0.12),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: const Icon(Icons.access_time_rounded,
+              color: ZienaColors.primary, size: 20),
+        ),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('booking_duration'.tr(),
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: ZienaColors.textSecondary,
+                  )),
+              const SizedBox(height: 2),
+              Text(
+                '$startHour  →  $endHour',
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: ZienaColors.textPrimary,
+                ),
+              ),
+            ],
+          ),
+        ),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: ZienaColors.primary,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Text(
+            '$duration ${'hrs'.tr()}',
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+            ),
+          ),
+        ),
+      ]),
+    );
+  }
+}
+
+// ── Empty placeholder ─────────────────────────────────────────────────────────
+class _EmptyBox extends StatelessWidget {
+  final String label;
+  const _EmptyBox({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: ZienaColors.bg1,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: ZienaColors.greyBorder),
+      ),
+      child: Text(label,
+          style: const TextStyle(
+            fontSize: 13,
+            color: ZienaColors.textSecondary,
+          )),
+    );
+  }
+}
+
+// ── Workers counter ───────────────────────────────────────────────────────────
 class _CounterRow extends StatelessWidget {
   final int value, min, max;
   final VoidCallback onDecrement, onIncrement;
@@ -326,7 +516,8 @@ class _CounterRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding:
+      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: ZienaColors.bg1,
         borderRadius: BorderRadius.circular(14),
@@ -335,20 +526,23 @@ class _CounterRow extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text('$value Worker${value > 1 ? 's' : ''}',
-              style: const TextStyle(
-                 fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: ZienaColors.textPrimary,
-              )),
+          Text(
+            '$value ${'worker'.tr()}${value > 1 ? 's' : ''}',
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: ZienaColors.textPrimary,
+            ),
+          ),
           Row(children: [
             _Btn(icon: Icons.remove,
                 onTap: value > min ? onDecrement : null),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding:
+              const EdgeInsets.symmetric(horizontal: 16),
               child: Text('$value',
                   style: const TextStyle(
-                     fontSize: 18,
+                    fontSize: 18,
                     fontWeight: FontWeight.w700,
                     color: ZienaColors.textPrimary,
                   )),
@@ -377,12 +571,16 @@ class _Btn extends StatelessWidget {
           color: onTap != null ? ZienaColors.bg2 : ZienaColors.greyLight,
           shape: BoxShape.circle,
           border: Border.all(
-              color: onTap != null
-                  ? ZienaColors.primary.withOpacity(0.3)
-                  : ZienaColors.greyBorder),
+            color: onTap != null
+                ? ZienaColors.primary.withOpacity(0.3)
+                : ZienaColors.greyBorder,
+          ),
         ),
-        child: Icon(icon, size: 16,
-            color: onTap != null ? ZienaColors.primary : ZienaColors.textHint),
+        child: Icon(icon,
+            size: 16,
+            color: onTap != null
+                ? ZienaColors.primary
+                : ZienaColors.textHint),
       ),
     );
   }

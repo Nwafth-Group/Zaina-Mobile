@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:zeina_app/widgets/signin_required_widget.dart';
 import '../../../../core/theme/theme.dart';
 import '../../data/model/booking_model.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -66,7 +67,7 @@ class _BookingsScreenState extends State<BookingsScreen> {
             _buildFilterTabs(),
             const SizedBox(height: 16),
             Expanded(
-              child: widget.isLoggedIn ? _buildList() : _buildSignInGate(),
+              child: widget.isLoggedIn ? _buildList() : SignInRequiredWidget(tabKey: 'bookings'),
             ),
           ],
         ),
@@ -222,39 +223,4 @@ class _BookingsScreenState extends State<BookingsScreen> {
     ),
   );
 
-  Widget _buildSignInGate() => Center(
-    child: Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 110, height: 110,
-            decoration: const BoxDecoration(
-                color: ZienaColors.bg2, shape: BoxShape.circle),
-            child: const Icon(Icons.calendar_month_rounded,
-                size: 50, color: ZienaColors.primary),
-          ),
-          const SizedBox(height: 28),
-          Text('signin_required_title'.tr(),
-              style: const TextStyle( fontSize: 20,
-                fontWeight: FontWeight.w700,
-                color: ZienaColors.textPrimary,
-              ),
-              textAlign: TextAlign.center),
-          const SizedBox(height: 10),
-          Text('signin_required_desc_bookings'.tr(),
-              style: const TextStyle( fontSize: 14,
-                color: ZienaColors.textSecondary, height: 1.6,
-              ),
-              textAlign: TextAlign.center),
-          const SizedBox(height: 36),
-          ZienaButton(
-            text: 'log_in'.tr(),
-            onTap: () {},
-          ),
-        ],
-      ),
-    ),
-  );
 }
