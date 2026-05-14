@@ -113,7 +113,7 @@ class _AddCardScreenState extends State<AddCardScreen> {
                   keyboardType: TextInputType.number,
                   suffix: ValueListenableBuilder(
                     valueListenable: _numberCtrl,
-                    builder: (_, v, __) => Text(
+                    builder: (_, v, _) => Text(
                       _detectBrand(v.text),
                       style: const TextStyle(
                         fontSize: 11,

@@ -44,7 +44,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
   }
 
   Future<void> getLoggedIn()async{
-    token = await SharedPrefHelper.getToken();
+    token = SharedPrefHelper.getToken();
   }
 
   @override
@@ -161,9 +161,9 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                       ? CachedNetworkImage(
                     imageUrl: service.image!,
                     fit: BoxFit.cover,
-                    placeholder: (_, __) =>
+                    placeholder: (_, _) =>
                         Container(color: ZienaColors.bg3),
-                    errorWidget: (_, __, ___) => Container(
+                    errorWidget: (_, _, _) => Container(
                       color: ZienaColors.bg3,
                       child: const Icon(
                           Icons.cleaning_services_rounded,

@@ -36,7 +36,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
     _controller.forward().then((_) {
       Future.delayed(const Duration(milliseconds: 800), ()async {
-        String? token = await SharedPrefHelper.getToken();
+        String? token = SharedPrefHelper.getToken();
         if (mounted) {
           if(token == null) {AppNavigator.pushAndRemoveUntil(LanguageSelectionScreen());}
           else {AppNavigator.pushAndRemoveUntil(MainScreen());}
@@ -61,7 +61,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
         child: Center(
           child: AnimatedBuilder(
             animation: _controller,
-            builder: (_, __) => FadeTransition(
+            builder: (_, _) => FadeTransition(
               opacity: _fadeAnimation,
               child: ScaleTransition(
                 scale: _scaleAnimation,

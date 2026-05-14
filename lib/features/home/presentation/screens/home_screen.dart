@@ -41,7 +41,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void callInit()async{
-    if(await SharedPrefHelper.isLoggedIn()) {
+    if(SharedPrefHelper.isLoggedIn()) {
       await context.read<AddressCubit>().fetchAddresses(); // ← fetch addresses
     }
   }
@@ -336,7 +336,7 @@ class _HomeScreenState extends State<HomeScreen> {
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 20),
         itemCount: categories.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 12),
+        separatorBuilder: (_, _) => const SizedBox(width: 12),
         itemBuilder: (_, i) => InkWell(
             onTap: () {
               AppNavigator.push(SubcategoriesScreen(category: categories[i]));
@@ -354,7 +354,7 @@ class _HomeScreenState extends State<HomeScreen> {
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 20),
         itemCount: services.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 14),
+        separatorBuilder: (_, _) => const SizedBox(width: 14),
         itemBuilder: (_, i) => _ServiceCard(service: services[i]),
       ),
     );
@@ -478,11 +478,11 @@ class _ServiceCard extends StatelessWidget {
             width: double.infinity,
             height: 100,
             fit: BoxFit.cover,
-            placeholder: (_, __) => Container(
+            placeholder: (_, _) => Container(
                 width: double.infinity,
                 height: 100,
                 color: ZienaColors.bg3),
-            errorWidget: (_, __, ___) => Container(color: ZienaColors.bg3, child: const Center(child: Icon(Icons.image))),
+            errorWidget: (_, _, _) => Container(color: ZienaColors.bg3, child: const Center(child: Icon(Icons.image))),
                         )
               : Container(
               width: double.infinity,

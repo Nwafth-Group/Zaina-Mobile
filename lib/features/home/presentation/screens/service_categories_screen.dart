@@ -198,8 +198,8 @@ class _CategoryCard extends StatelessWidget {
                   ? CachedNetworkImage(
                 imageUrl: category.image!,
                 fit: BoxFit.cover,
-                placeholder: (_, __) => Container(color: ZienaColors.bg3),
-                errorWidget: (_, __, ___) => _imageFallback(),
+                placeholder: (_, _) => Container(color: ZienaColors.bg3),
+                errorWidget: (_, _, _) => _imageFallback(),
               )
                   : _imageFallback(),
 

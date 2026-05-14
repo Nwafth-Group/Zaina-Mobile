@@ -24,7 +24,7 @@ class CustomTextField extends StatelessWidget {
   final VoidCallback? onTap;
 
   const CustomTextField({
-    Key? key,
+    super.key,
     this.controller,
     this.labelText,
     this.hintText,
@@ -45,7 +45,7 @@ class CustomTextField extends StatelessWidget {
     this.textDirection,
     this.onChanged,
     this.onTap,
-  }) : super(key: key);
+  });
 
   OutlineInputBorder _border(Color color, {double width = 1}) {
     return OutlineInputBorder(

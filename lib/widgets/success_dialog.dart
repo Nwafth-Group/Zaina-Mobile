@@ -10,7 +10,7 @@ class SuccessDialog extends StatelessWidget {
   final String title;
   final String message;
 
-  const SuccessDialog({
+  const SuccessDialog({super.key, 
     required this.icon,
     required this.title,
     required this.message,

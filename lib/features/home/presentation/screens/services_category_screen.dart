@@ -196,9 +196,9 @@ class _ServiceListCard extends StatelessWidget {
                 width: 110,
                 height: 140,
                 fit: BoxFit.cover,
-                placeholder: (_, __) =>
+                placeholder: (_, _) =>
                     Container(width: 110, height: 140, color: ZienaColors.bg3),
-                errorWidget: (_, __, ___) => _imgFallback(),
+                errorWidget: (_, _, _) => _imgFallback(),
               )
                   : _imgFallback(),
             ),

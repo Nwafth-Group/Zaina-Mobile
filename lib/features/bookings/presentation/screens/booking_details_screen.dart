@@ -124,9 +124,9 @@ class BookingDetailScreen extends StatelessWidget {
                   background: b.image != null
                       ? CachedNetworkImage(
                       imageUrl: b.image!, fit: BoxFit.cover,
-                      placeholder: (_, __) =>
+                      placeholder: (_, _) =>
                           Container(color: ZienaColors.bg3),
-                      errorWidget: (_, __, ___) =>
+                      errorWidget: (_, _, _) =>
                           Container(color: ZienaColors.bg3,
                               child: const Icon(
                                   Icons.cleaning_services_rounded,

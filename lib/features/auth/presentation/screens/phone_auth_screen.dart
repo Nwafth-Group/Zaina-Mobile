@@ -208,7 +208,7 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
                     text: 'continue_google'.tr(),
                     isOutlined: true,
                     onTap: () {},
-                    prefixIcon: Container(
+                    prefixIcon: SizedBox(
                       width: 22,
                       height: 22,
                       child: const _GoogleIcon(),

@@ -160,7 +160,7 @@ class TopUpCubit extends Cubit<TopUpState> {
       await _api.post('customer/wallet/top-up', data: {
         'amount':         amount,
         'payment_method': paymentMethod,
-        if (cardId != null) 'card_id': cardId,
+        'card_id': ?cardId,
       });
       emit(TopUpSuccess());
     } on DioException catch (e) {

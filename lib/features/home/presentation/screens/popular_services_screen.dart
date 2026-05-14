@@ -190,11 +190,11 @@ class _PopularServiceCard extends StatelessWidget {
                 width: 110,
                 height: 145,
                 fit: BoxFit.cover,
-                placeholder: (_, __) => Container(
+                placeholder: (_, _) => Container(
                     width: 110,
                     height: 145,
                     color: ZienaColors.bg3),
-                errorWidget: (_, __, ___) => _imgFallback(),
+                errorWidget: (_, _, _) => _imgFallback(),
               )
                   : _imgFallback(),
             ),

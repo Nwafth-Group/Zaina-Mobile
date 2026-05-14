@@ -4,7 +4,6 @@ import 'features/auth/presentation/screens/splash_screen.dart';
 import 'features/auth/presentation/screens/language_selection_screen.dart';
 import 'features/auth/presentation/screens/onboarding_screen.dart';
 import 'features/auth/presentation/screens/phone_auth_screen.dart';
-import 'features/auth/presentation/screens/otp_screen.dart';
 import 'features/auth/presentation/screens/success_screen.dart';
 import 'features/auth/presentation/screens/terms_screen.dart';
 import 'features/auth/presentation/cubit/auth_cubit.dart';

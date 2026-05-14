@@ -299,7 +299,7 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
                     Switch(
                       value: _isDefault,
                       onChanged: (v) => setState(() => _isDefault = v),
-                      activeColor: ZienaColors.primary,
+                      activeThumbColor: ZienaColors.primary,
                     ),
                   ],
                 ),

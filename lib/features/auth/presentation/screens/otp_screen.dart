@@ -104,7 +104,7 @@ class _OtpScreenState extends State<OtpScreen> {
                 const SizedBox(height: 10),
                 RichText(
                   text: TextSpan(
-                    text: 'verification_code_hint'.tr() + ' ',
+                    text: '${'verification_code_hint'.tr()} ',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(height: 1.5),
                     children: [
                       TextSpan(

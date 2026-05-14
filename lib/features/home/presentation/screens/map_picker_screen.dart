@@ -14,8 +14,8 @@ class MapPickerScreen extends StatefulWidget {
 class _MapPickerScreenState extends State<MapPickerScreen> {
   final _searchCtrl = TextEditingController();
   // Mock selected location — replace with actual map pin
-  double _lat = 30.0444;
-  double _lng = 31.2357;
+  final double _lat = 30.0444;
+  final double _lng = 31.2357;
 
   @override
   void dispose() {

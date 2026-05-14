@@ -47,7 +47,7 @@ class ServiceResultCard extends StatelessWidget {
                 width: 90,
                 height: 90,
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => _imagePlaceholder(),
+                errorBuilder: (_, _, _) => _imagePlaceholder(),
               )
                   : _imagePlaceholder(),
             ),

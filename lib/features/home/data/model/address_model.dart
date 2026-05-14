@@ -118,10 +118,12 @@ class AddressModel {
   String get oneLiner {
     final parts = <String>[];
     if (street.isNotEmpty) parts.add(street);
-    if (buildingNo != null && buildingNo!.isNotEmpty)
+    if (buildingNo != null && buildingNo!.isNotEmpty) {
       parts.add('Building $buildingNo');
-    if (apartmentNo != null && apartmentNo!.isNotEmpty)
+    }
+    if (apartmentNo != null && apartmentNo!.isNotEmpty) {
       parts.add('Ap $apartmentNo');
+    }
     return parts.join(' / ');
   }
 

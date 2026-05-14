@@ -54,7 +54,7 @@ class AddressCubit extends Cubit<AddressState> {
       emit(AddressLoaded(List.from(_list)));
     } on DioException catch (e) {
       emit(AddressError(handleDioError(e).message));
-    } catch (ee) {      print("adddd ${ee}");
+    } catch (ee) {      print("adddd $ee");
 
     emit(AddressError('Failed to load addresses'));
     }

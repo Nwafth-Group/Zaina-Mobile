@@ -102,7 +102,7 @@ class SearchCubit extends Cubit<SearchState> {
         lastPage: _lastPage,
         total: res.total,
       ));
-    } on Failure catch (e) {
+    } on Failure {
       // Restore previous results on error
       emit(SearchResults(
         results: List.from(_currentResults),

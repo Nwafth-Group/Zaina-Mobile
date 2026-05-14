@@ -31,7 +31,7 @@ class TermsScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'clause'.tr() + ' ${i + 1}',
+                      '${'clause'.tr()} ${i + 1}',
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                             color: ZienaColors.primary,
                             fontWeight: FontWeight.w700,

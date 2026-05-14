@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:zeina_app/core/utils/app_navigator.dart';
-import 'package:zeina_app/features/home/presentation/screens/home_screen.dart';
 import '../../../../core/theme/theme.dart';
-import '../../../../core/utils/constants.dart';
 import '../../../../widgets/ziena_button.dart';
 import '../../../main_screen.dart';
 
