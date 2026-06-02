@@ -5,7 +5,8 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:zeina_app/core/theme/theme.dart';
+
+import '../theme/theme.dart';
 import 'app_navigator.dart';
 
 class Helpers {

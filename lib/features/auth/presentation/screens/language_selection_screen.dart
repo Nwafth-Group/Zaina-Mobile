@@ -29,14 +29,13 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: ZienaColors.white,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Column(
             children: [
               SizedBox(height: MediaQuery.of(context).size.height * 0.1),
-              const ZienaLogo(size: 120),
+              const SizedBox(height: 80),
               const Spacer(),
               Text(
                 'select_language'.tr(),
@@ -60,7 +59,7 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
               ),
               const SizedBox(height: 12),
               _LanguageTile(
-                flag: '🇸🇦',
+                flag: '🇪🇬',
                 language: 'arabic'.tr(),
                 isSelected: _selectedLang == 'ar',
                 onTap: () => setState(() => _selectedLang = 'ar'),

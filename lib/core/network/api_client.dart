@@ -74,7 +74,7 @@ class ApiClient {
         developer.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
         final code = error.response?.statusCode;
-        if (code == 401) {
+        if (code == 401 || code == null) {
           developer.log('🚪 Logging out due to 401 Unauthorized', name: 'API');
           await SharedPrefHelper.clearAll();
           AppNavigator.pushAndRemoveUntil(const PhoneAuthScreen());

@@ -3,26 +3,62 @@ class ShiftModel {
   final String dropdownLabel;
   final String startTime;
   final String endTime;
-  final List<String> availableHours;
+  final List<AvailableBlockModel> availableBlocks;
 
   const ShiftModel({
     required this.id,
     required this.dropdownLabel,
     required this.startTime,
     required this.endTime,
-    required this.availableHours,
+    required this.availableBlocks,
   });
 
   factory ShiftModel.fromJson(Map<String, dynamic> json) {
     return ShiftModel(
-      id: json['id'],
+      id: json['id'] ?? 0,
       dropdownLabel: json['dropdown_label'] ?? '',
       startTime: json['start_time'] ?? '',
       endTime: json['end_time'] ?? '',
-      availableHours: (json['available_hours'] as List<dynamic>? ?? [])
-          .map((e) => e.toString())
+
+      availableBlocks:
+      (json['available_blocks'] as List<dynamic>? ?? [])
+          .map(
+            (e) => AvailableBlockModel.fromJson(
+          e as Map<String, dynamic>,
+        ),
+      )
           .toList(),
     );
+  }
+}
+
+class AvailableBlockModel {
+  final String startTime;
+  final String endTime;
+  final String label;
+
+  const AvailableBlockModel({
+    required this.startTime,
+    required this.endTime,
+    required this.label,
+  });
+
+  factory AvailableBlockModel.fromJson(
+      Map<String, dynamic> json,
+      ) {
+    return AvailableBlockModel(
+      startTime: json['start_time'] ?? '',
+      endTime: json['end_time'] ?? '',
+      label: json['label'] ?? '',
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'start_time': startTime,
+      'end_time': endTime,
+      'label': label,
+    };
   }
 }
 
@@ -95,7 +131,7 @@ class BookingFlowData {
   String? selectedEndTime;     // HH:mm
   int? selectedDurationHours;
   int? selectedWorkerCount;
-  int? selectedWorkerId;
+  List<int>? selectedWorkerIds;
   int? selectedAddressId;
   String? selectedAddressLabel;
   String? paymentMethod;       // cash | wallet | card
@@ -116,7 +152,7 @@ class BookingFlowData {
     this.selectedEndTime,
     this.selectedDurationHours,
     this.selectedWorkerCount = 1,
-    this.selectedWorkerId,
+    this.selectedWorkerIds,
     this.selectedAddressId,
     this.selectedAddressLabel,
     this.paymentMethod = 'cash',
@@ -136,7 +172,7 @@ class BookingFlowData {
     String? selectedEndTime,
     int? selectedDurationHours,
     int? selectedWorkerCount,
-    int? selectedWorkerId,
+    List<int>? selectedWorkerIds,
     int? selectedAddressId,
     String? selectedAddressLabel,
     String? paymentMethod,
@@ -158,7 +194,7 @@ class BookingFlowData {
       selectedDurationHours:
       selectedDurationHours ?? this.selectedDurationHours,
       selectedWorkerCount: selectedWorkerCount ?? this.selectedWorkerCount,
-      selectedWorkerId: selectedWorkerId ?? this.selectedWorkerId,
+      selectedWorkerIds: selectedWorkerIds ?? this.selectedWorkerIds,
       selectedAddressId: selectedAddressId ?? this.selectedAddressId,
       selectedAddressLabel:
       selectedAddressLabel ?? this.selectedAddressLabel,

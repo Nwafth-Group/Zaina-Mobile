@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
-import 'package:zeina_app/core/utils/app_navigator.dart';
+import 'package:zeina/core/utils/app_navigator.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../widgets/ziena_button.dart';
 import '../../../../widgets/ziena_logo.dart';
@@ -72,7 +72,6 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
         }
       },
       child: Scaffold(
-        backgroundColor: ZienaColors.white,
         body: SafeArea(
           child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 24),

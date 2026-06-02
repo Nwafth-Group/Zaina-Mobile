@@ -3,11 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:zeina/core/utils/app_navigator.dart';
+import 'package:zeina/features/auth/presentation/screens/verification_welcome_screen.dart';
 import '../../../../core/theme/theme.dart';
-import '../../../../core/utils/constants.dart';
+import '../../../../injection_container.dart';
 import '../../../../widgets/ziena_button.dart';
+import '../../../main_screen.dart';
 import '../cubit/auth_cubit.dart';
-import 'success_screen.dart';
+import '../cubit/verification_cubit.dart';
 
 class OtpScreen extends StatefulWidget {
   static const String routeName = '/otp';
@@ -67,23 +70,35 @@ class _OtpScreenState extends State<OtpScreen> {
     return BlocListener<AuthCubit, AuthState>(
       listener: (context, state) {
         print(state);
+        // In otp_screen.dart BlocListener:
         if (state is OtpVerifySuccess) {
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (_) => const SuccessScreen()),
-            (route) => false,
-          );
-        } else if (state is AuthError) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.message),
-              backgroundColor: ZienaColors.error,
-            ),
-          );
+
+          if (state.needsVerification) {
+            // Route to verification welcome
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(
+                builder: (_) => BlocProvider(
+                  create: (_) => sl<VerificationCubit>(),
+                  child: VerificationWelcomeScreen(
+                    onVerified: () {
+                      // After verification submitted → go to home
+                      AppNavigator.pushAndRemoveUntil(MainScreen());
+
+                    },
+                  ),
+                ),
+              ),
+                  (route) => false,
+            );
+          } else {
+            AppNavigator.pushAndRemoveUntil(MainScreen());
+          }
         }
+
       },
       child: Scaffold(
-        backgroundColor: ZienaColors.white,
+        
         appBar: AppBar(
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios_new, size: 20),

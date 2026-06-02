@@ -1,6 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:zeina_app/widgets/signin_required_widget.dart';
+import 'package:zeina/widgets/signin_required_widget.dart';
 import '../../../../core/theme/theme.dart';
 import '../../data/model/booking_model.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -49,9 +49,8 @@ class _BookingsScreenState extends State<BookingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: ZienaColors.bg1,
       body: SafeArea(
-        child: Column(
+        child: widget.isLoggedIn?Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             const SizedBox(height: 20),
@@ -67,10 +66,10 @@ class _BookingsScreenState extends State<BookingsScreen> {
             _buildFilterTabs(),
             const SizedBox(height: 16),
             Expanded(
-              child: widget.isLoggedIn ? _buildList() : SignInRequiredWidget(tabKey: 'bookings'),
+              child: _buildList(),
             ),
           ],
-        ),
+        ):SignInRequiredWidget(tabKey: 'bookings'),
       ),
     );
   }

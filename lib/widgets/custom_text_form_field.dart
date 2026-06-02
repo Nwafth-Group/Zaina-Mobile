@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:zeina_app/core/theme/theme.dart';
+import '../core/theme/theme.dart';
 
 class CustomTextField extends StatelessWidget {
   final TextEditingController? controller;

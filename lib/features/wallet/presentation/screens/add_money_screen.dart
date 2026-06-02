@@ -53,9 +53,9 @@ class _AddMoneyScreenState extends State<AddMoneyScreen> {
         }
       },
       child: Scaffold(
-        backgroundColor: ZienaColors.white,
+        
         appBar: AppBar(
-          backgroundColor: ZienaColors.white, elevation: 0,
+           elevation: 0,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios_new,
                 size: 18, color: ZienaColors.textPrimary),
@@ -252,7 +252,7 @@ class _AddMoneyScreenState extends State<AddMoneyScreen> {
       context: context,
       barrierDismissible: false,
       builder: (_) => Dialog(
-        backgroundColor: ZienaColors.white,
+        
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(24)),
         child: Padding(

@@ -72,9 +72,9 @@ class _AddCardScreenState extends State<AddCardScreen> {
         }
       },
       child: Scaffold(
-        backgroundColor: ZienaColors.white,
+        
         appBar: AppBar(
-          backgroundColor: ZienaColors.white, elevation: 0,
+           elevation: 0,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios_new,
                 size: 18, color: ZienaColors.textPrimary),

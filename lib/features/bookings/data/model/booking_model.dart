@@ -137,7 +137,7 @@ class BookingModel {
       bookingRef: json['booking_ref'] ?? '',
       status: json['status'] ?? 'Upcoming',
       serviceName: json['service_name'] ?? '',
-      image: json['image'],
+      image: json['image'].toString().startsWith('http://')?json['image']:json['image'].toString().replaceFirst('http:', 'http://'),
       price: (json['price'] as num?)?.toDouble() ?? 0,
       currency: json['currency'] ?? 'EGP',
       duration: json['duration'] ?? '',

@@ -2,9 +2,9 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:zeina_app/features/bookings/presentation/screens/report_sheet.dart';
-import 'package:zeina_app/features/bookings/presentation/screens/reschedule_sheet.dart';
-import 'package:zeina_app/features/bookings/presentation/screens/review_sheet.dart';
+import 'package:zeina/features/bookings/presentation/screens/report_sheet.dart';
+import 'package:zeina/features/bookings/presentation/screens/reschedule_sheet.dart';
+import 'package:zeina/features/bookings/presentation/screens/review_sheet.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../widgets/ziena_button.dart';
 import '../../data/model/booking_model.dart';
@@ -70,9 +70,9 @@ class BookingDetailScreen extends StatelessWidget {
 
   Scaffold _shell({required Widget child}) {
     return Scaffold(
-      backgroundColor: ZienaColors.white,
+      
       appBar: AppBar(
-        backgroundColor: ZienaColors.white,
+        
         elevation: 0,
         title: Text('booking_details'.tr(),
             style: const TextStyle(
@@ -92,7 +92,7 @@ class BookingDetailScreen extends StatelessWidget {
     final isCompleted = status == BookingStatusEnum.completed;
 
     return Scaffold(
-      backgroundColor: ZienaColors.white,
+      
       body: Stack(
         children: [
           CustomScrollView(
@@ -495,7 +495,7 @@ class BookingDetailScreen extends StatelessWidget {
       context: context,
       barrierColor: Colors.black.withOpacity(0.4),
       builder: (_) => Dialog(
-        backgroundColor: ZienaColors.white,
+        
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(24)),
         child: Padding(

@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:zeina/widgets/signin_required_widget.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../core/utils/shared_pref_helper.dart';
 import '../../../../injection_container.dart';
@@ -32,7 +33,7 @@ class _WalletScreenState extends State<WalletScreen> {
     return Scaffold(
       backgroundColor: ZienaColors.bg1,
       body: SafeArea(
-        child: widget.isLoggedIn ? _buildContent() : _buildSignInGate(),
+        child: widget.isLoggedIn ? _buildContent() : SignInRequiredWidget(tabKey: 'wallet'),
       ),
     );
   }
@@ -207,50 +208,6 @@ class _WalletScreenState extends State<WalletScreen> {
                   color: Colors.white)),
         ),
       ],
-    ));
-  }
-
-  Widget _buildSignInGate() {
-    return Center(child: Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32),
-      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-        Container(
-          width: 110, height: 110,
-          decoration: const BoxDecoration(
-              color: ZienaColors.bg2, shape: BoxShape.circle),
-          child: const Icon(Icons.wallet_rounded,
-              size: 50, color: ZienaColors.primary),
-        ),
-        const SizedBox(height: 28),
-        Text('signin_required_title'.tr(),
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
-              color: ZienaColors.textPrimary,
-            ), textAlign: TextAlign.center),
-        const SizedBox(height: 10),
-        Text('signin_required_desc_wallet'.tr(),
-            style: const TextStyle(
-              fontSize: 14,
-              color: ZienaColors.textSecondary, height: 1.6,
-            ), textAlign: TextAlign.center),
-        const SizedBox(height: 36),
-        ElevatedButton(
-          onPressed: () {},
-          style: ElevatedButton.styleFrom(
-            backgroundColor: ZienaColors.primary,
-            minimumSize: const Size(double.infinity, 52),
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14)),
-            elevation: 0,
-          ),
-          child: Text('log_in'.tr(),
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600, color: Colors.white,
-              )),
-        ),
-      ]),
     ));
   }
 }

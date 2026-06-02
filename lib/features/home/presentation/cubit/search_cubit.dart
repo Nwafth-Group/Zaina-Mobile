@@ -15,19 +15,6 @@ class SearchCubit extends Cubit<SearchState> {
   int _lastPage = 1;
   bool _isLoadingMore = false;
 
-  // ── Debounced search triggered on every keystroke ──────────────────────────
-  void onQueryChanged(String query) {
-    _debounce?.cancel();
-    if (query.trim().isEmpty) {
-      _currentQuery = '';
-      _fetchSuggestions();
-      return;
-    }
-    _debounce = Timer(const Duration(milliseconds: 450), () {
-      search(query);
-    });
-  }
-
   // ── Fetch suggestions (empty query) ───────────────────────────────────────
   Future<void> _fetchSuggestions() async {
     emit(SearchLoading());
@@ -43,6 +30,19 @@ class SearchCubit extends Cubit<SearchState> {
     } catch (_) {
       emit(SearchInitial());
     }
+  }
+
+  // ── Debounced search triggered on every keystroke ──────────────────────────
+  void onQueryChanged(String query) {
+    _debounce?.cancel();
+    if (query.trim().isEmpty) {
+      _currentQuery = '';
+      _fetchSuggestions();
+      return;
+    }
+    _debounce = Timer(const Duration(milliseconds: 450), () {
+      search(query);
+    });
   }
 
   // ── Full search (first page) ───────────────────────────────────────────────

@@ -1,4 +1,4 @@
-import 'package:zeina_app/features/home/data/model/service_model.dart';
+import 'package:zeina/features/home/data/model/service_model.dart';
 
 class BannerModel {
   final int id;
@@ -85,10 +85,66 @@ class PaginatedCategories {
   }
 }
 
+class UpcomingAppointment {
+  final int id;
+  final String bookingRef;
+  final String serviceNameAr;
+  final String serviceNameEn;
+  final String? image;
+  final String price;
+  final String currency;
+  final String status;
+  final String durationText;
+  final String dateDay;
+  final String dateMonth;
+  final String time;
+
+  const UpcomingAppointment({
+    required this.id,
+    required this.bookingRef,
+    required this.serviceNameAr,
+    required this.serviceNameEn,
+    this.image,
+    required this.price,
+    required this.currency,
+    required this.status,
+    required this.durationText,
+    required this.dateDay,
+    required this.dateMonth,
+    required this.time,
+  });
+
+  factory UpcomingAppointment.fromJson(Map<String, dynamic> json) {
+    return UpcomingAppointment(
+      id: json['id'] ?? 0,
+      bookingRef: json['booking_ref'] ?? '',
+      serviceNameAr: json['service_name_ar'] ?? '',
+      serviceNameEn: json['service_name_en'] ?? '',
+      image: json['image'],
+      price: json['price'] ?? '0',
+      currency: json['currency'] ?? 'EGP',
+      status: json['status'] ?? '',
+      durationText: json['duration_text'] ?? '',
+      dateDay: json['date_day'] ?? '',
+      dateMonth: json['date_month'] ?? '',
+      time: json['time'] ?? '',
+    );
+  }
+
+  String localizedName(String langCode) =>
+      langCode == 'ar' ? serviceNameAr : serviceNameEn;
+}
+
 class HomeData {
   final List<BannerModel> banners;
   final List<CategoryModel> categories;
   final List<ServiceModel> popularServices;
+  final UpcomingAppointment? upcomingAppointment;
 
-  HomeData({required this.banners, required this.categories, required this.popularServices});
+  HomeData({
+    required this.banners,
+    required this.categories,
+    required this.popularServices,
+    this.upcomingAppointment,
+  });
 }

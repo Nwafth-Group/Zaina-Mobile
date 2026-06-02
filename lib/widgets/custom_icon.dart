@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hugeicons/hugeicons.dart';
-import 'package:zeina_app/core/theme/theme.dart';
+
+import '../core/theme/theme.dart';
 
 class AppSvgIcon extends StatelessWidget {
   const AppSvgIcon(

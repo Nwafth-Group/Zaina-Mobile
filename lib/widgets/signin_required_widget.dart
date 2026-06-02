@@ -1,12 +1,13 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:zeina_app/core/utils/app_navigator.dart';
-import 'package:zeina_app/features/auth/presentation/cubit/auth_cubit.dart';
+import 'package:zeina/core/utils/shared_pref_helper.dart';
 import '../../../../features/auth/presentation/screens/phone_auth_screen.dart';
 import '../../../../widgets/ziena_button.dart';
 
 import '../core/theme/theme.dart';
+import '../core/utils/app_navigator.dart';
+import '../features/auth/presentation/cubit/auth_cubit.dart';
 
 class SignInRequiredWidget extends StatelessWidget {
   final String tabKey; // e.g. 'bookings', 'wallet', 'more'
@@ -55,7 +56,9 @@ class SignInRequiredWidget extends StatelessWidget {
             ZienaButton(
               text: 'log_in'.tr(),
               onTap: () {
-                context.read<AuthCubit>().logout();
+                if(SharedPrefHelper.getToken() != null) {
+                  context.read<AuthCubit>().logout();
+                }
                 AppNavigator.pushAndRemoveUntil(PhoneAuthScreen());
               },
             ),

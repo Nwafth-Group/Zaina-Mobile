@@ -13,15 +13,23 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
   final ApiClient _api;
   HomeRemoteDataSourceImpl(this._api);
 
-  @override
+@override
   Future<HomeData> getHomeData() async {
     try {
       final response = await _api.get('customer/home');
       final data = response['data'];
+      
+      // Parse upcoming appointment if present
+      UpcomingAppointment? upcomingAppointment;
+      if (data['upcoming_appointment'] != null && data['upcoming_appointment'].isNotEmpty) {
+        upcomingAppointment = UpcomingAppointment.fromJson(data['upcoming_appointment']);
+      }
+      
       return HomeData(
         banners: List.of(data['banners'] ?? []).map((e) => BannerModel.fromJson(e)).toList(),
         categories: List.of(data['categories'] ?? []).map((e) => CategoryModel.fromJson(e)).toList(),
         popularServices: List.of(data['popular_services']??[]).map((e) => ServiceModel.fromJson(e)).toList(),
+        upcomingAppointment: upcomingAppointment,
       );
     } on DioException catch (e) {
       throw handleDioError(e);

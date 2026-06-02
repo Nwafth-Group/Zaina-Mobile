@@ -45,8 +45,8 @@ class ServicePrice {
 
   factory ServicePrice.fromJson(Map<String, dynamic> json) {
     return ServicePrice(
-      basePrice: double.parse(json['base_price']??''),
-      pricePerHour: double.parse(json['price_per_hour']??''),
+      basePrice: double.parse(json['price_per_service_period']??'0'),
+      pricePerHour: double.parse(json['price_per_service_period']??'0'),
       currency: json['currency'] ?? 'EGP',
     );
   }
@@ -97,7 +97,7 @@ class ServiceModel {
           .toList(),
       status: json['status'] ?? 'active',
       avgRating: double.tryParse(json['avg_rating']?.toString() ?? '0') ?? 0,
-      image: json['image'],
+      image: json['image'].toString().startsWith('http://')?json['image']:json['image'].toString().replaceFirst('http:', 'http://'),
       price: ServicePrice.fromJson(json['price_details']),
     );
   }

@@ -35,9 +35,9 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: ZienaColors.white,
+      
       appBar: AppBar(
-        backgroundColor: ZienaColors.white,
+        
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new,

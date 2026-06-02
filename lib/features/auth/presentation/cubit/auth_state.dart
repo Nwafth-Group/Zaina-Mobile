@@ -11,9 +11,17 @@ class OtpSentSuccess extends AuthState {
   OtpSentSuccess(this.mobileNumber);
 }
 
+// In auth_state.dart — update OtpVerifySuccess:
 class OtpVerifySuccess extends AuthState {
   final Map<String, dynamic> data;
-  OtpVerifySuccess(this.data);
+  final bool isNewUser;
+  final bool needsVerification;
+  final String? token;
+
+  OtpVerifySuccess(this.data)
+      : isNewUser = data['is_new_user'] == true,
+        needsVerification = data['user']?['verification_status'] == 'unverified',
+        token = data['token'];
 }
 
 class AuthLogoutSuccess extends AuthState {

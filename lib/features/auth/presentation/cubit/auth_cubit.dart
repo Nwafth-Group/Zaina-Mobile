@@ -26,6 +26,7 @@ class AuthCubit extends Cubit<AuthState> {
     emit(AuthLoading());
     try {
       final result = await _authRepository.verifyOtp(mobileNumber, otp);
+      print("rrrrrrr $result");
       emit(OtpVerifySuccess(result));
     } on Failure catch (e) {
       emit(AuthError(e.message));

@@ -85,7 +85,7 @@ class _ReviewSheetState extends State<ReviewSheet> {
       },
       child: Container(
         decoration: const BoxDecoration(
-          color: ZienaColors.white,
+          color: ZienaColors.bg1,
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
         padding: EdgeInsets.fromLTRB(

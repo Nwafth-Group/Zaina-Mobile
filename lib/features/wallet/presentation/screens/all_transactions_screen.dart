@@ -24,7 +24,7 @@ class _AllTransactionsScreenState extends State<AllTransactionsScreen> {
     return Scaffold(
       backgroundColor: ZienaColors.bg1,
       appBar: AppBar(
-        backgroundColor: ZienaColors.white,
+        
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new,

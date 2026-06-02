@@ -1,9 +1,9 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:zeina_app/core/utils/shared_pref_helper.dart';
-import 'package:zeina_app/features/bookings/presentation/screens/bookings_screen.dart';
-import 'package:zeina_app/features/wallet/presentation/screens/wallet_screen.dart';
-import 'package:zeina_app/widgets/signin_required_widget.dart';
+import 'package:zeina/core/utils/shared_pref_helper.dart';
+import 'package:zeina/features/bookings/presentation/screens/bookings_screen.dart';
+import 'package:zeina/features/wallet/presentation/screens/wallet_screen.dart';
+import 'package:zeina/widgets/signin_required_widget.dart';
 
 import '../core/theme/theme.dart';
 import 'home/presentation/screens/home_screen.dart';

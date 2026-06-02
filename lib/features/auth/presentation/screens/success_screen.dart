@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:zeina_app/core/utils/app_navigator.dart';
+import 'package:zeina/core/utils/app_navigator.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../widgets/ziena_button.dart';
 import '../../../main_screen.dart';
@@ -45,7 +45,7 @@ class _SuccessScreenState extends State<SuccessScreen> with SingleTickerProvider
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: ZienaColors.white,
+      
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24),

@@ -1,4 +1,4 @@
-import 'package:zeina_app/features/home/data/model/service_model.dart';
+import 'package:zeina/features/home/data/model/service_model.dart';
 
 
 class ServiceDuration {
@@ -204,7 +204,7 @@ class ServiceDetailModel {
       coverages: (data['coverages'] as List<dynamic>? ?? [])
           .map((c) => ServiceCoverage.fromJson(c))
           .toList(),
-      image: data['image'],
+      image: data['image'].toString().startsWith('http://')?data['image']:data['image'].toString().replaceFirst('http:', 'http://'),
       price: ServicePrice.fromJson(data['price_details']),
       schedules: (data['schedules'] as List<dynamic>? ?? [])
           .map((s) => ServiceSchedule.fromJson(s))

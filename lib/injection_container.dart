@@ -3,6 +3,7 @@ import 'core/network/api_client.dart';
 import 'features/auth/data/datasources/auth_remote_datasource.dart';
 import 'features/auth/data/repositories/auth_repository.dart';
 import 'features/auth/presentation/cubit/auth_cubit.dart';
+import 'features/auth/presentation/cubit/verification_cubit.dart';
 import 'features/bookings/presentation/cubit/booking_flow_cubit.dart';
 import 'features/bookings/presentation/cubit/bookings_cubit.dart';
 import 'features/home/data/datasources/categories_remote_datasource.dart';
@@ -85,5 +86,9 @@ void setupDependencies() {
   sl.registerFactory<WalletCubit>(() => WalletCubit(sl<ApiClient>()));
   sl.registerFactory<CardsCubit>(() => CardsCubit(sl<ApiClient>()));
   sl.registerFactory<TopUpCubit>(() => TopUpCubit(sl<ApiClient>()));
+  sl.registerFactory<VerificationCubit>(
+          () => VerificationCubit(sl<ApiClient>()));
+  sl.registerFactory<ProfileCubit>(
+          () => ProfileCubit(sl<ApiClient>()));
 
 }

@@ -1,8 +1,8 @@
 import 'package:dio/dio.dart';
-import 'package:zeina_app/core/utils/shared_pref_helper.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/network/failure.dart';
 import '../../../../core/utils/constants.dart';
+import '../../../../core/utils/shared_pref_helper.dart';
 
 abstract class AuthRemoteDataSource {
   Future<Map<String, dynamic>> sendOtp(String mobileNumber);
@@ -39,7 +39,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         data: {'mobile_number': mobileNumber, 'otp': otp},
       );
       SharedPrefHelper.saveToken(response['data']['token']);
-      return response;
+      return response['data'];
     } on DioException catch (e) {
       throw handleDioError(e);
     }

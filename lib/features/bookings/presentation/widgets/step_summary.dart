@@ -65,115 +65,122 @@ class _StepSummaryState extends State<StepSummary> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<BookingFlowCubit, BookingFlowState>(
-      builder: (context, state) {
-        BookingFlowData? flow;
-        if (state is BookingFlowReady) flow = state.flow;
-        final cubit = context.read<BookingFlowCubit>();
-        flow ??= cubit.flow;
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('book_now'.tr()),
+      ),
+      body: BlocBuilder<BookingFlowCubit, BookingFlowState>(
+        builder: (context, state) {
+          final flow = state.flow;
 
-        return Stack(
-          children: [
-            SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 130),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // ── Service header ──────────────────────────────────────
-                  _ServiceHeader(flow: flow),
-                  const SizedBox(height: 20),
+          if (flow == null) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
 
-                  // ── Date & time ─────────────────────────────────────────
-                  _sectionTitle('date_and_time'.tr()),
-                  const SizedBox(height: 10),
-                  _InfoRow(Icons.calendar_today_rounded,
-                      flow.selectedDate ?? '-'),
-                  const SizedBox(height: 6),
-                  _InfoRow(Icons.access_time_rounded,
-                      '${flow.selectedStartTime ?? '-'} - ${flow.selectedEndTime ?? '-'}'),
-                  const SizedBox(height: 20),
+          return
+              SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 130),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // ── Service header ──────────────────────────────────────
+                    _ServiceHeader(flow: flow),
+                    const SizedBox(height: 20),
 
-                  // ── Payment method ──────────────────────────────────────
-                  _sectionTitle('payment_method'.tr()),
-                  const SizedBox(height: 10),
-                  _buildPaymentOptions(flow),
-                  const SizedBox(height: 20),
-
-                  // ── Coupon ──────────────────────────────────────────────
-                  _sectionTitle('coupon'.tr()),
-                  const SizedBox(height: 10),
-                  _buildCouponField(),
-                  if (_couponApplied) ...[
-                    const SizedBox(height: 8),
-                    _CouponChip(
-                      label: '10 EGP OFF',
-                      code: _couponCtrl.text,
-                      onRemove: () => setState(() {
-                        _couponApplied = false;
-                        _couponDiscount = 0;
-                        _couponCtrl.clear();
-                        final c = context.read<BookingFlowCubit>();
-                        c.updateFlow(c.flow.copyWith(
-                          couponCode: '',
-                          couponDiscount: 0,
-                        ));
-                      }),
+                    // ── Date & time ─────────────────────────────────────────
+                    _sectionTitle('date_and_time'.tr()),
+                    const SizedBox(height: 10),
+                    _InfoRow(
+                      Icons.calendar_today_rounded,
+                      flow.selectedDate != null
+                          ? DateFormat('yyyy-MM-dd').format(DateTime.parse(flow.selectedDate!))
+                          : '-',
                     ),
-                  ],
-                  const SizedBox(height: 20),
-
-                  // ── Address ─────────────────────────────────────────────
-                  _sectionTitle('address'.tr()),
-                  const SizedBox(height: 10),
-                  _AddressTile(
-                    label: _addressLabel,
-                    detail: _addressDetail,
-                  ),
-                  const SizedBox(height: 20),
-
-                  // ── Contract / Terms ────────────────────────────────────
-                  _sectionTitle('contract'.tr()),
-                  const SizedBox(height: 10),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 14),
-                    decoration: BoxDecoration(
-                      color: ZienaColors.bg1,
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(
-                          color: ZienaColors.bg4.withOpacity(0.6)),
+                    const SizedBox(height: 6),
+                    _InfoRow(
+                      Icons.access_time_rounded,
+                      '${flow.selectedStartTime ?? '-'} - ${flow.selectedEndTime ?? '-'}',
                     ),
-                    child: Row(children: [
-                      Container(
-                        width: 36, height: 36,
-                        decoration: BoxDecoration(
-                          color: ZienaColors.bg3,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Icon(Icons.description_outlined,
-                            color: ZienaColors.primary, size: 18),
+                    const SizedBox(height: 20),
+
+                    // ── Payment method ──────────────────────────────────────
+                    _sectionTitle('payment_method'.tr()),
+                    const SizedBox(height: 10),
+                    _buildPaymentOptions(flow),
+                    const SizedBox(height: 20),
+
+                    // ── Coupon ──────────────────────────────────────────────
+                    _sectionTitle('coupon'.tr()),
+                    const SizedBox(height: 10),
+                    _buildCouponField(),
+                    if (_couponApplied) ...[
+                      const SizedBox(height: 8),
+                      _CouponChip(
+                        label: '10 EGP OFF',
+                        code: _couponCtrl.text,
+                        onRemove: () => setState(() {
+                          _couponApplied = false;
+                          _couponDiscount = 0;
+                          _couponCtrl.clear();
+                          final c = context.read<BookingFlowCubit>();
+                          c.updateFlow(c.flow.copyWith(
+                            couponCode: '',
+                            couponDiscount: 0,
+                          ));
+                        }),
                       ),
-                      const SizedBox(width: 12),
-                      Text('terms_conditions'.tr(),
-                          style: const TextStyle(
-                            fontFamily: 'Poppins', fontSize: 13,
-                            fontWeight: FontWeight.w500,
-                            color: ZienaColors.primary,
-                          )),
-                    ]),
-                  ),
-                ],
-              ),
-            ),
+                    ],
+                    const SizedBox(height: 20),
 
-            // ── Bottom price + book ───────────────────────────────────────
-            Positioned(
-              bottom: 0, left: 0, right: 0,
-              child: _buildBottomBar(context, flow, state),
-            ),
-          ],
-        );
-      },
+                    // ── Address ─────────────────────────────────────────────
+                    _sectionTitle('address'.tr()),
+                    const SizedBox(height: 10),
+                    _AddressTile(
+                      label: _addressLabel,
+                      detail: _addressDetail,
+                    ),
+                    const SizedBox(height: 20),
+
+                    // ── Contract / Terms ────────────────────────────────────
+                    _sectionTitle('contract'.tr()),
+                    const SizedBox(height: 10),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 14),
+                      decoration: BoxDecoration(
+                        color: ZienaColors.bg1,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                            color: ZienaColors.bg4.withOpacity(0.6)),
+                      ),
+                      child: Row(children: [
+                        Container(
+                          width: 36, height: 36,
+                          decoration: BoxDecoration(
+                            color: ZienaColors.bg3,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Icon(Icons.description_outlined,
+                              color: ZienaColors.primary, size: 18),
+                        ),
+                        const SizedBox(width: 12),
+                        Text('terms_conditions'.tr(),
+                            style: const TextStyle(
+                               fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                              color: ZienaColors.primary,
+                            )),
+                      ]),
+                    ),
+
+                    _buildBottomBar(context, flow, state)
+                  ],
+                ),
+          );
+        },
+      ),
     );
   }
 
@@ -211,7 +218,7 @@ class _StepSummaryState extends State<StepSummary> {
               const SizedBox(width: 12),
               Expanded(child: Text(m.$2,
                   style: TextStyle(
-                    fontFamily: 'Poppins', fontSize: 14,
+                     fontSize: 14,
                     fontWeight: FontWeight.w500,
                     color: sel ? ZienaColors.primary : ZienaColors.textPrimary,
                   ))),
@@ -269,7 +276,7 @@ class _StepSummaryState extends State<StepSummary> {
 
   Widget _buildBottomBar(
       BuildContext context, BookingFlowData flow, BookingFlowState state) {
-    final loading = state is BookingFlowSubmitting;
+    final loading = state.submitting;
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 14, 20, 30),
       decoration: BoxDecoration(
@@ -300,7 +307,8 @@ class _StepSummaryState extends State<StepSummary> {
         const SizedBox(height: 14),
         ZienaButton(
           text: 'book_now'.tr(),
-          onTap: loading ? null : _onBook,
+          isLoading: state.submitting,
+          onTap: state.submitting ? null : _onBook,
           disabledBackgroundColor: ZienaColors.primary.withOpacity(0.5),
           disabledTextColor: Colors.white,
         ),
@@ -310,7 +318,7 @@ class _StepSummaryState extends State<StepSummary> {
 
   Widget _sectionTitle(String t) => Text(t,
       style: const TextStyle(
-        fontFamily: 'Poppins', fontSize: 14,
+         fontSize: 14,
         fontWeight: FontWeight.w700, color: ZienaColors.textPrimary,
       ));
 }
@@ -345,18 +353,22 @@ class _ServiceHeader extends StatelessWidget {
         Expanded(child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(flow.serviceName,
-                style: const TextStyle(
-                  fontFamily: 'Poppins', fontSize: 15,
-                  fontWeight: FontWeight.w700, color: ZienaColors.textPrimary,
-                )),
+            Text(
+              flow.serviceName ?? '',
+              style: const TextStyle(
+                
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                color: ZienaColors.textPrimary,
+              ),
+            ),
             const SizedBox(height: 4),
             Text(
               '${flow.pricePerHour.toStringAsFixed(0)} ${flow.currency} × '
-                  '${flow.selectedDurationHours ?? 1} hrs × '
-                  '${flow.selectedWorkerCount ?? 1} worker',
+                  '${(flow.selectedDurationHours ?? 1).toString()} hrs × '
+                  '${(flow.selectedWorkerCount ?? 1).toString()} worker',
               style: const TextStyle(
-                fontFamily: 'Poppins', fontSize: 12,
+                 fontSize: 12,
                 color: ZienaColors.textSecondary,
               ),
             ),
@@ -379,7 +391,7 @@ class _InfoRow extends StatelessWidget {
       const SizedBox(width: 8),
       Text(label,
           style: const TextStyle(
-            fontFamily: 'Poppins', fontSize: 13,
+             fontSize: 13,
             color: ZienaColors.textPrimary,
           )),
     ]);
@@ -415,13 +427,13 @@ class _AddressTile extends StatelessWidget {
           children: [
             Text(label,
                 style: const TextStyle(
-                  fontFamily: 'Poppins', fontSize: 13,
+                   fontSize: 13,
                   fontWeight: FontWeight.w600, color: ZienaColors.textPrimary,
                 )),
             const SizedBox(height: 2),
             Text(detail,
                 style: const TextStyle(
-                  fontFamily: 'Poppins', fontSize: 11,
+                   fontSize: 11,
                   color: ZienaColors.textSecondary, height: 1.4,
                 )),
           ],
@@ -455,12 +467,12 @@ class _CouponChip extends StatelessWidget {
           children: [
             Text(code,
                 style: const TextStyle(
-                  fontFamily: 'Poppins', fontSize: 13,
+                   fontSize: 13,
                   fontWeight: FontWeight.w600, color: ZienaColors.primary,
                 )),
             Text(label,
                 style: const TextStyle(
-                  fontFamily: 'Poppins', fontSize: 11,
+                   fontSize: 11,
                   color: ZienaColors.textSecondary,
                 )),
           ],
@@ -491,13 +503,13 @@ class _PriceRow extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(label, style: TextStyle(
-          fontFamily: 'Poppins',
+          
           fontSize: isTotal ? 14 : 13,
           fontWeight: isTotal ? FontWeight.w700 : FontWeight.w400,
           color: isTotal ? ZienaColors.textPrimary : ZienaColors.textSecondary,
         )),
         Text(value, style: TextStyle(
-          fontFamily: 'Poppins',
+          
           fontSize: isTotal ? 15 : 13,
           fontWeight: isTotal ? FontWeight.w700 : FontWeight.w400,
           color: isTotal ? ZienaColors.primary : ZienaColors.textSecondary,

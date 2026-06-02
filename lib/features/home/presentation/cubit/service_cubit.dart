@@ -50,7 +50,8 @@ class PopularServicesCubit extends Cubit<PopularServicesState> {
         'customer/services',
         queryParameters: {'page': 1},
       );
-      final data = res;
+      print("rrrrrr $res");
+      final data = res['data'];
       final meta = data['meta'] as Map<String, dynamic>? ?? {};
       _currentPage = meta['current_page'] ?? 1;
       _lastPage = meta['last_page'] ?? 1;
@@ -64,8 +65,11 @@ class PopularServicesCubit extends Cubit<PopularServicesState> {
         total: meta['total'] ?? 0,
       ));
     } on DioException catch (e) {
+      print("eeeeee $e");
       emit(PopularServicesError(handleDioError(e).message));
     } catch (e) {
+      print("eeeeee1 $e");
+
       emit(PopularServicesError('Something went wrong'));
     }
   }
