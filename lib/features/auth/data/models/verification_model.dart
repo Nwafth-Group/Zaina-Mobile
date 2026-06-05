@@ -67,4 +67,23 @@ class UserProfile {
       preferredLanguage: data['preferred_language'],
     );
   }
+
+  String get displayName {
+    if (fullName != null && fullName!.isNotEmpty) return fullName!;
+    final parts = [firstName, lastName]
+        .where((p) => p != null && p.isNotEmpty)
+        .join(' ');
+    return parts.isNotEmpty ? parts : mobileNumber;
+  }
+
+  String get initials {
+    if (fullName != null && fullName!.trim().isNotEmpty) {
+      final parts = fullName!.trim().split(' ');
+      if (parts.length >= 2) {
+        return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
+      }
+      return fullName![0].toUpperCase();
+    }
+    return mobileNumber.isNotEmpty ? mobileNumber[0] : 'U';
+  }
 }

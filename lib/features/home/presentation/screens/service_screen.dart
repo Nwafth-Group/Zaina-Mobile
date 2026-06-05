@@ -5,7 +5,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:zeina/core/utils/shared_pref_helper.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../injection_container.dart';
+import '../../../../widgets/custom_icon.dart';
 import '../../../../widgets/ziena_button.dart';
+import '../../../../widgets/signin_required_widget.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/screens/phone_auth_screen.dart';
 import '../../../bookings/data/model/booking_flow_model.dart';
@@ -49,6 +51,20 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
   void initState() {
     super.initState();
     _token = SharedPrefHelper.getToken();
+  }
+
+  void _showSignInRequiredDialog(BuildContext ctx) {
+    showDialog(
+      context: ctx,
+      barrierDismissible: true,
+      builder: (_) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxHeight: 480),
+          child: const SignInRequiredWidget(tabKey: 'bookings'),
+        ),
+      ),
+    );
   }
 
   @override
@@ -608,21 +624,6 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
 
         BlocBuilder<BookingFlowCubit, BookingFlowState>(
           builder: (bctx, bstate) {
-            // Listen for success
-            if (bstate.bookingRef != null) {
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                _showSuccessDialog(bctx, bstate.bookingRef!);
-              });
-            }
-            if (bstate.error != null) {
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                ScaffoldMessenger.of(bctx).showSnackBar(SnackBar(
-                  content: Text(bstate.error!),
-                  backgroundColor: ZienaColors.error,
-                ));
-              });
-            }
-
             return ZienaButton(
               text: 'book_now'.tr(),
               isLoading: bstate.submitting,
@@ -631,15 +632,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                   ? () {
                 // 1. Auth check
                 if (_token == null) {
-                  Navigator.push(
-                    ctx,
-                    MaterialPageRoute(
-                      builder: (_) => BlocProvider(
-                        create: (_) => sl<AuthCubit>(),
-                        child: const PhoneAuthScreen(),
-                      ),
-                    ),
-                  );
+                  _showSignInRequiredDialog(ctx);
                   return;
                 }
 
@@ -673,67 +666,6 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
           },
         ),
       ]),
-    );
-  }
-
-  void _showSuccessDialog(BuildContext context, String ref) {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => Dialog(
-        
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24)),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
-          child: Column(mainAxisSize: MainAxisSize.min, children: [
-            Container(
-              width: 110, height: 110,
-              decoration: const BoxDecoration(
-                  color: ZienaColors.bg2, shape: BoxShape.circle),
-              child: Stack(alignment: Alignment.center, children: [
-                const Icon(Icons.calendar_month_rounded,
-                    size: 55, color: ZienaColors.primary),
-                Positioned(
-                  bottom: 10, right: 10,
-                  child: Container(
-                    width: 28, height: 28,
-                    decoration: const BoxDecoration(
-                        color: ZienaColors.primary, shape: BoxShape.circle),
-                    child: const Icon(Icons.check, color: Colors.white, size: 16),
-                  ),
-                ),
-              ]),
-            ),
-            const SizedBox(height: 20),
-            Text('booking_confirmed'.tr(),
-                style: const TextStyle(
-                  fontSize: 22, fontWeight: FontWeight.w700,
-                  color: ZienaColors.textPrimary,
-                )),
-            const SizedBox(height: 8),
-            if (ref.isNotEmpty)
-              Text(ref,
-                  style: const TextStyle(
-                    fontSize: 14, fontWeight: FontWeight.w600,
-                    color: ZienaColors.primary,
-                  )),
-            const SizedBox(height: 8),
-            Text('booking_confirmed_desc'.tr(),
-                style: const TextStyle(
-                    fontSize: 13, color: ZienaColors.textSecondary, height: 1.5),
-                textAlign: TextAlign.center),
-            const SizedBox(height: 24),
-            ZienaButton(
-              text: 'done'.tr(),
-              onTap: () {
-                Navigator.pop(context); // dialog
-                Navigator.pop(context); // service detail
-              },
-            ),
-          ]),
-        ),
-      ),
     );
   }
 
@@ -1186,12 +1118,7 @@ class _FeatureRow extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Row(children: [
-        Container(
-          width: 22, height: 22,
-          decoration: const BoxDecoration(
-              color: ZienaColors.bg2, shape: BoxShape.circle),
-          child: const Icon(Icons.check, size: 13, color: ZienaColors.primary),
-        ),
+        const ImageAsset('assets/images/point.png', height: 20, width: 20,),
         const SizedBox(width: 10),
         Expanded(child: Text(label,
             style: const TextStyle(

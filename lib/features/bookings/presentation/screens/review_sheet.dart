@@ -70,7 +70,7 @@ class _ReviewSheetState extends State<ReviewSheet> {
           showDialog(
             context: context,
             builder: (_) => SuccessDialog(
-              icon: Icons.star_rounded,
+              imageAsset: 'assets/images/rating.png',
               title: 'review_submitted_title'.tr(),
               message: 'review_submitted_msg'.tr(),
             ),

@@ -159,16 +159,22 @@ class _BookingsScreenState extends State<BookingsScreen> {
               final b = bookings[i];
               return BookingCard(
                 booking: b,
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => BlocProvider(
-                      create: (_) => sl<BookingDetailCubit>()
-                        ..fetchDetail(b.id),
-                      child: BookingDetailScreen(bookingId: b.id),
+                onTap: () {
+                  final cubit = context.read<BookingsCubit>();
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => BlocProvider(
+                        create: (_) => sl<BookingDetailCubit>()
+                          ..fetchDetail(b.id),
+                        child: BookingDetailScreen(bookingId: b.id),
+                      ),
                     ),
-                  ),
-                ),
+                  ).then((_) {
+                    if (!mounted) return;
+                    cubit.fetchBookings(filter: _filter, refresh: true);
+                  });
+                },
               );
             },
           ),
@@ -178,25 +184,21 @@ class _BookingsScreenState extends State<BookingsScreen> {
   }
 
   Widget _buildEmpty() => Center(
-    child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Container(
-          width: 90, height: 90,
-          decoration: const BoxDecoration(
-              color: ZienaColors.bg2, shape: BoxShape.circle),
-          child: const Icon(Icons.calendar_month_outlined,
-              color: ZienaColors.primary, size: 40),
-        ),
-        const SizedBox(height: 16),
-        Text('no_bookings'.tr(),
-            style: const TextStyle(
-              
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: ZienaColors.textPrimary,
-            )),
-      ],
+    child: Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 32),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Image.asset('assets/images/not_found.png', width: 160, height: 160),
+          const SizedBox(height: 20),
+          Text('no_bookings'.tr(),
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: ZienaColors.textPrimary,
+              )),
+        ],
+      ),
     ),
   );
 

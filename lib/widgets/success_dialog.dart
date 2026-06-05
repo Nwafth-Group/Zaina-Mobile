@@ -84,63 +84,28 @@ class SuccessDialog extends StatelessWidget {
   Widget _buildHeaderGraphic() {
     // 1. Exact Map/Asset Image variant layout match
     if (imageAsset != null) {
-      return SizedBox(
-        width: 160,
-        height: 160,
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            // White circular background map wrapper with ambient pink shadow
-            Container(
-              width: 140,
-              height: 140,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFFE56B8F).withOpacity(0.15),
-                    blurRadius: 20,
-                    spreadRadius: 5,
-                  ),
-                ],
-              ),
-              child: ClipOval(
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0), // Padding around vector map
-                  child: Image.asset(
-                    imageAsset!,
-                    fit: BoxFit.contain,
-                  ),
-                ),
-              ),
-            ),
-            // Floating user pin avatar over the bottom-right corner
-            Positioned(
-              bottom: 12,
-              right: 12,
-              child: Container(
-                width: 38,
-                height: 38,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFE56B8F), // Solid vibrant branding accent pink
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFFE56B8F).withOpacity(0.4),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: const Icon(
-                  Icons.accessibility_new_rounded,
-                  color: Colors.white,
-                  size: 20,
-                ),
-              ),
+      return Container(
+        width: 140,
+        height: 140,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFFE56B8F).withOpacity(0.15),
+              blurRadius: 20,
+              spreadRadius: 5,
             ),
           ],
+        ),
+        child: ClipOval(
+          child: Padding(
+            padding: const EdgeInsets.all(8.0), // Padding around vector map
+            child: Image.asset(
+              imageAsset!,
+              fit: BoxFit.contain,
+            ),
+          ),
         ),
       );
     }

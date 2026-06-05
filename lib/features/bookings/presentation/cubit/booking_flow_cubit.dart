@@ -9,20 +9,24 @@ class BookingFlowState {
   final bool shiftsLoading;
   final bool workersLoading;
   final bool submitting;
+  final bool couponLoading;
   final List<ShiftModel> shifts;
   final AvailableWorkersResponse? workers;
   final String? bookingRef;
   final String? error;
+  final String? couponError;
 
   const BookingFlowState({
     this.flow,
     this.shiftsLoading = false,
     this.workersLoading = false,
     this.submitting = false,
+    this.couponLoading = false,
     this.shifts = const [],
     this.workers,
     this.bookingRef,
     this.error,
+    this.couponError,
   });
 
   BookingFlowState copyWith({
@@ -30,20 +34,25 @@ class BookingFlowState {
     bool? shiftsLoading,
     bool? workersLoading,
     bool? submitting,
+    bool? couponLoading,
     List<ShiftModel>? shifts,
     AvailableWorkersResponse? workers,
     String? bookingRef,
     String? error,
+    String? couponError,
+    bool clearCouponError = false,
   }) {
     return BookingFlowState(
       flow: flow ?? this.flow,
       shiftsLoading: shiftsLoading ?? this.shiftsLoading,
       workersLoading: workersLoading ?? this.workersLoading,
       submitting: submitting ?? this.submitting,
+      couponLoading: couponLoading ?? this.couponLoading,
       shifts: shifts ?? this.shifts,
       workers: workers ?? this.workers,
       bookingRef: bookingRef ?? this.bookingRef,
       error: error,
+      couponError: clearCouponError ? null : (couponError ?? this.couponError),
     );
   }
 }
@@ -114,6 +123,45 @@ class BookingFlowCubit extends Cubit<BookingFlowState> {
     }
   }
 
+  // ── Validate coupon ────────────────────────────────────────────────────────
+  Future<void> validateCoupon(String code) async {
+    emit(state.copyWith(couponLoading: true, clearCouponError: true));
+    try {
+      final res = await _api.post(
+        'customer/coupons/validate',
+        data: {'code': code},
+      );
+      final data = res['data'] as Map<String, dynamic>? ?? {};
+      final discount = (data['discount_amount'] as num?)?.toDouble() ?? 0.0;
+      _flow = _flow.copyWith(couponCode: code, couponDiscount: discount);
+      emit(state.copyWith(
+        couponLoading: false,
+        flow: _flow,
+        clearCouponError: true,
+      ));
+    } on DioException catch (e) {
+      final msg = handleDioError(e).message;
+      _flow = _flow.copyWith(couponCode: '', couponDiscount: 0);
+      emit(state.copyWith(
+        couponLoading: false,
+        flow: _flow,
+        couponError: msg,
+      ));
+    } catch (_) {
+      _flow = _flow.copyWith(couponCode: '', couponDiscount: 0);
+      emit(state.copyWith(
+        couponLoading: false,
+        flow: _flow,
+        couponError: 'invalid_coupon',
+      ));
+    }
+  }
+
+  void removeCoupon() {
+    _flow = _flow.copyWith(couponCode: '', couponDiscount: 0);
+    emit(state.copyWith(flow: _flow, clearCouponError: true));
+  }
+
   // ── POST customer/bookings ─────────────────────────────────────────────────
   Future<void> submitBooking() async {
     final flow = state.flow;
@@ -132,31 +180,28 @@ class BookingFlowCubit extends Cubit<BookingFlowState> {
     emit(state.copyWith(submitting: true, error: null));
 
     try {
-      final res = await _api.post(
-        'customer/bookings',
-        data: {
-          'service_id': flow.serviceId.toString(),
-          'worker_ids': flow.selectedWorkerIds,
-          'address_id': flow.selectedAddressId.toString(),
-          'date': flow.selectedDate,
-          'start_time': flow.selectedStartTime,
-          'periods_count': 1,
-        },
-      );
+      final body = <String, dynamic>{
+        'service_id': flow.serviceId.toString(),
+        'worker_ids': flow.selectedWorkerIds,
+        'address_id': flow.selectedAddressId.toString(),
+        'date': flow.selectedDate,
+        'start_time': flow.selectedStartTime,
+        'periods_count': 1,
+      };
+      if (flow.couponCode != null && flow.couponCode!.isNotEmpty) {
+        body['coupon_code'] = flow.couponCode;
+      }
 
+      final res = await _api.post('customer/bookings', data: body);
       final ref = res['data']?['booking_ref']?.toString() ?? '';
-
       emit(state.copyWith(submitting: false, bookingRef: ref));
     } on DioException catch (e) {
       emit(state.copyWith(
         submitting: false,
         error: handleDioError(e).message,
       ));
-    } catch (e) {
-      emit(state.copyWith(
-        submitting: false,
-        error: 'Booking failed',
-      ));
+    } catch (_) {
+      emit(state.copyWith(submitting: false, error: 'Booking failed'));
     }
   }
 }

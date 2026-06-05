@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:zeina/core/utils/shared_pref_helper.dart';
 import 'package:zeina/features/bookings/presentation/screens/bookings_screen.dart';
+import 'package:zeina/features/profile/presentation/screens/more_screen.dart';
 import 'package:zeina/features/wallet/presentation/screens/wallet_screen.dart';
 import 'package:zeina/widgets/signin_required_widget.dart';
 
@@ -11,6 +12,12 @@ import 'home/presentation/screens/home_screen.dart';
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
 
+  static _MainScreenState? _state;
+
+  static void switchToTab(int index) {
+    _state?._switchToTab(index);
+  }
+
   @override
   _MainScreenState createState() => _MainScreenState();
 }
@@ -18,20 +25,31 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
 
+  @override
+  void initState() {
+    super.initState();
+    MainScreen._state = this;
+  }
+
+  @override
+  void dispose() {
+    MainScreen._state = null;
+    super.dispose();
+  }
+
+  void _switchToTab(int index) {
+    setState(() => _selectedIndex = index);
+  }
+
   // 1. List of your child screens
   // Your existing HomeScreen is the first item in this list
   final List<Widget> _pages = [
     HomeScreen(),
     BookingsScreen(isLoggedIn: SharedPrefHelper.isLoggedIn()),
     WalletScreen(isLoggedIn: SharedPrefHelper.isLoggedIn()),
-    Scaffold(body: SignInRequiredWidget(tabKey: 'more'),),
+    MoreScreen(isLoggedIn: SharedPrefHelper.isLoggedIn())
   ];
 
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
 
   Widget _buildBottomNav() {
     final items = [

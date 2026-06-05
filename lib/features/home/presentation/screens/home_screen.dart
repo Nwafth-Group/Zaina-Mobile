@@ -11,6 +11,8 @@ import 'package:zeina/features/home/presentation/screens/service_screen.dart';
 import 'package:zeina/features/home/presentation/screens/subcategories_screen.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../injection_container.dart';
+import '../../../auth/presentation/cubit/verification_cubit.dart' show ProfileCubit, ProfileLoaded, ProfileState;
+import '../../../bookings/presentation/cubit/bookings_cubit.dart';
 import '../../data/model/banner_model.dart';
 import '../../data/model/service_model.dart';
 import '../../../bookings/presentation/screens/booking_details_screen.dart';
@@ -18,6 +20,7 @@ import '../cubit/address_cubit.dart';
 import '../cubit/home_cubti.dart';
 import '../cubit/search_cubit.dart';
 import '../cubit/service_cubit.dart';
+import '../../../../widgets/signin_required_widget.dart';
 import 'add_edit_address_screen.dart';
 import 'my_addresses_screen.dart';
 import 'search_screen.dart';
@@ -41,9 +44,26 @@ class _HomeScreenState extends State<HomeScreen> {
     callInit();
   }
 
-  void callInit()async{
-    if(SharedPrefHelper.isLoggedIn()) {
-      await context.read<AddressCubit>().fetchAddresses(); // ← fetch addresses
+  void _showAddressDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (_) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxHeight: 480),
+          child: const SignInRequiredWidget(tabKey: 'bookings'),
+        ),
+      ),
+    );
+  }
+
+  void callInit() async {
+    if (SharedPrefHelper.isLoggedIn()) {
+      final addressCubit = context.read<AddressCubit>();
+      final profileCubit = context.read<ProfileCubit>();
+      await addressCubit.fetchAddresses();
+      profileCubit.fetchProfile();
     }
   }
 
@@ -161,12 +181,21 @@ class _HomeScreenState extends State<HomeScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Greeting
-                Text('hello_name'.tr(args: ['Amer']),
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: ZienaColors.textPrimary,
-                    )),
+                BlocBuilder<ProfileCubit, ProfileState>(
+                  builder: (_, state) {
+                    final name = state is ProfileLoaded
+                        ? (state.profile.firstName ?? state.profile.displayName)
+                        : '';
+                    return Text(
+                      'hello_name'.tr(args: [name]),
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: ZienaColors.textPrimary,
+                      ),
+                    );
+                  },
+                ),
                 const SizedBox(height: 2),
 
                 // Address row — dynamic
@@ -179,15 +208,21 @@ class _HomeScreenState extends State<HomeScreen> {
                         addrState is AddressInitial ||
                         !hasAddress) {
                       return GestureDetector(
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => BlocProvider.value(
-                              value: cubit,
-                              child: const AddEditAddressScreen(),
+                        onTap: () {
+                          if (!SharedPrefHelper.isLoggedIn()) {
+                            _showAddressDialog();
+                            return;
+                          }
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => BlocProvider.value(
+                                value: cubit,
+                                child: const AddEditAddressScreen(),
+                              ),
                             ),
-                          ),
-                        ),
+                          );
+                        },
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -265,15 +300,22 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           const SizedBox(width: 6),
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: ZienaColors.bg2,
-              shape: BoxShape.circle,
+          GestureDetector(
+            onTap: () {
+              if (!SharedPrefHelper.isLoggedIn()) {
+                _showAddressDialog();
+              }
+            },
+            child: Container(
+              width: 44,
+              height: 44,
+              decoration: const BoxDecoration(
+                color: ZienaColors.bg2,
+                shape: BoxShape.circle,
+              ),
+              child: Image.asset('assets/images/notifications.png',
+                  color: ZienaColors.primary),
             ),
-            child: Image.asset('assets/images/notifications.png',
-                color: ZienaColors.primary),
           ),
         ],
       ),
@@ -300,7 +342,7 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(width: 10),
               Text('search'.tr(), style: const TextStyle(color: ZienaColors.textHint)),
               const Spacer(),
-              const Icon(Icons.tune_rounded, color: ZienaColors.textSecondary, size: 18),
+              const Icon(Icons.tune_rounded, color: ZienaColors.primaryLight, size: 18),
             ],
           ),
         ),
@@ -352,7 +394,7 @@ class _HomeScreenState extends State<HomeScreen> {
   // ── Popular Services (UPDATED) ─────────────────────────────────────────────
   Widget _buildPopularServices(List<ServiceModel> services) {
     return SizedBox(
-      height: 192,
+      height: 222,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -471,7 +513,7 @@ class _ServiceCard extends StatelessWidget {
         ));
       },
       child: Container(
-        width: 155,
+        width: 180,
         padding: const EdgeInsets.all(12), // Adjusted for proper spacing
         decoration: BoxDecoration(
       color: Colors.white,
@@ -511,35 +553,35 @@ class _ServiceCard extends StatelessWidget {
               service.localizedCategory(locale),
               style: const TextStyle(
                 color: Color(0xFFE91E63), // Replace with your exact pink accent color code
-                fontSize: 12,
+                fontSize: 10,
                 fontWeight: FontWeight.w500,
               ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 3),
 
             // 3. Service Title
             Text(
               service.localizedName(locale),
               style: const TextStyle(
-                fontSize: 15,
+                fontSize: 12,
                 fontWeight: FontWeight.bold,
                 color: Color(0xFF1A237E), // Dark blue/slate color as seen in screenshot
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 5),
 
             // 4. Price Row
             Text(
               "${service.price.basePrice} ${service.price.currency}",
               style: const TextStyle(
-                fontSize: 18,
+                fontSize: 14,
                 fontWeight: FontWeight.bold, // Heavy bold for price emphasis
                 color: Color(0xFF1A237E),
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 5),
 
             // 5. Rating Row (Stars and text)
             Row(
@@ -624,141 +666,249 @@ Widget _buildAppointmentCard(UpcomingAppointment? appointment) {
   }
 
   return Builder(builder: (context) {
+
     final locale = context.locale.languageCode;
+    final isRtl = locale == 'ar';
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
-child: InkWell(
+      child: InkWell(
+        borderRadius: BorderRadius.circular(18),
         onTap: () {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) => BookingDetailScreen(bookingId: appointment.id),
+              builder: (_) => BlocProvider(
+                create: (_) => sl<BookingDetailCubit>()
+                  ..fetchDetail(appointment.id),
+                child: BookingDetailScreen(bookingId: appointment.id),
+              ),
             ),
           );
         },
         child: Container(
-          padding: const EdgeInsets.all(16),
+          height: 108,
           decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: ZienaColors.greyBorder),
+            color: ZienaColors.bg1,
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: ZienaColors.greyBorder, width: 0.5),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.04),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
           child: Row(
             children: [
-              // Date box
-              Container(
-                width: 50,
-                height: 60,
-                decoration: BoxDecoration(
-                  color: ZienaColors.primary.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
+
+                _buildDatePanel(
+                  appointment,
+                  borderRadius: const BorderRadiusDirectional.only(
+                    topStart:    Radius.circular(18),
+                    bottomStart: Radius.circular(18),
+                  ),
+                  isRtl: isRtl
                 ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      appointment.dateDay,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: ZienaColors.primary,
-                      ),
-                    ),
-                    Text(
-                      appointment.dateMonth,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: ZienaColors.primary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 12),
-              // Service info
+
+              // ── Middle content ────────────────────────────────────────────
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      appointment.localizedName(locale),
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: ZienaColors.textPrimary,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 12, vertical: 10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        appointment.localizedName(locale),
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: ZienaColors.textPrimary,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.access_time,
-                          size: 12,
-                          color: ZienaColors.textSecondary,
+                      const SizedBox(height: 3),
+                      Text(
+                        '${appointment.price} ${appointment.currency}',
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: ZienaColors.primary,
                         ),
-                        const SizedBox(width: 4),
-                        Text(
-                          appointment.time,
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: ZienaColors.textSecondary,
-                          ),
+                      ),
+                      const SizedBox(height: 6),
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: [
+                            _InfoChip(
+                              icon: Icons.bookmark_outline_rounded,
+                              label: appointment.status,
+                              color: _statusColor(appointment.status),
+                            ),
+                            const SizedBox(width: 8),
+                            const _InfoChip(
+                              icon: Icons.location_on_outlined,
+                              label: 'Home',
+                              color: ZienaColors.textSecondary,
+                            ),
+                            const SizedBox(width: 8),
+                            _InfoChip(
+                              icon: Icons.access_time_rounded,
+                              label: appointment.durationText,
+                              color: ZienaColors.textSecondary,
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 8),
-                        Text(
-                          '• ${appointment.durationText}',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: ZienaColors.textSecondary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
-              // Price and status
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    '${appointment.price} ${appointment.currency}',
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: ZienaColors.primary,
-                    ),
+
+
+                _buildImage(
+                  appointment,
+                  borderRadius: const BorderRadiusDirectional.only(
+                    topEnd:    Radius.circular(18),
+                    bottomEnd: Radius.circular(18),
                   ),
-                  const SizedBox(height: 4),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 2,
-                    ),
-                    decoration: BoxDecoration(
-                      color: ZienaColors.primary.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      appointment.status,
-                      style: const TextStyle(
-                        fontSize: 10,
-                        color: ZienaColors.primary,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(width: 8),
-              const Icon(
-                Icons.chevron_right,
-                color: ZienaColors.textSecondary,
-              ),
+                ),
             ],
           ),
         ),
       ),
     );
   });
+
+}
+
+Widget _buildImage(
+    UpcomingAppointment appointment, {
+      required BorderRadiusDirectional borderRadius,
+    }) {
+  return ClipRRect(
+    borderRadius: borderRadius,
+    child: appointment.image != null
+        ? CachedNetworkImage(
+      imageUrl: appointment.image!,
+      width: 110,
+      height: 108,
+      fit: BoxFit.cover,
+      placeholder: (_, __) => Container(
+          width: 110, height: 108, color: ZienaColors.bg3),
+      errorWidget: (_, __, ___) => Container(
+        width: 110,
+        height: 108,
+        color: ZienaColors.bg3,
+        child: const Icon(Icons.cleaning_services_rounded,
+            color: ZienaColors.primary, size: 38),
+      ),
+    )
+        : Container(
+      width: 110,
+      height: 108,
+      color: ZienaColors.bg3,
+      child: const Icon(Icons.cleaning_services_rounded,
+          color: ZienaColors.primary, size: 38),
+    ),
+  );
+}
+
+Widget _buildDatePanel(
+    UpcomingAppointment appointment, {
+      required BorderRadiusDirectional borderRadius,
+      required bool isRtl,
+    }) {
+  return Container(
+    width: 64,
+    height: 108,
+    decoration: BoxDecoration(
+      color: ZienaColors.primary,
+      borderRadius: borderRadius,
+    ),
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          appointment.dateDay,
+          style: const TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.w700,
+            color: Colors.white,
+          ),
+        ),
+        Text(
+          appointment.dateMonth,
+          style: const TextStyle(
+            fontSize: 13,
+            color: Colors.white70,
+          ),
+        ),
+        const SizedBox(height: 6),
+        Container(
+          width: 26,
+          height: 26,
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.2),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(isRtl?Icons.chevron_left:Icons.chevron_right,
+              color: Colors.white, size: 16),
+        ),
+      ],
+    ),
+  );
+}
+
+// ── Info chip ─────────────────────────────────────────────────────────────────
+class _InfoChip extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color color;
+
+  const _InfoChip({
+    required this.icon,
+    required this.label,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 11, color: color),
+        const SizedBox(width: 3),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 10,
+            color: color,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ── Status color ──────────────────────────────────────────────────────────────
+Color _statusColor(String status) {
+  switch (status.toLowerCase()) {
+    case 'upcoming':
+      return const Color(0xFF2196F3);
+    case 'in service':
+    case 'in_service':
+      return const Color(0xFFFF9800);
+    case 'completed':
+      return const Color(0xFF4CAF50);
+    case 'cancelled':
+      return const Color(0xFFE53935);
+    default:
+      return ZienaColors.textSecondary;
+  }
 }

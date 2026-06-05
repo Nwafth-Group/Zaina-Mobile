@@ -4,9 +4,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:zeina/core/utils/app_navigator.dart';
+import 'package:zeina/features/auth/data/models/verification_model.dart';
+import 'package:zeina/features/auth/presentation/screens/verification_flow_screen.dart';
+import 'package:zeina/features/auth/presentation/screens/verification_pending_screen.dart';
 import 'package:zeina/features/auth/presentation/screens/verification_welcome_screen.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../injection_container.dart';
+import '../../../../widgets/success_dialog.dart';
 import '../../../../widgets/ziena_button.dart';
 import '../../../main_screen.dart';
 import '../cubit/auth_cubit.dart';
@@ -65,37 +69,107 @@ class _OtpScreenState extends State<OtpScreen> {
     }
   }
 
+  void _handlePostOtpNavigation(BuildContext context, VerificationStatus status) {
+    switch (status) {
+      case VerificationStatus.approved:
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (_) => SuccessDialog(
+            title: 'success_title'.tr(),
+            message: 'success_message'.tr(),
+            buttonText: 'done'.tr(),
+            onButtonTap: () {
+              Navigator.pop(context);
+              AppNavigator.pushAndRemoveUntil(const MainScreen());
+            },
+          ),
+        );
+
+      case VerificationStatus.pending:
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(
+            builder: (_) => VerificationPendingScreen(
+              onStatusChecked: (s) {
+                if (s == 'approved') {
+                  showDialog(
+                    context: AppNavigator.context!,
+                    barrierDismissible: false,
+                    builder: (_) => SuccessDialog(
+                      title: 'success_title'.tr(),
+                      message: 'success_message'.tr(),
+                      buttonText: 'done'.tr(),
+                      onButtonTap: () {
+                        Navigator.pop(AppNavigator.context!);
+                        AppNavigator.pushAndRemoveUntil(const MainScreen());
+                      },
+                    ),
+                  );
+                } else if (s == 'rejected') {
+                  AppNavigator.pushAndRemoveUntil(
+                    BlocProvider(
+                      create: (_) => sl<VerificationCubit>(),
+                      child: VerificationFlowScreen(
+                        initialStatus: 'rejected',
+                        fromSplash: false,
+                        onVerified: () => AppNavigator.pushAndRemoveUntil(const MainScreen()),
+                      ),
+                    ),
+                  );
+                }
+              },
+            ),
+          ),
+          (route) => false,
+        );
+
+      case VerificationStatus.rejected:
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(
+            builder: (_) => BlocProvider(
+              create: (_) => sl<VerificationCubit>(),
+              child: VerificationFlowScreen(
+                initialStatus: 'rejected',
+                fromSplash: false,
+                onVerified: () => AppNavigator.pushAndRemoveUntil(const MainScreen()),
+              ),
+            ),
+          ),
+          (route) => false,
+        );
+
+      default: // unverified
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(
+            builder: (_) => BlocProvider(
+              create: (_) => sl<VerificationCubit>(),
+              child: VerificationWelcomeScreen(
+                onVerified: () => AppNavigator.pushAndRemoveUntil(const MainScreen()),
+              ),
+            ),
+          ),
+          (route) => false,
+        );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocListener<AuthCubit, AuthState>(
       listener: (context, state) {
-        print(state);
-        // In otp_screen.dart BlocListener:
         if (state is OtpVerifySuccess) {
-
-          if (state.needsVerification) {
-            // Route to verification welcome
-            Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(
-                builder: (_) => BlocProvider(
-                  create: (_) => sl<VerificationCubit>(),
-                  child: VerificationWelcomeScreen(
-                    onVerified: () {
-                      // After verification submitted → go to home
-                      AppNavigator.pushAndRemoveUntil(MainScreen());
-
-                    },
-                  ),
-                ),
-              ),
-                  (route) => false,
-            );
-          } else {
-            AppNavigator.pushAndRemoveUntil(MainScreen());
-          }
+          final rawStatus = state.data['data']?['verification_status'] as String?;
+          final status = VerificationStatusExt.fromString(rawStatus);
+          _handlePostOtpNavigation(context, status);
         }
-
+        if (state is AuthError) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(state.message)),
+          );
+        }
       },
       child: Scaffold(
         

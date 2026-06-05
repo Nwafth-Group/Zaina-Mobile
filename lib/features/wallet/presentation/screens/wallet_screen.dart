@@ -5,6 +5,7 @@ import 'package:zeina/widgets/signin_required_widget.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../core/utils/shared_pref_helper.dart';
 import '../../../../injection_container.dart';
+import '../../../../widgets/custom_icon.dart';
 import '../../data/models/wallet_model.dart';
 import '../cubit/cubit.dart';
 import 'add_money_screen.dart';
@@ -192,7 +193,7 @@ class _WalletScreenState extends State<WalletScreen> {
         const SizedBox(height: 12),
         Text(msg, textAlign: TextAlign.center,
             style: const TextStyle(
-                fontFamily: 'Poppins',
+                
                 color: ZienaColors.textSecondary)),
         const SizedBox(height: 16),
         ElevatedButton(
@@ -242,53 +243,54 @@ class _BalanceCard extends StatelessWidget {
           ),
         ],
       ),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-          Text('available_balance'.tr(),
-              style: const TextStyle(
-                fontSize: 13,
-                color: Colors.white70, fontWeight: FontWeight.w500,
-              )),
-          Container(
-            width: 36, height: 36,
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: const Icon(Icons.account_balance_wallet_outlined,
-                color: Colors.white, size: 20),
-          ),
-        ]),
-        const SizedBox(height: 8),
-        Text(
-          '${balance.toStringAsFixed(2)} $currency',
-          style: const TextStyle(
-            fontSize: 28,
-            fontWeight: FontWeight.w700, color: Colors.white,
-          ),
-        ),
-        const SizedBox(height: 16),
-        GestureDetector(
-          onTap: onAddMoney,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.18),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.white.withOpacity(0.3)),
-            ),
-            child: Row(mainAxisSize: MainAxisSize.min, children: [
-              const Icon(Icons.add_rounded, color: Colors.white, size: 18),
-              const SizedBox(width: 6),
-              Text('add_money'.tr(),
+      child: Column(
+        children: [
+          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+            Expanded(
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text('available_balance'.tr(),
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: Colors.white70, fontWeight: FontWeight.w500,
+                    )),
+                const SizedBox(height: 8),
+                Text(
+                  '${balance.toStringAsFixed(2)} $currency',
                   style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600, color: Colors.white,
-                  )),
-            ]),
+                    fontSize: 28,
+                    fontWeight: FontWeight.w700, color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ]),
+            ),
+            ImageAsset('assets/images/money.png', width:60, height: 60, fit: BoxFit.cover,)
+          ]),
+          GestureDetector(
+            onTap: onAddMoney,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.18),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.white.withOpacity(0.3)),
+              ),
+              child: Row(children: [
+                const Icon(Icons.add_rounded, color: Colors.white, size: 18),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text('add_money'.tr(),
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600, color: Colors.white,
+                      )),
+                ),
+              ]),
+            ),
           ),
-        ),
-      ]),
+
+        ],
+      ),
     );
   }
 }

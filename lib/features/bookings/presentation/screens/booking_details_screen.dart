@@ -3,7 +3,12 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:zeina/features/bookings/presentation/screens/report_sheet.dart';
+import 'package:zeina/widgets/custom_icon.dart';
+import '../../../../widgets/success_dialog.dart';
+import 'package:zeina/features/bookings/data/model/booking_flow_model.dart';
+import 'package:zeina/features/bookings/presentation/cubit/booking_flow_cubit.dart';
 import 'package:zeina/features/bookings/presentation/screens/reschedule_sheet.dart';
+import 'package:zeina/injection_container.dart';
 import 'package:zeina/features/bookings/presentation/screens/review_sheet.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../widgets/ziena_button.dart';
@@ -23,6 +28,25 @@ class BookingDetailScreen extends StatelessWidget {
             content: Text(state.message),
             backgroundColor: ZienaColors.error,
           ));
+        }
+        if (state is BookingCancelSuccess) {
+          showDialog(
+            context: context,
+            builder: (_) => SuccessDialog(
+              icon: Icons.cancel_outlined,
+              title: 'cancel_success_title'.tr(),
+              message: 'cancel_success_msg'.tr(),
+              onButtonTap: () {
+                Navigator.pop(context); // close dialog
+                Navigator.pop(context); // back to bookings list
+              },
+            ),
+          );
+        }
+        if (state is BookingReviewSuccess ||
+            state is BookingRescheduleSuccess ||
+            state is BookingReportSuccess) {
+          context.read<BookingDetailCubit>().fetchDetail(bookingId);
         }
       },
       builder: (context, state) {
@@ -57,8 +81,10 @@ class BookingDetailScreen extends StatelessWidget {
         if (state is BookingDetailLoaded) {
           return _buildDetail(context, state.booking);
         }
-        // Action loading
-        if (state is BookingActionLoading) {
+        if (state is BookingActionLoading ||
+            state is BookingReviewSuccess ||
+            state is BookingRescheduleSuccess ||
+            state is BookingReportSuccess) {
           return _shell(child: const Center(
               child: CircularProgressIndicator(
                   color: ZienaColors.primary, strokeWidth: 2)));
@@ -90,6 +116,7 @@ class BookingDetailScreen extends StatelessWidget {
     final isUpcoming = status == BookingStatusEnum.upcoming;
     final isInService = status == BookingStatusEnum.inService;
     final isCompleted = status == BookingStatusEnum.completed;
+    final isCancelled = status == BookingStatusEnum.cancelled;
 
     return Scaffold(
       
@@ -153,32 +180,39 @@ class BookingDetailScreen extends StatelessWidget {
 
                       // ── Booking ref ────────────────────────────────────────
                       _InfoPill(
-                        icon: Icons.tag_rounded,
+                        icon: 'assets/images/delivery.png',
                         label: b.bookingRef,
                         color: ZienaColors.primary,
                       ),
                       const SizedBox(height: 8),
                       Row(children: [
-                        _InfoPill(
-                          icon: Icons.calendar_today_rounded,
-                          label: b.fullDate,
-                          color: ZienaColors.textPrimary,
+                        Expanded(
+                          child: _InfoPill(
+                            icon: 'assets/images/calender.png',
+                            label: b.fullDate,
+                            color: ZienaColors.primary,
+                          ),
                         ),
                         const SizedBox(width: 8),
-                        _InfoPill(
-                          icon: Icons.access_time_rounded,
-                          label: b.timeSlot,
-                          color: ZienaColors.textPrimary,
+                        Expanded(
+                          child: _InfoPill(
+                            icon: 'assets/images/time.png',
+                            label: b.timeSlot,
+                            color: ZienaColors.primary,
+                          ),
                         ),
                       ]),
                       const SizedBox(height: 16),
 
-                      // ── Stepper ────────────────────────────────────────────
-                      _buildStepper(status),
+                      // ── Status indicator ───────────────────────────────────
+                      if (isCancelled)
+                        _buildCancelledBadge()
+                      else
+                        _buildStepper(status),
                       const SizedBox(height: 20),
 
                       // ── Important notes ────────────────────────────────────
-                      if (b.importantNotes.isNotEmpty) ...[
+                      if (!isCancelled && b.importantNotes.isNotEmpty) ...[
                         _sectionTitle('important_notes'.tr()),
                         const SizedBox(height: 10),
                         Container(
@@ -226,40 +260,55 @@ class BookingDetailScreen extends StatelessWidget {
                         Container(
                           padding: const EdgeInsets.all(14),
                           decoration: BoxDecoration(
-                            color: ZienaColors.bg1,
-                            borderRadius: BorderRadius.circular(14),
+                            color: ZienaColors.bg2,
+                            borderRadius: BorderRadius.circular(16),
                             border: Border.all(
-                                color: ZienaColors.greyBorder, width: 0.6),
+                                color: ZienaColors.primaryLight, width: 0.6),
                           ),
                           child: Row(
                             children: [
-                              Container(
-                                width: 38, height: 38,
-                                decoration: BoxDecoration(
-                                  color: ZienaColors.bg3,
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: const Icon(Icons.location_on_outlined,
-                                    color: ZienaColors.primary, size: 18),
-                              ),
+                              ImageAsset('assets/images/address_booking.png', height: 60, width: 60),
                               const SizedBox(width: 12),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(b.address!.label,
-                                        style: const TextStyle(
-                                           fontSize: 13,
-                                          fontWeight: FontWeight.w600,
-                                          color: ZienaColors.textPrimary,
-                                        )),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 8, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: ZienaColors.white,
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(
+                                            color: ZienaColors.primary
+                                                .withValues(alpha: 0.3),
+                                            width: 0.8),
+                                      ),
+                                      child: Text(b.address!.label,
+                                          style: const TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w500,
+                                            color: ZienaColors.primary,
+                                          )),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      '${b.address!.areaName}, ${b.address!.cityName}',
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                        color: ZienaColors.textPrimary,
+                                      ),
+                                    ),
                                     const SizedBox(height: 2),
-                                    Text(b.address!.fullAddress,
-                                        style: const TextStyle(
-                                           fontSize: 12,
-                                          color: ZienaColors.textSecondary,
-                                          height: 1.4,
-                                        )),
+                                    Text(
+                                      '${b.address!.areaName} ${b.address!.street}',
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        color: ZienaColors.textPrimary,
+                                        height: 1.4,
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ),
@@ -332,7 +381,7 @@ class BookingDetailScreen extends StatelessWidget {
           // ── Bottom action bar ──────────────────────────────────────────────
           Positioned(
             bottom: 0, left: 0, right: 0,
-            child: _buildBottomBar(context, b, isUpcoming, isInService, isCompleted),
+            child: _buildBottomBar(context, b, isUpcoming, isInService, isCompleted, isCancelled),
           ),
         ],
       ),
@@ -375,7 +424,7 @@ class BookingDetailScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: ZienaColors.bg1,
+        color: ZienaColors.bg2,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: ZienaColors.greyBorder, width: 0.6),
       ),
@@ -400,9 +449,37 @@ class BookingDetailScreen extends StatelessWidget {
     );
   }
 
+  Widget _buildCancelledBadge() {
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.warning_amber_rounded,
+                color: Color(0xFFE53935), size: 22),
+            const SizedBox(width: 8),
+            Text('cancelled'.tr(),
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFFE53935),
+                )),
+          ],
+        ),
+        const SizedBox(height: 6),
+        Text('cancelled_refund_message'.tr(),
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 13,
+              color: ZienaColors.textSecondary,
+            )),
+      ],
+    );
+  }
+
   Widget _buildBottomBar(BuildContext context, BookingModel b,
-      bool isUpcoming, bool isInService, bool isCompleted) {
-    if (!isUpcoming && !isInService && !isCompleted) return const SizedBox();
+      bool isUpcoming, bool isInService, bool isCompleted, bool isCancelled) {
+    if (!isUpcoming && !isInService && !isCompleted && !isCancelled) return const SizedBox();
 
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 30),
@@ -421,15 +498,28 @@ class BookingDetailScreen extends StatelessWidget {
               context: context,
               isScrollControlled: true,
               backgroundColor: Colors.transparent,
-              builder: (_) => BlocProvider.value(
-                value: context.read<BookingDetailCubit>(),
+              builder: (_) => MultiBlocProvider(
+                providers: [
+                  BlocProvider.value(
+                      value: context.read<BookingDetailCubit>()),
+                  BlocProvider(
+                    create: (_) => sl<BookingFlowCubit>()
+                      ..init(BookingFlowData(
+                        serviceId: b.serviceId,
+                        serviceName: b.serviceName,
+                        pricePerHour: 0,
+                        currency: b.currency,
+                        type: 'hourly',
+                      )),
+                  ),
+                ],
                 child: RescheduleSheet(bookingId: b.id),
               ),
             ),
           )),
           const SizedBox(width: 12),
           Expanded(child: OutlinedButton(
-            onPressed: () => _showCancelDialog(context),
+            onPressed: () => _showCancelDialog(context, b.id),
             style: OutlinedButton.styleFrom(
               foregroundColor: ZienaColors.primary,
               side: const BorderSide(color: ZienaColors.primary),
@@ -490,7 +580,8 @@ class BookingDetailScreen extends StatelessWidget {
     );
   }
 
-  void _showCancelDialog(BuildContext context) {
+  void _showCancelDialog(BuildContext context, int bookingId) {
+    final cubit = context.read<BookingDetailCubit>();
     showDialog(
       context: context,
       barrierColor: Colors.black.withOpacity(0.4),
@@ -502,28 +593,28 @@ class BookingDetailScreen extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
           child: Column(mainAxisSize: MainAxisSize.min, children: [
             Container(
-              width: 100, height: 100,
-              decoration: const BoxDecoration(
-                  color: ZienaColors.bg2, shape: BoxShape.circle),
-              child: Stack(alignment: Alignment.center, children: [
-                Container(
-                  width: 68, height: 68,
-                  decoration: const BoxDecoration(
-                      color: ZienaColors.primary, shape: BoxShape.circle),
-                ),
-                const Icon(Icons.sentiment_dissatisfied_rounded,
-                    color: Colors.white, size: 38),
-                Positioned(
-                  top: 8, right: 8,
-                  child: Container(
-                    width: 18, height: 18,
-                    decoration: const BoxDecoration(
-                      color: ZienaColors.primaryDark,
-                      shape: BoxShape.circle,
-                    ),
+              width: 140,
+              height: 140,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFE56B8F).withOpacity(0.15),
+                    blurRadius: 20,
+                    spreadRadius: 5,
+                  ),
+                ],
+              ),
+              child: ClipOval(
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0), // Padding around vector map
+                  child: Image.asset(
+                    'assets/images/cancel_illustration.png',
+                    fit: BoxFit.contain,
                   ),
                 ),
-              ]),
+              ),
             ),
             const SizedBox(height: 20),
             Text('are_you_sure_cancel'.tr(),
@@ -542,7 +633,10 @@ class BookingDetailScreen extends StatelessWidget {
             const SizedBox(height: 24),
             ZienaButton(
               text: 'confirm_button'.tr(),
-              onTap: () => Navigator.pop(context),
+              onTap: () {
+                Navigator.pop(context);
+                cubit.cancelBooking(bookingId);
+              },
               height: 50,
             ),
             const SizedBox(height: 10),
@@ -641,7 +735,7 @@ class _WorkerCard extends StatelessWidget {
 }
 
 class _InfoPill extends StatelessWidget {
-  final IconData icon;
+  final String icon;
   final String label;
   final Color color;
   const _InfoPill(
@@ -650,20 +744,25 @@ class _InfoPill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       decoration: BoxDecoration(
-        color: ZienaColors.bg1,
+        color: ZienaColors.bg2,
         borderRadius: BorderRadius.circular(10),
         border: Border.all(color: ZienaColors.greyBorder, width: 0.6),
       ),
-      child: Row(mainAxisSize: MainAxisSize.min, children: [
-        Icon(icon, size: 14, color: color),
+      child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+        ImageAsset(icon, height: 15, width: 15),
         const SizedBox(width: 6),
-        Text(label,
-            style: TextStyle(
-               fontSize: 12,
-              fontWeight: FontWeight.w500, color: color,
-            )),
+        Flexible(
+          child: Text(label,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                 fontSize: 12,
+                fontWeight: FontWeight.w500, color: color,
+              )),
+        ),
       ]),
     );
   }

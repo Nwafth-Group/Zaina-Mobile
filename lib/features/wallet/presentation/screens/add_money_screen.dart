@@ -259,23 +259,13 @@ class _AddMoneyScreenState extends State<AddMoneyScreen> {
           padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
           child: Column(mainAxisSize: MainAxisSize.min, children: [
             Container(
-              width: 110, height: 110,
-              decoration: const BoxDecoration(
-                  color: ZienaColors.bg2, shape: BoxShape.circle),
-              child: Stack(alignment: Alignment.center, children: [
-                const Icon(Icons.notifications_active_rounded,
-                    size: 55, color: ZienaColors.primary),
-                Positioned(
-                  bottom: 10, right: 10,
-                  child: Container(
-                    width: 28, height: 28,
-                    decoration: const BoxDecoration(
-                        color: ZienaColors.primary, shape: BoxShape.circle),
-                    child: const Icon(Icons.check,
-                        color: Colors.white, size: 16),
-                  ),
-                ),
-              ]),
+              width: 110,
+              height: 110,
+              decoration: BoxDecoration(
+                color: ZienaColors.bg2,
+                shape: BoxShape.circle,
+              ),
+              child: Image.asset('assets/images/success.png', height: 180,),
             ),
             const SizedBox(height: 20),
             Text('success_title'.tr(),

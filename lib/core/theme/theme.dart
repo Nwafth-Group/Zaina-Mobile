@@ -18,8 +18,8 @@ class ZienaColors {
   static const Color grey = Color(0xFF9E9E9E);
   static const Color greyLight = Color(0xFFF5F5F5);
   static const Color greyBorder = Color(0xFFE0E0E0);
-  static const Color textPrimary = Color(0xFF1A1A2E);
-  static const Color textSecondary = Color(0xFF757575);
+  static const Color textPrimary = Color(0xFF1A0A0E);
+  static const Color textSecondary = Color(0xFF434343);
   static const Color textHint = Color(0xFFBDBDBD);
 
   // Status

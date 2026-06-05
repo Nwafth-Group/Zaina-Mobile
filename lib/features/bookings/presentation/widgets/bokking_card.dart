@@ -12,7 +12,7 @@ class BookingCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final status = booking.statusEnum;
-    return GestureDetector(
+    final isRtl = Directionality.of(context) == TextDirection.rtl;    return GestureDetector(
       onTap: onTap,
       child: Container(
         margin: const EdgeInsets.only(bottom: 14),
@@ -31,8 +31,8 @@ class BookingCard extends StatelessWidget {
           children: [
             // ── Image ──────────────────────────────────────────────────────
             ClipRRect(
-              borderRadius: const BorderRadius.horizontal(
-                  left: Radius.circular(18)),
+              borderRadius: const BorderRadiusDirectional.horizontal(
+                  start: Radius.circular(18)),
               child: booking.image != null
                   ? CachedNetworkImage(
                 imageUrl: booking.image!,
@@ -96,8 +96,8 @@ class BookingCard extends StatelessWidget {
               width: 60, height: 108,
               decoration: const BoxDecoration(
                 color: ZienaColors.primary,
-                borderRadius: BorderRadius.horizontal(
-                    right: Radius.circular(18)),
+                borderRadius: BorderRadiusDirectional.horizontal(
+                    end: Radius.circular(18)),
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -119,7 +119,7 @@ class BookingCard extends StatelessWidget {
                       color: Colors.white.withOpacity(0.2),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.chevron_right,
+                    child: Icon(!isRtl?Icons.chevron_left:Icons.chevron_right,
                         color: Colors.white, size: 15),
                   ),
                 ],

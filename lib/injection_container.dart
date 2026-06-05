@@ -14,6 +14,7 @@ import 'features/home/data/repository/home_repository.dart';
 import 'features/home/data/repository/search_repository.dart';
 import 'features/home/presentation/cubit/address_cubit.dart';
 import 'features/home/presentation/cubit/category_cubit.dart';
+import 'features/home/presentation/cubit/filter_cubit.dart';
 import 'features/home/presentation/cubit/home_cubti.dart';
 import 'features/home/presentation/cubit/search_cubit.dart';
 import 'features/home/presentation/cubit/service_cubit.dart';
@@ -90,5 +91,7 @@ void setupDependencies() {
           () => VerificationCubit(sl<ApiClient>()));
   sl.registerFactory<ProfileCubit>(
           () => ProfileCubit(sl<ApiClient>()));
+  sl.registerFactory<FilterCubit>(() => FilterCubit(sl<ApiClient>()));
+
 
 }

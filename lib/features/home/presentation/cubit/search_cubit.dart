@@ -1,3 +1,6 @@
+import 'package:zeina/core/network/api_client.dart';
+
+import '../../data/model/filter_models.dart';
 import '../../data/model/service_model.dart';
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -113,6 +116,54 @@ class SearchCubit extends Cubit<SearchState> {
       ));
     } finally {
       _isLoadingMore = false;
+    }
+  }
+
+  final ApiClient _api = ApiClient();
+
+
+  Future<void> applyFilter(FilterParams params) async {
+    _currentQuery = ''; // filter clears text query
+    _currentPage = 1;
+    _currentResults = [];
+
+    emit(SearchLoading());
+    try {
+      final queryParams = params.toQueryParams();
+      queryParams['page'] = 1;
+
+      final res = await _api.get(
+        'customer/filter',
+        queryParameters: queryParams,
+      );
+
+      // Parse using the same SearchResponse format
+      // filter API wraps in data.services.data
+      final data = res['data'] as Map<String, dynamic>;
+      final servicesMap = data['services'] as Map<String, dynamic>;
+      final meta = servicesMap['meta'] as Map<String, dynamic>? ?? {};
+
+      _currentPage = meta['current_page'] ?? 1;
+      _lastPage    = meta['last_page'] ?? 1;
+      _currentResults = (servicesMap['data'] as List<dynamic>? ?? [])
+          .map((s) => ServiceModel.fromJson(s))
+          .toList();
+
+      if (_currentResults.isEmpty) {
+        emit(SearchEmpty(''));
+      } else {
+        emit(SearchResults(
+          results: List.from(_currentResults),
+          query: '',
+          currentPage: _currentPage,
+          lastPage: _lastPage,
+          total: meta['total'] ?? 0,
+        ));
+      }
+    } on Failure catch (e) {
+      emit(SearchError(e.message));
+    } catch (e) {
+      emit(SearchError('Something went wrong. Please try again.'));
     }
   }
 

@@ -1,5 +1,7 @@
 import 'dart:ui';
 
+import '../../../../core/utils/constants.dart';
+
 class BookingAddress {
   final int id;
   final String label;
@@ -29,8 +31,8 @@ class BookingAddress {
     return BookingAddress(
       id: json['id'] ?? 0,
       label: json['label'] ?? 'Home',
-      areaName: area['name'] ?? '',
-      cityName: city['name'] ?? '',
+      areaName: lng=='ar'?area['name_ar']:area['name_en'] ?? '',
+      cityName: lng=='ar'?city['name_ar']:city['name_en'] ?? '',
       street: json['street'] ?? '',
       building: json['building'] ?? '',
       floor: json['floor'] ?? '',
@@ -95,6 +97,7 @@ class BookingPriceSummary {
 
 class BookingModel {
   final int id;
+  final int serviceId;
   final String bookingRef;
   final String status;
   final String serviceName;
@@ -113,6 +116,7 @@ class BookingModel {
 
   const BookingModel({
     required this.id,
+    required this.serviceId,
     required this.bookingRef,
     required this.status,
     required this.serviceName,
@@ -134,6 +138,7 @@ class BookingModel {
     print("hhhhhh $json");
     return BookingModel(
       id: json['id'] ?? 0,
+      serviceId: json['service_id'] ?? 0,
       bookingRef: json['booking_ref'] ?? '',
       status: json['status'] ?? 'Upcoming',
       serviceName: json['service_name'] ?? '',

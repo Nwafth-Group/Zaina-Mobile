@@ -4,10 +4,12 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:zeina/core/utils/app_navigator.dart';
 import '../../../../core/theme/theme.dart';
+import '../../../../injection_container.dart';
 import '../../../../widgets/ziena_button.dart';
 import '../../../../widgets/ziena_logo.dart';
 import '../../../main_screen.dart';
 import '../cubit/auth_cubit.dart';
+import '../cubit/verification_cubit.dart';
 import 'otp_screen.dart';
 import 'terms_screen.dart';
 import 'dart:ui' as ui;
@@ -56,8 +58,11 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) => BlocProvider.value(
-                value: context.read<AuthCubit>(),
+              builder: (_) => MultiBlocProvider(
+                providers: [
+                  BlocProvider.value(value: context.read<AuthCubit>()),
+                  BlocProvider(create: (_) => sl<ProfileCubit>()),
+                ],
                 child: OtpScreen(mobileNumber: state.mobileNumber),
               ),
             ),
@@ -121,8 +126,10 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
                     ),
                     initialCountryCode: 'EG',
                     onChanged: (phone) {
-                      // _completePhone = phone.completeNumber;
-                      _completePhone = phone.number;
+                      // Build E.164 format: +{countryCode}{national number without leading 0}
+                      final national = phone.number.replaceFirst(RegExp(r'^0+'), '');
+                      // _completePhone = '${phone.countryCode}$national';
+                      _completePhone = '${phone.number}';
                     },
                     flagsButtonPadding: const EdgeInsets.only(left: 12),
                     dropdownIconPosition: IconPosition.trailing,

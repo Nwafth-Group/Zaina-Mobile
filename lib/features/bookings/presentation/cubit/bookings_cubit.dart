@@ -151,6 +151,19 @@ class BookingDetailCubit extends Cubit<BookingDetailState> {
     }
   }
 
+  // ── Cancel ─────────────────────────────────────────────────────────────────
+  Future<void> cancelBooking(int bookingId) async {
+    emit(BookingActionLoading());
+    try {
+      await _api.put('customer/bookings/$bookingId/cancel');
+      emit(BookingCancelSuccess());
+    } on DioException catch (e) {
+      emit(BookingDetailError(handleDioError(e).message));
+    } catch (_) {
+      emit(BookingDetailError('Something went wrong'));
+    }
+  }
+
   // ── Review ─────────────────────────────────────────────────────────────────
   Future<void> submitReview({
     required int bookingId,
@@ -215,6 +228,7 @@ class BookingActionLoading extends BookingDetailState {}
 class BookingRescheduleSuccess extends BookingDetailState {}
 class BookingReportSuccess extends BookingDetailState {}
 class BookingReviewSuccess extends BookingDetailState {}
+class BookingCancelSuccess extends BookingDetailState {}
 class BookingDetailError extends BookingDetailState {
   final String message;
   BookingDetailError(this.message);

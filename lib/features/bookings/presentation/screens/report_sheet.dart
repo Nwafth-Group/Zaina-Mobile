@@ -17,7 +17,7 @@ class ReportSheet extends StatefulWidget {
 
 class _ReportSheetState extends State<ReportSheet> {
   final _reasons = [
-    ('worker_no_show', 'worker_no_show'),
+    ('worker_absent', 'worker_no_show'),
     ('late_arrival', 'late_arrival'),
     ('poor_quality', 'poor_quality'),
     ('wrong_charges', 'wrong_charges'),
@@ -26,6 +26,17 @@ class _ReportSheetState extends State<ReportSheet> {
 
   String _selectedReason = 'other';
   final _descCtrl = TextEditingController();
+  bool _descError = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _descCtrl.addListener(() {
+      if (_descError && _descCtrl.text.trim().isNotEmpty) {
+        setState(() => _descError = false);
+      }
+    });
+  }
 
   @override
   void dispose() {
@@ -34,6 +45,10 @@ class _ReportSheetState extends State<ReportSheet> {
   }
 
   void _submit() {
+    if (_selectedReason == 'other' && _descCtrl.text.trim().isEmpty) {
+      setState(() => _descError = true);
+      return;
+    }
     context.read<BookingDetailCubit>().submitReport(
       bookingId: widget.bookingId,
       reason: _selectedReason,
@@ -101,7 +116,10 @@ class _ReportSheetState extends State<ReportSheet> {
               activeColor: ZienaColors.primary,
               contentPadding: EdgeInsets.zero,
               dense: true,
-              onChanged: (v) => setState(() => _selectedReason = v!),
+              onChanged: (v) => setState(() {
+                _selectedReason = v!;
+                if (v != 'other') _descError = false;
+              }),
             )),
 
             // Description
@@ -109,18 +127,36 @@ class _ReportSheetState extends State<ReportSheet> {
               decoration: BoxDecoration(
                 color: ZienaColors.bg1,
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: ZienaColors.greyBorder),
+                border: Border.all(
+                  color: _descError ? ZienaColors.error : ZienaColors.greyBorder,
+                  width: _descError ? 1.4 : 1,
+                ),
               ),
               child: CustomTextField(
                 controller: _descCtrl,
                 maxLines: 3,
-                hintText: 'describe_issue_optional'.tr(),
+                hintText: _selectedReason == 'other'
+                    ? 'describe_issue_required'.tr()
+                    : 'describe_issue_optional'.tr(),
                 border: 0,
                 borderRadius: 14,
                 fillColor: ZienaColors.bg1,
                 contentPadding: const EdgeInsets.all(16),
+              ),
+            ),
+            if (_descError) ...[
+              const SizedBox(height: 6),
+              Padding(
+                padding: const EdgeInsets.only(left: 4),
+                child: Text(
+                  'this_field_required'.tr(),
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: ZienaColors.error,
+                  ),
                 ),
               ),
+            ],
 
             const SizedBox(height: 20),
 

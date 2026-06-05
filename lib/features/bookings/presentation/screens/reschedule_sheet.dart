@@ -4,6 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../widgets/success_dialog.dart';
 import '../../../../widgets/ziena_button.dart';
+import '../../data/model/booking_flow_model.dart';
+import '../cubit/booking_flow_cubit.dart';
 import '../cubit/bookings_cubit.dart';
 
 class RescheduleSheet extends StatefulWidget {
@@ -15,27 +17,29 @@ class RescheduleSheet extends StatefulWidget {
 }
 
 class _RescheduleSheetState extends State<RescheduleSheet> {
-  DateTime _selectedDate = DateTime(2026, 8, 20);
-  bool _isAm = true;
-  String? _selectedStartTime;
-
-  final _amTimes = ['09:00', '10:00', '11:00'];
-  final _pmTimes = ['12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00'];
-
-  List<String> get _times => _isAm ? _amTimes : _pmTimes;
-
-  String get _displayDate =>
-      '${_selectedDate.day.toString().padLeft(2, '0')}/${_selectedDate.month.toString().padLeft(2, '0')}/${_selectedDate.year}';
+  DateTime _date = DateTime.now().add(const Duration(days: 1));
+  ShiftModel? _shift;
+  AvailableBlockModel? _block;
 
   String get _apiDate =>
-      '${_selectedDate.year}-${_selectedDate.month.toString().padLeft(2, '0')}-${_selectedDate.day.toString().padLeft(2, '0')}';
+      '${_date.year}-${_date.month.toString().padLeft(2, '0')}-${_date.day.toString().padLeft(2, '0')}';
+
+  bool get _canConfirm => _block != null;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<BookingFlowCubit>().fetchShifts(_apiDate);
+    });
+  }
 
   Future<void> _pickDate() async {
     final d = await showDatePicker(
       context: context,
-      initialDate: _selectedDate,
+      initialDate: _date,
       firstDate: DateTime.now(),
-      lastDate: DateTime(2027),
+      lastDate: DateTime.now().add(const Duration(days: 14)),
       builder: (ctx, child) => Theme(
         data: Theme.of(ctx).copyWith(
           colorScheme: const ColorScheme.light(
@@ -44,22 +48,23 @@ class _RescheduleSheetState extends State<RescheduleSheet> {
         child: child!,
       ),
     );
-    if (d != null) setState(() { _selectedDate = d; _selectedStartTime = null; });
+    if (d != null && mounted) {
+      setState(() {
+        _date = d;
+        _shift = null;
+        _block = null;
+      });
+      context.read<BookingFlowCubit>().fetchShifts(_apiDate);
+    }
   }
 
   void _onConfirm() {
-    if (_selectedStartTime == null) return;
-    final parts = _selectedStartTime!.split(':');
-    int h = int.parse(parts[0]);
-    final endH = (h + 1).toString().padLeft(2, '0');
-    final start = '$_selectedStartTime:00';
-    final end = '$endH:00:00';
-
+    if (_block == null) return;
     context.read<BookingDetailCubit>().reschedule(
       bookingId: widget.bookingId,
       newDate: _apiDate,
-      newStartTime: start,
-      newEndTime: end,
+      newStartTime: _block!.startTime,
+      newEndTime: _block!.endTime,
     );
   }
 
@@ -92,139 +97,212 @@ class _RescheduleSheetState extends State<RescheduleSheet> {
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
         padding: EdgeInsets.fromLTRB(
-            24, 16, 24, MediaQuery.of(context).viewInsets.bottom + 24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(child: Container(
-              width: 40, height: 4,
-              decoration: BoxDecoration(
-                  color: ZienaColors.greyBorder,
-                  borderRadius: BorderRadius.circular(2)),
-            )),
-            const SizedBox(height: 20),
-            Center(child: Text('select_date_and_time'.tr(),
-                style: const TextStyle(
-                   fontSize: 17,
-                  fontWeight: FontWeight.w700,
-                  color: ZienaColors.textPrimary,
-                ))),
-            const SizedBox(height: 20),
-            Text('select_new_date'.tr(),
-                style: const TextStyle(
-                   fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: ZienaColors.textPrimary,
-                )),
-            const SizedBox(height: 10),
-            GestureDetector(
-              onTap: _pickDate,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 16, vertical: 14),
-                decoration: BoxDecoration(
-                  color: ZienaColors.bg1,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: ZienaColors.greyBorder),
+            20, 12, 20, MediaQuery.of(context).viewInsets.bottom + 24),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Handle
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                      color: ZienaColors.greyBorder,
+                      borderRadius: BorderRadius.circular(2)),
                 ),
-                child: Row(children: [
-                  Expanded(child: Text(_displayDate,
-                      style: const TextStyle(
-                         fontSize: 14,
-                        color: ZienaColors.textPrimary,
-                      ))),
-                  const Icon(Icons.calendar_today_rounded,
-                      size: 18, color: ZienaColors.textSecondary),
-                ]),
               ),
-            ),
-            const SizedBox(height: 16),
-
-            // AM/PM
-            Row(children: [
-              _Toggle('AM', _isAm, () => setState(() {
-                _isAm = true; _selectedStartTime = null;
-              })),
-              const SizedBox(width: 10),
-              _Toggle('PM', !_isAm, () => setState(() {
-                _isAm = false; _selectedStartTime = null;
-              })),
-            ]),
-            const SizedBox(height: 14),
-
-            // Time grid
-            Wrap(spacing: 10, runSpacing: 10,
-              children: _times.map((t) {
-                final sel = _selectedStartTime == t;
-                return GestureDetector(
-                  onTap: () => setState(() => _selectedStartTime = t),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 180),
-                    width: 74, height: 40,
-                    decoration: BoxDecoration(
-                      color: sel ? ZienaColors.primary : ZienaColors.bg1,
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(
-                          color: sel ? ZienaColors.primary : ZienaColors.greyBorder),
-                    ),
-                    child: Center(child: Text(t,
-                        style: TextStyle(
-                           fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: sel ? Colors.white : ZienaColors.textPrimary,
-                        ))),
+              const SizedBox(height: 16),
+              Center(
+                child: Text(
+                  'select_date_and_time'.tr(),
+                  style: const TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
+                    color: ZienaColors.textPrimary,
                   ),
-                );
-              }).toList(),
-            ),
-            const SizedBox(height: 24),
+                ),
+              ),
+              const SizedBox(height: 20),
 
-            BlocBuilder<BookingDetailCubit, BookingDetailState>(
-              builder: (_, state) {
-                final loading = state is BookingActionLoading;
-                return ZienaButton(
-                  text: 'select'.tr(),
-                  onTap: (_selectedStartTime != null && !loading)
-                      ? _onConfirm : null,
-                  disabledBackgroundColor: ZienaColors.primary.withOpacity(0.4),
-                  disabledTextColor: Colors.white,
-                );
-              },
-            ),
-          ],
+              // ── Date picker ────────────────────────────────────────────────
+              _label('select_new_date'.tr()),
+              const SizedBox(height: 8),
+              GestureDetector(
+                onTap: _pickDate,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 14, vertical: 14),
+                  decoration: BoxDecoration(
+                    color: ZienaColors.bg1,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: ZienaColors.greyBorder),
+                  ),
+                  child: Row(children: [
+                    Expanded(
+                      child: Text(
+                        DateFormat('dd/MM/yyyy').format(_date),
+                        style: const TextStyle(
+                            fontSize: 14,
+                            color: ZienaColors.textPrimary),
+                      ),
+                    ),
+                    const Icon(Icons.calendar_today_outlined,
+                        size: 18, color: ZienaColors.textSecondary),
+                  ]),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // ── Shifts ─────────────────────────────────────────────────────
+              _label('select_time_slot'.tr()),
+              const SizedBox(height: 8),
+              BlocBuilder<BookingFlowCubit, BookingFlowState>(
+                builder: (context, state) {
+                  if (state.shiftsLoading) {
+                    return const Center(
+                      child: CircularProgressIndicator(
+                          color: ZienaColors.primary, strokeWidth: 2),
+                    );
+                  }
+                  if (state.shifts.isEmpty) {
+                    return _emptyBox('no_shifts_available'.tr());
+                  }
+                  return Column(
+                    children: state.shifts.map((s) {
+                      final sel = _shift?.id == s.id;
+                      return GestureDetector(
+                        onTap: () => setState(() {
+                          _shift = s;
+                          _block = null;
+                        }),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          margin: const EdgeInsets.only(bottom: 8),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 14, vertical: 12),
+                          decoration: BoxDecoration(
+                            color:
+                                sel ? ZienaColors.bg2 : ZienaColors.bg1,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: sel
+                                  ? ZienaColors.primary
+                                  : ZienaColors.greyBorder,
+                              width: sel ? 1.5 : 0.8,
+                            ),
+                          ),
+                          child: Row(children: [
+                            Expanded(
+                              child: Text(
+                                s.dropdownLabel,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                  color: sel
+                                      ? ZienaColors.primary
+                                      : ZienaColors.textPrimary,
+                                ),
+                              ),
+                            ),
+                            if (sel)
+                              const Icon(Icons.keyboard_arrow_up,
+                                  color: ZienaColors.primary, size: 18)
+                            else
+                              const Icon(Icons.keyboard_arrow_down,
+                                  color: ZienaColors.textSecondary,
+                                  size: 18),
+                          ]),
+                        ),
+                      );
+                    }).toList(),
+                  );
+                },
+              ),
+
+              // ── Available time blocks ──────────────────────────────────────
+              if (_shift != null) ...[
+                const SizedBox(height: 16),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: _shift!.availableBlocks.map((b) {
+                    final sel = _block == b;
+                    return GestureDetector(
+                      onTap: () => setState(() => _block = b),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 180),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: sel
+                              ? ZienaColors.primary
+                              : ZienaColors.bg1,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: sel
+                                ? ZienaColors.primary
+                                : ZienaColors.greyBorder,
+                            width: sel ? 1.5 : 0.8,
+                          ),
+                        ),
+                        child: Text(
+                          b.label,
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: sel
+                                ? Colors.white
+                                : ZienaColors.textPrimary,
+                          ),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ],
+
+              const SizedBox(height: 24),
+
+              // ── Confirm button ─────────────────────────────────────────────
+              BlocBuilder<BookingDetailCubit, BookingDetailState>(
+                builder: (_, state) {
+                  final loading = state is BookingActionLoading;
+                  return ZienaButton(
+                    text: 'select'.tr(),
+                    onTap: (_canConfirm && !loading) ? _onConfirm : null,
+                    disabledBackgroundColor:
+                        ZienaColors.primary.withValues(alpha: 0.4),
+                    disabledTextColor: Colors.white,
+                  );
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
-}
 
-class _Toggle extends StatelessWidget {
-  final String label;
-  final bool isSelected;
-  final VoidCallback onTap;
-  const _Toggle(this.label, this.isSelected, this.onTap);
+  Widget _label(String t) => Text(
+        t,
+        style: const TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+          color: ZienaColors.textPrimary,
+        ),
+      );
 
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+  Widget _emptyBox(String t) => Container(
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: isSelected ? ZienaColors.primary : ZienaColors.bg1,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-              color: isSelected ? ZienaColors.primary : ZienaColors.greyBorder),
+          color: ZienaColors.bg1,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: ZienaColors.greyBorder),
         ),
-        child: Text(label,
-            style: TextStyle(
-               fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: isSelected ? Colors.white : ZienaColors.textPrimary,
-            )),
-      ),
-    );
-  }
+        child: Text(t,
+            style: const TextStyle(
+                fontSize: 13, color: ZienaColors.textSecondary)),
+      );
 }

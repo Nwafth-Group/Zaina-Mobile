@@ -115,8 +115,10 @@ class _VerificationFlowScreenState extends State<VerificationFlowScreen> {
       listener: (context, state) {
         if (state is VerificationSuccess) {
           AppNavigator.pushAndRemoveUntil(VerificationSubmittedScreen(onContinue: () {
-            context.read<AuthCubit>().logout();
-            AppNavigator.pushAndRemoveUntil(PhoneAuthScreen());
+            AppNavigator.pushAndRemoveUntil(VerificationPendingScreen(onStatusChecked: (String status) {
+              AppNavigator.context!.read<AuthCubit>().logout();
+              AppNavigator.pushAndRemoveUntil(const PhoneAuthScreen());
+            },));
           },));
         }
         if (state is VerificationError) {

@@ -2,10 +2,14 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/theme.dart';
+import '../../../../injection_container.dart';
 import '../../../../widgets/custom_text_form_field.dart';
+import '../../data/model/filter_models.dart';
 import '../../data/model/service_model.dart';
+import '../cubit/filter_cubit.dart';
 import '../cubit/search_cubit.dart';
 import '../widgets/service_result_card.dart';
+import 'filter_screen.dart';
 
 class SearchScreen extends StatefulWidget {
   static const String routeName = '/search';
@@ -19,6 +23,7 @@ class _SearchScreenState extends State<SearchScreen> {
   final TextEditingController _ctrl = TextEditingController();
   final FocusNode _focus = FocusNode();
   final ScrollController _scrollCtrl = ScrollController();
+  FilterParams _activeFilter = const FilterParams();
 
   @override
   void initState() {
@@ -167,8 +172,23 @@ class _SearchScreenState extends State<SearchScreen> {
                     child: const Icon(Icons.cancel, color: ZienaColors.textSecondary, size: 20),
                   )
                       : GestureDetector(
-                    onTap: () {
-                      // Handle filter logic
+                    onTap: () async {
+                      final result = await Navigator.push<FilterParams>(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => BlocProvider(
+                            create: (_) => sl<FilterCubit>(),
+                            child: FilterScreen(
+                              initialParams: _activeFilter,
+                            ),
+                          ),
+                        ),
+                      );
+                      if (result != null) {
+                        setState(() => _activeFilter = result);
+                        // Apply filter — replaces search results
+                        context.read<SearchCubit>().applyFilter(result);
+                      }
                     },
                     child: Container(
                       width: 48,
@@ -230,42 +250,7 @@ class _SearchScreenState extends State<SearchScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            SizedBox(
-              width: 180,
-              height: 180,
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  Container(
-                    width: 140,
-                    height: 140,
-                    decoration: BoxDecoration(
-                      color: ZienaColors.bg2,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                  Icon(
-                    Icons.search_off_rounded,
-                    size: 80,
-                    color: ZienaColors.primary.withOpacity(0.45),
-                  ),
-                  Positioned(
-                    right: 12,
-                    bottom: 12,
-                    child: Container(
-                      width: 36,
-                      height: 36,
-                      decoration: const BoxDecoration(
-                        color: ZienaColors.primary,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(Icons.close,
-                          color: Colors.white, size: 20),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            Image.asset('assets/images/not_found.png', width: 160, height: 160),
             const SizedBox(height: 24),
             Text(
               'no_services_found'.tr(),

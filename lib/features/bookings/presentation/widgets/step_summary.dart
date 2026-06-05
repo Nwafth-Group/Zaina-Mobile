@@ -6,6 +6,8 @@ import '../../../../widgets/custom_text_form_field.dart';
 import '../../../../widgets/ziena_button.dart';
 import '../../data/model/booking_flow_model.dart';
 import '../cubit/booking_flow_cubit.dart';
+import '../../../main_screen.dart';
+import '../../../wallet/presentation/cubit/cubit.dart';
 
 class StepSummary extends StatefulWidget {
   const StepSummary({super.key});
@@ -15,10 +17,8 @@ class StepSummary extends StatefulWidget {
 }
 
 class _StepSummaryState extends State<StepSummary> {
-  String _paymentMethod = 'cash';
+  String _paymentMethod = 'points';
   final _couponCtrl = TextEditingController();
-  bool _couponApplied = false;
-  double _couponDiscount = 0;
 
   // Mock address (replace with address picker)
   final int _addressId = 1;
@@ -34,7 +34,7 @@ class _StepSummaryState extends State<StepSummary> {
       cubit.updateFlow(cubit.flow.copyWith(
         selectedAddressId: _addressId,
         selectedAddressLabel: _addressLabel,
-        paymentMethod: _paymentMethod,
+        paymentMethod: 'points',
       ));
     });
   }
@@ -46,26 +46,75 @@ class _StepSummaryState extends State<StepSummary> {
   }
 
   void _applyCoupon() {
-    if (_couponCtrl.text.trim().isEmpty) return;
-    // Mock: any coupon gives 10 EGP discount
-    setState(() {
-      _couponApplied = true;
-      _couponDiscount = 10;
-    });
-    final cubit = context.read<BookingFlowCubit>();
-    cubit.updateFlow(cubit.flow.copyWith(
-      couponCode: _couponCtrl.text.trim(),
-      couponDiscount: 10,
-    ));
+    final code = _couponCtrl.text.trim();
+    if (code.isEmpty) return;
+    context.read<BookingFlowCubit>().validateCoupon(code);
   }
 
   void _onBook() {
     context.read<BookingFlowCubit>().submitBooking();
   }
 
+  void _showBookingSuccessDialog(BuildContext context, String ref) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            Container(
+              width: 110,
+              height: 110,
+              decoration: BoxDecoration(
+                color: ZienaColors.bg2,
+                shape: BoxShape.circle,
+              ),
+              child: Image.asset('assets/images/success.png', height: 180,),
+            ),
+            const SizedBox(height: 20),
+            Text('booking_confirmed'.tr(),
+                style: const TextStyle(
+                  fontSize: 22, fontWeight: FontWeight.w700,
+                  color: ZienaColors.textPrimary,
+                )),
+            const SizedBox(height: 8),
+            if (ref.isNotEmpty)
+              Text(ref,
+                  style: const TextStyle(
+                    fontSize: 14, fontWeight: FontWeight.w600,
+                    color: ZienaColors.primary,
+                  )),
+            const SizedBox(height: 8),
+            Text('booking_confirmed_desc'.tr(),
+                style: const TextStyle(
+                    fontSize: 13, color: ZienaColors.textSecondary, height: 1.5),
+                textAlign: TextAlign.center),
+            const SizedBox(height: 24),
+            ZienaButton(
+              text: 'my_bookings'.tr(),
+              onTap: () {
+                Navigator.pop(context); // close dialog
+                Navigator.popUntil(context, (route) => route.isFirst); // back to main
+                MainScreen.switchToTab(1); // switch to bookings tab
+              },
+            ),
+          ]),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return BlocListener<BookingFlowCubit, BookingFlowState>(
+      listenWhen: (prev, curr) => prev.bookingRef == null && curr.bookingRef != null,
+      listener: (context, state) {
+        context.read<WalletCubit>().fetchWallet();
+        _showBookingSuccessDialog(context, state.bookingRef ?? '');
+      },
+      child: Scaffold(
       appBar: AppBar(
         title: Text('book_now'.tr()),
       ),
@@ -114,22 +163,24 @@ class _StepSummaryState extends State<StepSummary> {
                     // ── Coupon ──────────────────────────────────────────────
                     _sectionTitle('coupon'.tr()),
                     const SizedBox(height: 10),
-                    _buildCouponField(),
-                    if (_couponApplied) ...[
+                    _buildCouponField(state),
+                    if (state.couponError != null) ...[
+                      const SizedBox(height: 6),
+                      Text(state.couponError!.tr(),
+                          style: const TextStyle(
+                              fontSize: 12, color: ZienaColors.error)),
+                    ],
+                    if (flow.couponCode != null &&
+                        flow.couponCode!.isNotEmpty &&
+                        flow.couponDiscount > 0) ...[
                       const SizedBox(height: 8),
                       _CouponChip(
-                        label: '10 EGP OFF',
-                        code: _couponCtrl.text,
-                        onRemove: () => setState(() {
-                          _couponApplied = false;
-                          _couponDiscount = 0;
+                        label: '-${flow.couponDiscount.toStringAsFixed(0)} ${flow.currency}',
+                        code: flow.couponCode!,
+                        onRemove: () {
                           _couponCtrl.clear();
-                          final c = context.read<BookingFlowCubit>();
-                          c.updateFlow(c.flow.copyWith(
-                            couponCode: '',
-                            couponDiscount: 0,
-                          ));
-                        }),
+                          context.read<BookingFlowCubit>().removeCoupon();
+                        },
                       ),
                     ],
                     const SizedBox(height: 20),
@@ -181,91 +232,116 @@ class _StepSummaryState extends State<StepSummary> {
           );
         },
       ),
+      ),
     );
   }
 
   Widget _buildPaymentOptions(BookingFlowData flow) {
     final methods = [
-      ('cash', 'Cash', Icons.money_rounded),
+      ('points', 'points'.tr(), Icons.stars_rounded),
       ('wallet', 'Wallet', Icons.account_balance_wallet_outlined),
       ('card', 'Card', Icons.credit_card_rounded),
     ];
-    return Column(
-      children: methods.map((m) {
-        final sel = _paymentMethod == m.$1;
-        return GestureDetector(
-          onTap: () {
-            setState(() => _paymentMethod = m.$1);
-            final c = context.read<BookingFlowCubit>();
-            c.updateFlow(c.flow.copyWith(paymentMethod: m.$1));
-          },
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            margin: const EdgeInsets.only(bottom: 10),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            decoration: BoxDecoration(
-              color: sel ? ZienaColors.bg2 : ZienaColors.bg1,
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(
-                color: sel ? ZienaColors.primary : ZienaColors.greyBorder,
-                width: sel ? 1.5 : 0.8,
-              ),
-            ),
-            child: Row(children: [
-              Icon(m.$3,
-                  color: sel ? ZienaColors.primary : ZienaColors.textSecondary,
-                  size: 20),
-              const SizedBox(width: 12),
-              Expanded(child: Text(m.$2,
-                  style: TextStyle(
-                     fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: sel ? ZienaColors.primary : ZienaColors.textPrimary,
-                  ))),
-              Container(
-                width: 20, height: 20,
+    return BlocBuilder<WalletCubit, WalletState>(
+      builder: (context, walletState) {
+        final walletData = walletState is WalletLoaded ? walletState.data : null;
+        return Column(
+          children: methods.map((m) {
+            final sel = _paymentMethod == m.$1;
+            return GestureDetector(
+              onTap: () {
+                setState(() => _paymentMethod = m.$1);
+                final c = context.read<BookingFlowCubit>();
+                c.updateFlow(c.flow.copyWith(paymentMethod: m.$1));
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                margin: const EdgeInsets.only(bottom: 10),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: sel ? ZienaColors.primary : Colors.transparent,
+                  color: sel ? ZienaColors.bg2 : ZienaColors.bg1,
+                  borderRadius: BorderRadius.circular(14),
                   border: Border.all(
-                      color: sel ? ZienaColors.primary : ZienaColors.greyBorder,
-                      width: 2),
+                    color: sel ? ZienaColors.primary : ZienaColors.greyBorder,
+                    width: sel ? 1.5 : 0.8,
+                  ),
                 ),
-                child: sel
-                    ? const Icon(Icons.check, color: Colors.white, size: 12)
-                    : null,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(children: [
+                      Icon(m.$3,
+                          color: sel ? ZienaColors.primary : ZienaColors.textSecondary,
+                          size: 20),
+                      const SizedBox(width: 12),
+                      Expanded(child: Text(m.$2,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: sel ? ZienaColors.primary : ZienaColors.textPrimary,
+                          ))),
+                      Container(
+                        width: 20, height: 20,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: sel ? ZienaColors.primary : Colors.transparent,
+                          border: Border.all(
+                              color: sel ? ZienaColors.primary : ZienaColors.greyBorder,
+                              width: 2),
+                        ),
+                        child: sel
+                            ? const Icon(Icons.check, color: Colors.white, size: 12)
+                            : null,
+                      ),
+                    ]),
+                    if (sel && m.$1 == 'wallet') ...[
+                      const SizedBox(height: 6),
+                      Text(
+                        walletData != null
+                            ? '${'wallet_balance'.tr()}: ${walletData.availableBalance.toStringAsFixed(2)} ${walletData.currency}'
+                            : '${'wallet_balance'.tr()}: --',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: ZienaColors.primary,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
               ),
-            ]),
-          ),
+            );
+          }).toList(),
         );
-      }).toList(),
+      },
     );
   }
 
-  Widget _buildCouponField() {
+  Widget _buildCouponField(BookingFlowState state) {
+    final applied = state.flow?.couponCode?.isNotEmpty == true &&
+        state.flow!.couponDiscount > 0;
     return Row(children: [
       Expanded(
-        child: Expanded(
-          child: CustomTextField(
-            controller: _couponCtrl,
-            hintText: 'enter_coupon'.tr(),
-            fillColor: ZienaColors.bg1,
-            borderColor: ZienaColors.greyBorder,
-            contentPadding: EdgeInsets.zero,
-            maxLines: 1,
-            borderRadius: 15,
-            prefixIcon: const Padding(
-              padding: EdgeInsets.only(left: 12, right: 8),
-              child: Icon(Icons.local_offer_outlined,
-                  color: ZienaColors.primary, size: 18),
-            ),
+        child: CustomTextField(
+          controller: _couponCtrl,
+          hintText: 'enter_coupon'.tr(),
+          fillColor: ZienaColors.bg1,
+          borderColor: ZienaColors.greyBorder,
+          contentPadding: EdgeInsets.zero,
+          maxLines: 1,
+          borderRadius: 15,
+          prefixIcon: const Padding(
+            padding: EdgeInsets.only(left: 12, right: 8),
+            child: Icon(Icons.local_offer_outlined,
+                color: ZienaColors.primary, size: 18),
           ),
         ),
       ),
       const SizedBox(width: 10),
       ZienaButton(
         text: 'apply'.tr(),
-        onTap: _couponApplied ? null : _applyCoupon,
+        isLoading: state.couponLoading,
+        onTap: (applied || state.couponLoading) ? null : _applyCoupon,
         width: 100,
         height: 50,
         disabledBackgroundColor: ZienaColors.greyBorder,
@@ -276,27 +352,26 @@ class _StepSummaryState extends State<StepSummary> {
 
   Widget _buildBottomBar(
       BuildContext context, BookingFlowData flow, BookingFlowState state) {
-    final loading = state.submitting;
+    final walletOnly = _paymentMethod == 'card';
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 14, 20, 30),
       decoration: BoxDecoration(
         color: ZienaColors.white,
         boxShadow: [BoxShadow(
-          color: Colors.black.withOpacity(0.07),
+          color: Colors.black.withValues(alpha: 0.07),
           blurRadius: 16, offset: const Offset(0, -4),
         )],
       ),
       child: Column(mainAxisSize: MainAxisSize.min, children: [
-        // Price rows
         _PriceRow('subtotal'.tr(),
             '${flow.subtotal.toStringAsFixed(0)} ${flow.currency}', false),
         const SizedBox(height: 4),
         _PriceRow('service_vat'.tr(),
             '${flow.vat.toStringAsFixed(0)} ${flow.currency}', false),
-        if (_couponDiscount > 0) ...[
+        if (flow.couponDiscount > 0) ...[
           const SizedBox(height: 4),
           _PriceRow('coupon_discount'.tr(),
-              '-${_couponDiscount.toStringAsFixed(0)} ${flow.currency}', false),
+              '-${flow.couponDiscount.toStringAsFixed(0)} ${flow.currency}', false),
         ],
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 8),
@@ -308,10 +383,18 @@ class _StepSummaryState extends State<StepSummary> {
         ZienaButton(
           text: 'book_now'.tr(),
           isLoading: state.submitting,
-          onTap: state.submitting ? null : _onBook,
-          disabledBackgroundColor: ZienaColors.primary.withOpacity(0.5),
+          onTap: (state.submitting || walletOnly) ? null : _onBook,
+          disabledBackgroundColor: ZienaColors.primary.withValues(alpha: 0.5),
           disabledTextColor: Colors.white,
         ),
+        if (walletOnly) ...[
+          const SizedBox(height: 8),
+          Text(
+            'payment_not_available'.tr(),
+            style: const TextStyle(fontSize: 12, color: ZienaColors.textSecondary),
+            textAlign: TextAlign.center,
+          ),
+        ],
       ]),
     );
   }
