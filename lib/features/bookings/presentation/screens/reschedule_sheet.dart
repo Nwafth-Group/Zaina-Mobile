@@ -5,8 +5,8 @@ import '../../../../core/theme/theme.dart';
 import '../../../../widgets/success_dialog.dart';
 import '../../../../widgets/ziena_button.dart';
 import '../../data/model/booking_flow_model.dart';
-import '../cubit/booking_flow_cubit.dart';
 import '../cubit/bookings_cubit.dart';
+import '../cubit/reschedule_shifts_cubit.dart';
 
 class RescheduleSheet extends StatefulWidget {
   final int bookingId;
@@ -30,7 +30,9 @@ class _RescheduleSheetState extends State<RescheduleSheet> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<BookingFlowCubit>().fetchShifts(_apiDate);
+      context
+          .read<RescheduleShiftsCubit>()
+          .fetchShifts(widget.bookingId, _apiDate);
     });
   }
 
@@ -54,7 +56,9 @@ class _RescheduleSheetState extends State<RescheduleSheet> {
         _shift = null;
         _block = null;
       });
-      context.read<BookingFlowCubit>().fetchShifts(_apiDate);
+      context
+          .read<RescheduleShiftsCubit>()
+          .fetchShifts(widget.bookingId, _apiDate);
     }
   }
 
@@ -158,19 +162,24 @@ class _RescheduleSheetState extends State<RescheduleSheet> {
               // ── Shifts ─────────────────────────────────────────────────────
               _label('select_time_slot'.tr()),
               const SizedBox(height: 8),
-              BlocBuilder<BookingFlowCubit, BookingFlowState>(
+              BlocBuilder<RescheduleShiftsCubit, RescheduleShiftsState>(
                 builder: (context, state) {
-                  if (state.shiftsLoading) {
+                  if (state is RescheduleShiftsLoading) {
                     return const Center(
                       child: CircularProgressIndicator(
                           color: ZienaColors.primary, strokeWidth: 2),
                     );
                   }
-                  if (state.shifts.isEmpty) {
+                  if (state is RescheduleShiftsError) {
+                    return _emptyBox(state.message);
+                  }
+                  final shifts =
+                      state is RescheduleShiftsLoaded ? state.shifts : <ShiftModel>[];
+                  if (shifts.isEmpty) {
                     return _emptyBox('no_shifts_available'.tr());
                   }
                   return Column(
-                    children: state.shifts.map((s) {
+                    children: shifts.map((s) {
                       final sel = _shift?.id == s.id;
                       return GestureDetector(
                         onTap: () => setState(() {

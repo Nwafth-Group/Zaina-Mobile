@@ -5,8 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:zeina/features/bookings/presentation/screens/report_sheet.dart';
 import 'package:zeina/widgets/custom_icon.dart';
 import '../../../../widgets/success_dialog.dart';
-import 'package:zeina/features/bookings/data/model/booking_flow_model.dart';
-import 'package:zeina/features/bookings/presentation/cubit/booking_flow_cubit.dart';
+import 'package:zeina/features/bookings/presentation/cubit/reschedule_shifts_cubit.dart';
 import 'package:zeina/features/bookings/presentation/screens/reschedule_sheet.dart';
 import 'package:zeina/injection_container.dart';
 import 'package:zeina/features/bookings/presentation/screens/review_sheet.dart';
@@ -503,14 +502,7 @@ class BookingDetailScreen extends StatelessWidget {
                   BlocProvider.value(
                       value: context.read<BookingDetailCubit>()),
                   BlocProvider(
-                    create: (_) => sl<BookingFlowCubit>()
-                      ..init(BookingFlowData(
-                        serviceId: b.serviceId,
-                        serviceName: b.serviceName,
-                        pricePerHour: 0,
-                        currency: b.currency,
-                        type: 'hourly',
-                      )),
+                    create: (_) => sl<RescheduleShiftsCubit>(),
                   ),
                 ],
                 child: RescheduleSheet(bookingId: b.id),

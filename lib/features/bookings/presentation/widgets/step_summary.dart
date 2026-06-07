@@ -8,6 +8,8 @@ import '../../data/model/booking_flow_model.dart';
 import '../cubit/booking_flow_cubit.dart';
 import '../../../main_screen.dart';
 import '../../../wallet/presentation/cubit/cubit.dart';
+import '../../../home/presentation/cubit/address_cubit.dart';
+import '../../../home/data/model/address_model.dart';
 
 class StepSummary extends StatefulWidget {
   const StepSummary({super.key});
@@ -20,22 +22,22 @@ class _StepSummaryState extends State<StepSummary> {
   String _paymentMethod = 'points';
   final _couponCtrl = TextEditingController();
 
-  // Mock address (replace with address picker)
-  final int _addressId = 1;
-  final String _addressLabel = 'Home';
-  final String _addressDetail = 'Nasr City, Cairo\nAbbas El Akkad Street Building 24';
 
   @override
   void initState() {
     super.initState();
-    // Set address in flow
+// Set default address from profile in flow
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final cubit = context.read<BookingFlowCubit>();
-      cubit.updateFlow(cubit.flow.copyWith(
-        selectedAddressId: _addressId,
-        selectedAddressLabel: _addressLabel,
-        paymentMethod: 'points',
-      ));
+      final addressCubit = context.read<AddressCubit>();
+      final defaultAddr = addressCubit.defaultAddress;
+      if (defaultAddr != null) {
+        final flowCubit = context.read<BookingFlowCubit>();
+        flowCubit.updateFlow(flowCubit.flow.copyWith(
+          selectedAddressId: defaultAddr.id,
+          selectedAddressLabel: defaultAddr.label,
+          paymentMethod: 'points',
+        ));
+      }
     });
   }
 
@@ -188,9 +190,14 @@ class _StepSummaryState extends State<StepSummary> {
                     // ── Address ─────────────────────────────────────────────
                     _sectionTitle('address'.tr()),
                     const SizedBox(height: 10),
-                    _AddressTile(
-                      label: _addressLabel,
-                      detail: _addressDetail,
+BlocBuilder<AddressCubit, AddressState>(
+                      builder: (context, addrState) {
+                        final defaultAddr = context.read<AddressCubit>().defaultAddress;
+                        return _AddressTile(
+                          label: defaultAddr?.label ?? '-',
+                          detail: defaultAddr?.oneLiner ?? '-',
+                        );
+                      },
                     ),
                     const SizedBox(height: 20),
 

@@ -69,11 +69,11 @@ class _AddMoneyScreenState extends State<AddMoneyScreen> {
               )),
           centerTitle: false,
           actions: [
-            IconButton(
-              icon: const Icon(Icons.tune_rounded,
-                  color: ZienaColors.primary),
-              onPressed: () {},
-            ),
+            // IconButton(
+            //   icon: const Icon(Icons.tune_rounded,
+            //       color: ZienaColors.primary),
+            //   onPressed: () {},
+            // ),
           ],
         ),
         body: SingleChildScrollView(

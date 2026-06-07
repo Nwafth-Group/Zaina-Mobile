@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1025258124299",
+    "project_id": "ziena-c5969",
+    "storage_bucket": "ziena-c5969.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1025258124299:android:3a478c4bb0f6cf6a3dc30e",
+        "android_client_info": {
+          "package_name": "com.example.zeina_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDXfBSPQQ94-rRDOUYu2ycdYV4p69Ga164"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

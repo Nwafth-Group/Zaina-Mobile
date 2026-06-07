@@ -79,6 +79,7 @@ class _OtpScreenState extends State<OtpScreen> {
             title: 'success_title'.tr(),
             message: 'success_message'.tr(),
             buttonText: 'done'.tr(),
+            imageAsset: 'assets/images/success.png',
             onButtonTap: () {
               Navigator.pop(context);
               AppNavigator.pushAndRemoveUntil(const MainScreen());
