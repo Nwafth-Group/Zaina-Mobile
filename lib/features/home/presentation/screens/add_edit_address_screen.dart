@@ -2,10 +2,13 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/theme.dart';
+import '../../../../injection_container.dart';
 import '../../../../widgets/custom_text_form_field.dart';
 import '../../../../widgets/ziena_button.dart';
 import '../../data/model/address_model.dart';
+import '../../data/model/filter_models.dart';
 import '../cubit/address_cubit.dart';
+import '../cubit/filter_cubit.dart';
 import 'map_picker_screen.dart';
 
 class AddEditAddressScreen extends StatefulWidget {
@@ -20,6 +23,7 @@ class AddEditAddressScreen extends StatefulWidget {
 class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
   final _formKey = GlobalKey<FormState>();
 
+  final _labelCtrl         = TextEditingController();
   final _streetCtrl        = TextEditingController();
   final _buildingNameCtrl  = TextEditingController();
   final _buildingNoCtrl    = TextEditingController();
@@ -30,26 +34,34 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
   final _secondaryPhoneCtrl= TextEditingController();
   final _notesCtrl         = TextEditingController();
 
-  String _selectedLabel = 'Home';
+  late final FilterCubit _filterCubit;
+
   bool   _isDefault     = false;
   bool   _isSaving      = false;
 
   // Location from map
   double? _latitude;
   double? _longitude;
-  int?    _areaId; // would come from map selection
+  int?    _areaId;
   String? _selectedLocationDisplay;
+
+  // Country / governorate / city / area selection
+  LocationItem? _selectedCountry;
+  LocationItem? _selectedGovernorate;
+  LocationItem? _selectedCity;
+  LocationItem? _selectedArea;
 
   bool get _isEdit => widget.editAddress != null;
 
   @override
   void initState() {
     super.initState();
+    _filterCubit = sl<FilterCubit>()..loadCountries();
     if (_isEdit) _prefill(widget.editAddress!);
   }
 
   void _prefill(AddressModel a) {
-    _selectedLabel       = a.label;
+    _labelCtrl.text      = a.label;
     _streetCtrl.text     = a.street;
     _buildingNameCtrl.text = a.buildingName ?? '';
     _buildingNoCtrl.text = a.buildingNo ?? '';
@@ -65,11 +77,28 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
     _areaId    = a.area?.id;
     if (a.area != null) {
       _selectedLocationDisplay = a.shortAddress('en');
+      if (a.area!.city != null) {
+        final c = a.area!.city!;
+        _selectedCity = LocationItem(id: c.id, nameAr: c.nameAr, nameEn: c.nameEn);
+        _filterCubit.loadAreas(c.id).then((_) {
+          if (mounted) {
+            setState(() {
+              _selectedArea = LocationItem(
+                id: a.area!.id,
+                nameAr: a.area!.nameAr,
+                nameEn: a.area!.nameEn,
+              );
+            });
+          }
+        });
+      }
     }
   }
 
   @override
   void dispose() {
+    _filterCubit.close();
+    _labelCtrl.dispose();
     _streetCtrl.dispose();
     _buildingNameCtrl.dispose();
     _buildingNoCtrl.dispose();
@@ -83,7 +112,6 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
   }
 
   Future<void> _openMap() async {
-    return;
     final result = await Navigator.push<Map<String, dynamic>>(
       context,
       MaterialPageRoute(builder: (_) => const MapPickerScreen()),
@@ -104,7 +132,7 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
     setState(() => _isSaving = true);
 
     final payload = <String, dynamic>{
-      'label':           _selectedLabel,
+      'label':           _labelCtrl.text.trim().isEmpty ? 'Home' : _labelCtrl.text.trim(),
       'street':          _streetCtrl.text.trim(),
       'building_name':   _buildingNameCtrl.text.trim(),
       'building_no':     _buildingNoCtrl.text.trim(),
@@ -173,6 +201,14 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
 
+              // ── Address Label ─────────────────────────────────────────────
+              _buildTextField(
+                label: 'address_label'.tr(),
+                ctrl: _labelCtrl,
+                hint: 'Home',
+                required: true,
+              ),
+
               // ── Select from Map ───────────────────────────────────────────
               SizedBox(
                 width: double.infinity,
@@ -197,12 +233,110 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
 
-              // ── Label picker ──────────────────────────────────────────────
-              _sectionLabel('address_label'.tr()),
-              const SizedBox(height: 10),
-              _buildLabelPicker(),
+              // ── Country / Governorate + City / Area ───────────────────────
+              BlocBuilder<FilterCubit, FilterState>(
+                bloc: _filterCubit,
+                builder: (context, state) {
+                  final data = state is FilterLocationsLoaded
+                      ? state.data
+                      : state is FilterLocationsLoading
+                          ? state.data
+                          : _filterCubit.data;
+                  final lang = context.locale.languageCode;
+                  return Column(
+                    children: [
+                      // Country + Governorate row
+                      Row(children: [
+                        Expanded(child: _buildDropdown<int>(
+                          hint: data.countriesLoading ? 'loading'.tr() : 'country'.tr(),
+                          value: _selectedCountry?.id,
+                          items: data.countries.map((c) => DropdownMenuItem(
+                            value: c.id,
+                            child: Text(c.localized(lang),
+                                style: const TextStyle(fontSize: 13)),
+                          )).toList(),
+                          onChanged: (id) {
+                            if (id == null) return;
+                            final country = data.countries.firstWhere((c) => c.id == id);
+                            setState(() {
+                              _selectedCountry    = country;
+                              _selectedGovernorate = null;
+                              _selectedCity       = null;
+                              _selectedArea       = null;
+                              _areaId             = null;
+                            });
+                            _filterCubit.loadGovernates(country.id);
+                          },
+                        )),
+                        const SizedBox(width: 10),
+                        Expanded(child: _buildDropdown<int>(
+                          hint: data.governoratesLoading ? 'loading'.tr() : 'governorate'.tr(),
+                          value: _selectedGovernorate?.id,
+                          items: data.governorates.map((g) => DropdownMenuItem(
+                            value: g.id,
+                            child: Text(g.localized(lang),
+                                style: const TextStyle(fontSize: 13)),
+                          )).toList(),
+                          onChanged: (id) {
+                            if (id == null) return;
+                            final gov = data.governorates.firstWhere((g) => g.id == id);
+                            setState(() {
+                              _selectedGovernorate = gov;
+                              _selectedCity        = null;
+                              _selectedArea        = null;
+                              _areaId              = null;
+                            });
+                            _filterCubit.loadCities(governorateId: gov.id);
+                          },
+                        )),
+                      ]),
+                      const SizedBox(height: 10),
+                      // City + Area row
+                      Row(children: [
+                        Expanded(child: _buildDropdown<int>(
+                          hint: data.citiesLoading ? 'loading'.tr() : 'city'.tr(),
+                          value: _selectedCity?.id,
+                          items: data.cities.map((c) => DropdownMenuItem(
+                            value: c.id,
+                            child: Text(c.localized(lang),
+                                style: const TextStyle(fontSize: 13)),
+                          )).toList(),
+                          onChanged: (id) {
+                            if (id == null) return;
+                            final city = data.cities.firstWhere((c) => c.id == id);
+                            setState(() {
+                              _selectedCity = city;
+                              _selectedArea = null;
+                              _areaId = null;
+                            });
+                            _filterCubit.loadAreas(city.id);
+                          },
+                        )),
+                        const SizedBox(width: 10),
+                        Expanded(child: _buildDropdown<int>(
+                          hint: data.areasLoading ? 'loading'.tr() : 'area'.tr(),
+                          value: _selectedArea?.id,
+                          items: data.areas.map((a) => DropdownMenuItem(
+                            value: a.id,
+                            child: Text(a.localized(lang),
+                                style: const TextStyle(fontSize: 13)),
+                          )).toList(),
+                          onChanged: (id) {
+                            if (id == null) return;
+                            final area = data.areas.firstWhere((a) => a.id == id);
+                            setState(() {
+                              _selectedArea = area;
+                              _areaId = area.id;
+                            });
+                          },
+                        )),
+                      ]),
+                    ],
+                  );
+                },
+              ),
               const SizedBox(height: 16),
 
               // ── Street ────────────────────────────────────────────────────
@@ -349,39 +483,6 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
     );
   }
 
-  Widget _buildLabelPicker() {
-    const options = ['Home', 'Work', 'Other'];
-    return Row(
-      children: options.map((opt) {
-        final sel = _selectedLabel == opt;
-        final isLast = opt == options.last;
-        return Expanded(
-          child: GestureDetector(
-            onTap: () => setState(() => _selectedLabel = opt),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 180),
-              margin: EdgeInsets.only(right: isLast ? 0 : 8),
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              decoration: BoxDecoration(
-                color: sel ? ZienaColors.primary : ZienaColors.bg1,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                    color: sel ? ZienaColors.primary : ZienaColors.greyBorder),
-              ),
-              child: Center(
-                child: Text(opt,
-                    style: TextStyle(
-                      fontFamily: 'Poppins', fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: sel ? Colors.white : ZienaColors.textPrimary,
-                    )),
-              ),
-            ),
-          ),
-        );
-      }).toList(),
-    );
-  }
 
   Widget _buildTextField({
     required String label,
@@ -429,8 +530,41 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
     );
   }
 
-  Widget _sectionLabel(String text) => Text(text,
-      style: const TextStyle( fontSize: 13,
-        fontWeight: FontWeight.w600, color: ZienaColors.textPrimary,
-      ));
+  Widget _buildDropdown<T>({
+    required String hint,
+    required T? value,
+    required List<DropdownMenuItem<T>> items,
+    required ValueChanged<T?> onChanged,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      decoration: BoxDecoration(
+        color: ZienaColors.bg1,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: ZienaColors.greyBorder, width: 0.8),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<T>(
+          value: value,
+          hint: Row(children: [
+            const Icon(Icons.location_on_outlined,
+                size: 15, color: ZienaColors.primary),
+            const SizedBox(width: 6),
+            Text(hint,
+                style: const TextStyle(
+                    fontSize: 13, color: ZienaColors.textHint)),
+          ]),
+          isExpanded: true,
+          icon: const Icon(Icons.keyboard_arrow_down,
+              color: ZienaColors.textSecondary, size: 18),
+          items: items,
+          onChanged: onChanged,
+          style: const TextStyle(fontSize: 13, color: ZienaColors.textPrimary),
+          dropdownColor: ZienaColors.white,
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+    );
+  }
+
 }

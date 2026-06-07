@@ -28,6 +28,10 @@
     <string>This app needs camera access to take selfies</string>
     <key>NSPhotoLibraryUsageDescription</key>
     <string>This app needs photo access to select images</string>
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>This app needs your location to set your delivery address on the map</string>
+    <key>NSLocationAlwaysUsageDescription</key>
+    <string>This app needs your location to set your delivery address on the map</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UIApplicationSceneManifest</key>

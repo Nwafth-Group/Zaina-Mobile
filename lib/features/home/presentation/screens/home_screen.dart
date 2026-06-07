@@ -394,7 +394,7 @@ class _HomeScreenState extends State<HomeScreen> {
   // ── Popular Services (UPDATED) ─────────────────────────────────────────────
   Widget _buildPopularServices(List<ServiceModel> services) {
     return SizedBox(
-      height: 222,
+      height: 226,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 20),

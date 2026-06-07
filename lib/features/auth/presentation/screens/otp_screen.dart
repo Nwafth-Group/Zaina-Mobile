@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:zeina/core/utils/app_navigator.dart';
 import 'package:zeina/features/auth/data/models/verification_model.dart';
 import 'package:zeina/features/auth/presentation/screens/verification_flow_screen.dart';
 import 'package:zeina/features/auth/presentation/screens/verification_pending_screen.dart';
 import 'package:zeina/features/auth/presentation/screens/verification_welcome_screen.dart';
 import '../../../../core/theme/theme.dart';
+import '../../../../core/utils/app_navigator.dart';
 import '../../../../injection_container.dart';
 import '../../../../widgets/success_dialog.dart';
 import '../../../../widgets/ziena_button.dart';
@@ -161,8 +161,9 @@ class _OtpScreenState extends State<OtpScreen> {
     return BlocListener<AuthCubit, AuthState>(
       listener: (context, state) {
         if (state is OtpVerifySuccess) {
-          final rawStatus = state.data['data']?['verification_status'] as String?;
+          final rawStatus = state.data['user']?['verification_status'] as String?;
           final status = VerificationStatusExt.fromString(rawStatus);
+          print("ssssss $rawStatus $status");
           _handlePostOtpNavigation(context, status);
         }
         if (state is AuthError) {
@@ -284,10 +285,14 @@ class _OtpScreenState extends State<OtpScreen> {
                 ),
                 const Spacer(),
                 BlocBuilder<AuthCubit, AuthState>(
-                  builder: (context, state) => ZienaButton(
-                    text: 'submit'.tr(),
-                    onTap: _onSubmit,
-                    isLoading: state is AuthLoading,
+                  builder: (context, authState) =>
+                      BlocBuilder<ProfileCubit, ProfileState>(
+                    builder: (context, profileState) => ZienaButton(
+                      text: 'submit'.tr(),
+                      onTap: _onSubmit,
+                      isLoading: authState is AuthLoading ||
+                          profileState is ProfileLoading,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 32),

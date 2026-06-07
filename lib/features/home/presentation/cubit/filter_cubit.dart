@@ -26,37 +26,53 @@ class FilterError extends FilterState {
 
 // ── Holds all picker data ─────────────────────────────────────────────────────
 class FilterCubitData {
+  final List<LocationItem> countries;
+  final List<LocationItem> governorates;
   final List<LocationItem> cities;
   final List<LocationItem> areas;
   final List<CategoryModel> categories;
+  final bool countriesLoading;
+  final bool governoratesLoading;
   final bool citiesLoading;
   final bool areasLoading;
   final bool categoriesLoading;
 
   const FilterCubitData({
-    this.cities             = const [],
-    this.areas              = const [],
-    this.categories         = const [],
-    this.citiesLoading      = false,
-    this.areasLoading       = false,
-    this.categoriesLoading  = false,
+    this.countries            = const [],
+    this.governorates         = const [],
+    this.cities               = const [],
+    this.areas                = const [],
+    this.categories           = const [],
+    this.countriesLoading     = false,
+    this.governoratesLoading  = false,
+    this.citiesLoading        = false,
+    this.areasLoading         = false,
+    this.categoriesLoading    = false,
   });
 
   FilterCubitData copyWith({
+    List<LocationItem>? countries,
+    List<LocationItem>? governorates,
     List<LocationItem>? cities,
     List<LocationItem>? areas,
     List<CategoryModel>? categories,
+    bool? countriesLoading,
+    bool? governoratesLoading,
     bool? citiesLoading,
     bool? areasLoading,
     bool? categoriesLoading,
   }) {
     return FilterCubitData(
-      cities:             cities             ?? this.cities,
-      areas:              areas              ?? this.areas,
-      categories:         categories         ?? this.categories,
-      citiesLoading:      citiesLoading      ?? this.citiesLoading,
-      areasLoading:       areasLoading       ?? this.areasLoading,
-      categoriesLoading:  categoriesLoading  ?? this.categoriesLoading,
+      countries:            countries            ?? this.countries,
+      governorates:         governorates         ?? this.governorates,
+      cities:               cities               ?? this.cities,
+      areas:                areas                ?? this.areas,
+      categories:           categories           ?? this.categories,
+      countriesLoading:     countriesLoading     ?? this.countriesLoading,
+      governoratesLoading:  governoratesLoading  ?? this.governoratesLoading,
+      citiesLoading:        citiesLoading        ?? this.citiesLoading,
+      areasLoading:         areasLoading         ?? this.areasLoading,
+      categoriesLoading:    categoriesLoading    ?? this.categoriesLoading,
     );
   }
 }
@@ -90,8 +106,53 @@ class FilterCubit extends Cubit<FilterState> {
     }
   }
 
+  // ── Load countries ─────────────────────────────────────────────────────────
+  Future<void> loadCountries() async {
+    if (_data.countries.isNotEmpty) return;
+    _data = _data.copyWith(countriesLoading: true);
+    emit(FilterLocationsLoading(_data));
+    try {
+      final res = await _api.get('customer/locations/countries');
+      final items = (res['data']['items'] as List<dynamic>? ?? [])
+          .map((e) => LocationItem.fromJson(e))
+          .toList();
+      _data = _data.copyWith(countriesLoading: false, countries: items);
+      emit(FilterLocationsLoaded(_data));
+    } on DioException catch (e) {
+      _data = _data.copyWith(countriesLoading: false);
+      emit(FilterError(handleDioError(e).message));
+      emit(FilterLocationsLoaded(_data));
+    } catch (_) {
+      _data = _data.copyWith(countriesLoading: false);
+      emit(FilterLocationsLoaded(_data));
+    }
+  }
+
+  // ── Load governorates for a country ───────────────────────────────────────
+  Future<void> loadGovernates(int countryId) async {
+    _data = _data.copyWith(governoratesLoading: true, governorates: [], cities: [], areas: []);
+    emit(FilterLocationsLoading(_data));
+    try {
+      final res = await _api.get(
+        'customer/locations/governorates',
+        queryParameters: {'country_id': countryId},
+      );
+      final items = (res['data']['items'] as List<dynamic>? ?? [])
+          .map((e) => LocationItem.fromJson(e))
+          .toList();
+      _data = _data.copyWith(governoratesLoading: false, governorates: items);
+      emit(FilterLocationsLoaded(_data));
+    } on DioException catch (e) {
+      _data = _data.copyWith(governoratesLoading: false);
+      emit(FilterError(handleDioError(e).message));
+      emit(FilterLocationsLoaded(_data));
+    } catch (_) {
+      _data = _data.copyWith(governoratesLoading: false);
+      emit(FilterLocationsLoaded(_data));
+    }
+  }
+
   // ── Load cities for a governorate ──────────────────────────────────────────
-  // Using governorate_id → cities endpoint
   Future<void> loadCities({int? governorateId}) async {
     _data = _data.copyWith(citiesLoading: true, cities: [], areas: []);
     emit(FilterLocationsLoading(_data));

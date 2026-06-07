@@ -57,6 +57,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
       switch (status) {
         case VerificationStatus.verified:
+        case VerificationStatus.approved:
         // User is verified, go to main screen
           AppNavigator.pushAndRemoveUntil(MainScreen());
           break;
@@ -112,22 +113,6 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     }
   }
 
-  Future<void> _checkAndNavigateAfterVerification() async {
-    // Wait a bit for the status to update
-    await Future.delayed(const Duration(seconds: 2));
-
-    try {
-      final profile = await context.read<ProfileCubit>().fetchProfile();
-      if (profile?.verificationStatus == VerificationStatus.approved) {
-        AppNavigator.pushAndRemoveUntil(MainScreen());
-      } else {
-        // Still pending or other status, stay on verification screen
-        // The VerificationFlowScreen will show appropriate message
-      }
-    } catch (e) {
-      print('Error checking verification status: $e');
-    }
-  }
 
   @override
   void dispose() {
