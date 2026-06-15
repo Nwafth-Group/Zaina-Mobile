@@ -59,7 +59,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxHeight: 480),
-          child: const SignInRequiredWidget(tabKey: 'bookings'),
+          child: const SignInRequiredWidget(tabKey: 'bookings', dialog: true,),
         ),
       ),
     );
@@ -284,8 +284,8 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                       ...ReviewModel.mockReviews
                           .take(2)
                           .map((r) => _ReviewCard(review: r)),
-                      // const SizedBox(height: 4),
-                      // _buildSeeMoreReviews(),
+                      const SizedBox(height: 4),
+                      _buildSeeMoreReviews(),
                       const SizedBox(height: 30),
 
                     ],

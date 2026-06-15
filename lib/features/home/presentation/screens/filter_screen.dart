@@ -255,11 +255,7 @@ class _FilterScreenState extends State<FilterScreen> {
                     value: _selectedCity?.id,
                     items: data.cities.map((c) => DropdownMenuItem(
                       value: c.id,
-                      child: Row(children: [
-                        const Icon(Icons.location_on_outlined, size: 15, color: ZienaColors.primary),
-                        const SizedBox(width: 6),
-                        Text(c.localized(lang), style: const TextStyle(fontSize: 13)),
-                      ]),
+                      child: Text(c.localized(lang), style: const TextStyle(fontSize: 13)),
                     )).toList(),
                     onChanged: (id) {
                       if (id == null) return;
@@ -280,11 +276,7 @@ class _FilterScreenState extends State<FilterScreen> {
                     value: _selectedArea?.id,
                     items: data.areas.map((a) => DropdownMenuItem(
                       value: a.id,
-                      child: Row(children: [
-                        const Icon(Icons.location_on_outlined, size: 15, color: ZienaColors.primary),
-                        const SizedBox(width: 6),
-                        Text(a.localized(lang), style: const TextStyle(fontSize: 13)),
-                      ]),
+                      child: Text(a.localized(lang), style: const TextStyle(fontSize: 13)),
                     )).toList(),
                     onChanged: (id) {
                       if (id == null) return;
