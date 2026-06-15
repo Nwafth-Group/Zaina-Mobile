@@ -65,7 +65,7 @@ class _ReportSheetState extends State<ReportSheet> {
           showDialog(
             context: context,
             builder: (_) => SuccessDialog(
-              icon: Icons.notifications_active_rounded,
+              imageAsset: 'assets/images/success.png',
               title: 'report_submitted'.tr(),
               message: 'report_submitted_msg'.tr(),
             ),

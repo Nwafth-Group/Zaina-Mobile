@@ -107,7 +107,7 @@ class ProfileCubit extends Cubit<ProfileState> {
         formData = FormData.fromMap(fields);
       }
 
-      final res = await _api.dio.put(
+      final res = await _api.dio.post(
         'customer/profile/complete',
         data: formData,
         options: Options(contentType: 'multipart/form-data'),

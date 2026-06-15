@@ -61,12 +61,14 @@ class _WalletScreenState extends State<WalletScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Title
-                  Text('wallet'.tr(),
-                      style: const TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w700,
-                        color: ZienaColors.textPrimary,
-                      )),
+                  Center(
+                    child: Text('wallet'.tr(),
+                        style: const TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w700,
+                          color: ZienaColors.textPrimary,
+                        )),
+                  ),
                   const SizedBox(height: 20),
 
                   // Balance card
@@ -308,11 +310,11 @@ class _TransactionTile extends StatelessWidget {
     final isCredit = tx.isCredit;
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: ZienaColors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: ZienaColors.greyBorder, width: 0.5),
+        color: ZienaColors.bg1,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: ZienaColors.primary, width: 0.5),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.03),
@@ -322,41 +324,37 @@ class _TransactionTile extends StatelessWidget {
       ),
       child: Row(children: [
         // Icon
-        Container(
-          width: 44, height: 44,
-          decoration: BoxDecoration(
-            color: isCredit
-                ? ZienaColors.success.withOpacity(0.1)
-                : ZienaColors.error.withOpacity(0.1),
-            shape: BoxShape.circle,
-          ),
-          child: Icon(
-            isCredit ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded,
-            color: isCredit ? ZienaColors.success : ZienaColors.error,
-            size: 20,
-          ),
-        ),
+        ImageAsset(isCredit?'assets/images/add.png':'assets/images/subtract.png', height: 55, width: 55,),
         const SizedBox(width: 12),
 
         // Title + ref
         Expanded(child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Amount
+            Text(
+              '${isCredit ? '+' : '-'}${tx.amount.toStringAsFixed(0)} EGP',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: isCredit ? ZienaColors.success : ZienaColors.error,
+              ),
+            ),
             Text(tx.title,
                 style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
                   color: ZienaColors.textPrimary,
                 ),
                 maxLines: 1, overflow: TextOverflow.ellipsis),
-            if (tx.referenceId != null) ...[
-              const SizedBox(height: 2),
-              Text(tx.referenceId!,
-                  style: const TextStyle(
-                    fontSize: 11,
-                    color: ZienaColors.textSecondary,
-                  )),
-            ],
+            // if (tx.referenceId != null) ...[
+            //   const SizedBox(height: 2),
+            //   Text(tx.referenceId!,
+            //       style: const TextStyle(
+            //         fontSize: 11,
+            //         color: ZienaColors.textSecondary,
+            //       )),
+            // ],
             const SizedBox(height: 2),
             Text(tx.createdAt,
                 style: const TextStyle(
@@ -366,15 +364,7 @@ class _TransactionTile extends StatelessWidget {
           ],
         )),
 
-        // Amount
-        Text(
-          '${isCredit ? '+' : '-'}${tx.amount.toStringAsFixed(0)} EGP',
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w700,
-            color: isCredit ? ZienaColors.success : ZienaColors.error,
-          ),
-        ),
+
       ]),
     );
   }

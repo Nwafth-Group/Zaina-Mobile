@@ -54,7 +54,7 @@ class _HomeScreenState extends State<HomeScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxHeight: 480),
-          child: const SignInRequiredWidget(tabKey: 'bookings'),
+          child: const SignInRequiredWidget(tabKey: 'bookings', dialog: true,),
         ),
       ),
     );

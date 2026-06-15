@@ -141,7 +141,16 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
       create: (_) {
         final cubit = sl<BookingFlowCubit>();
         cubit.init(BookingFlowData(
-          serviceId: widget.serviceId, serviceName: widget.preview!.nameAr, pricePerHour: widget.preview!.price.pricePerHour, currency: widget.preview!.price!.currency, type: widget.preview!.type,
+          serviceId: widget.serviceId,
+          serviceName: widget.preview!.nameAr,
+          serviceNameEn: widget.preview!.nameEn,
+          serviceImage: widget.preview!.image,
+          categoryNameAr: widget.preview!.category.nameAr,
+          categoryNameEn: widget.preview!.category.nameEn,
+          avgRating: widget.preview!.avgRating,
+          pricePerHour: widget.preview!.price.pricePerHour,
+          currency: widget.preview!.price.currency,
+          type: widget.preview!.type,
         ));
         return cubit;
       },

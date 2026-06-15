@@ -118,8 +118,12 @@ class AvailableWorkersResponse {
 // ── Booking summary passed between steps ──────────────────────────────────────
 class BookingFlowData {
   final int serviceId;
-  final String serviceName;
+  final String serviceName;       // nameAr
+  final String? serviceNameEn;
   final String? serviceImage;
+  final String? categoryNameAr;
+  final String? categoryNameEn;
+  final double avgRating;
   final double pricePerHour;
   final String currency;
   final String type; // hourly | moqema | both
@@ -139,10 +143,17 @@ class BookingFlowData {
   double couponDiscount;
   String? selectedShiftLabel;
 
+  String localizedName(String lang) => lang == 'ar' ? serviceName : (serviceNameEn ?? serviceName);
+  String localizedCategory(String lang) => lang == 'ar' ? (categoryNameAr ?? '') : (categoryNameEn ?? '');
+
   BookingFlowData({
     required this.serviceId,
     required this.serviceName,
+    this.serviceNameEn,
     this.serviceImage,
+    this.categoryNameAr,
+    this.categoryNameEn,
+    this.avgRating = 0,
     required this.pricePerHour,
     required this.currency,
     required this.type,
@@ -163,8 +174,7 @@ class BookingFlowData {
 
   double get subtotal =>
       pricePerHour * (selectedDurationHours ?? 1) * (selectedWorkerCount ?? 1);
-  double get vat => subtotal * 0.1;
-  double get total => subtotal + vat - couponDiscount;
+  double get total => subtotal - couponDiscount;
 
   BookingFlowData copyWith({
     String? selectedDate,
@@ -183,7 +193,11 @@ class BookingFlowData {
     return BookingFlowData(
       serviceId: serviceId,
       serviceName: serviceName,
+      serviceNameEn: serviceNameEn,
       serviceImage: serviceImage,
+      categoryNameAr: categoryNameAr,
+      categoryNameEn: categoryNameEn,
+      avgRating: avgRating,
       pricePerHour: pricePerHour,
       currency: currency,
       type: type,

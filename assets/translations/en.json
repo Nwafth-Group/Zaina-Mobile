@@ -263,6 +263,7 @@
   "invalid_card_number": "Please enter a valid card number",
   "wallet_topped_up": "Your Wallet Has Been Successfully Topped Up",
   "to": "To",
+  "pay": "Pay",
   "err_agree_terms": "Please agree to Terms & Conditions",
   "err_enter_phone": "Please enter a valid phone number",
   "err_generic": "Something went wrong. Please try again.",

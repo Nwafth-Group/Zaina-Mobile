@@ -11,8 +11,9 @@ import '../features/auth/presentation/cubit/auth_cubit.dart';
 
 class SignInRequiredWidget extends StatelessWidget {
   final String tabKey; // e.g. 'bookings', 'wallet', 'more'
+  final bool dialog; // e.g. 'bookings', 'wallet', 'more'
 
-  const SignInRequiredWidget({super.key, required this.tabKey});
+  const SignInRequiredWidget({super.key, required this.tabKey, this.dialog=false});
 
   @override
   Widget build(BuildContext context) {
@@ -25,8 +26,8 @@ class SignInRequiredWidget extends StatelessWidget {
             // Image
             Image.asset(
               'assets/images/signin_required.png',
-              width: MediaQuery.of(context).size.width*0.8,
-              height: MediaQuery.of(context).size.width*0.8,
+              width: MediaQuery.of(context).size.width*(dialog?0.4:0.8),
+              height: MediaQuery.of(context).size.width*(dialog?0.4:0.8),
             ),
             const SizedBox(height: 28),
 

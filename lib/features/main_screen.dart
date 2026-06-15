@@ -60,7 +60,7 @@ class _MainScreenState extends State<MainScreen> {
 
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.only(left: 30,right: 30, bottom: 12),
+        padding: const EdgeInsets.only(left: 38,right: 38, bottom: 16),
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 3),
           decoration: BoxDecoration(
