@@ -1,4 +1,4 @@
-import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/theme.dart';
@@ -150,7 +150,6 @@ class _FilterScreenState extends State<FilterScreen> {
     return Scaffold(
       backgroundColor: ZienaColors.bg1,
       appBar: AppBar(
-        backgroundColor: ZienaColors.white,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new,
@@ -193,23 +192,25 @@ class _FilterScreenState extends State<FilterScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _DropdownField<int>(
-                      hint: data.categoriesLoading
-                          ? 'loading'.tr()
-                          : 'select_category'.tr(),
-                      items: allCategories
-                          .where((c) => !_params.categoryIds.contains(c.id))
-                          .map((c) => DropdownMenuItem<int>(
-                        value: c.id,
-                        child: Text(lang == 'ar' ? c.nameAr : c.nameEn,
-                            style: const TextStyle(
-                                fontSize: 14,
-                                color: ZienaColors.textPrimary)),
-                      ))
-                          .toList(),
-                      onChanged: (id) {
-                        if (id != null) _toggleCategory(id);
-                      },
-                    ),
+                        hint: data.categoriesLoading
+                            ? 'loading'.tr()
+                            : 'select_category'.tr(),
+                        items: allCategories
+                            .where((c) => !_params.categoryIds.contains(c.id))
+                            .map((c) => DropdownMenuItem<int>(
+                          value: c.id,
+      
+                          child: Text(lang == 'ar' ? c.nameAr : c.nameEn,
+                              style: const TextStyle(
+                                  fontSize: 14,
+                                  color: ZienaColors.textPrimary)),
+                        ))
+                            .toList(),
+                        onChanged: (id) {
+                          if (id != null) _toggleCategory(id);
+                        },
+                      ),
+                    
                     const SizedBox(height: 12),
                     if (_params.categoryIds.isNotEmpty)
                       Wrap(
@@ -254,8 +255,11 @@ class _FilterScreenState extends State<FilterScreen> {
                     value: _selectedCity?.id,
                     items: data.cities.map((c) => DropdownMenuItem(
                       value: c.id,
-                      child: Text(c.localized(lang),
-                          style: const TextStyle(fontSize: 13)),
+                      child: Row(children: [
+                        const Icon(Icons.location_on_outlined, size: 15, color: ZienaColors.primary),
+                        const SizedBox(width: 6),
+                        Text(c.localized(lang), style: const TextStyle(fontSize: 13)),
+                      ]),
                     )).toList(),
                     onChanged: (id) {
                       if (id == null) return;
@@ -276,8 +280,11 @@ class _FilterScreenState extends State<FilterScreen> {
                     value: _selectedArea?.id,
                     items: data.areas.map((a) => DropdownMenuItem(
                       value: a.id,
-                      child: Text(a.localized(lang),
-                          style: const TextStyle(fontSize: 13)),
+                      child: Row(children: [
+                        const Icon(Icons.location_on_outlined, size: 15, color: ZienaColors.primary),
+                        const SizedBox(width: 6),
+                        Text(a.localized(lang), style: const TextStyle(fontSize: 13)),
+                      ]),
                     )).toList(),
                     onChanged: (id) {
                       if (id == null) return;
@@ -306,13 +313,9 @@ class _FilterScreenState extends State<FilterScreen> {
               data: SliderTheme.of(context).copyWith(
                 activeTrackColor: ZienaColors.primary,
                 inactiveTrackColor: ZienaColors.bg4,
-                thumbColor: ZienaColors.white,
-                thumbShape:
-                const RoundSliderThumbShape(enabledThumbRadius: 10),
-                overlayShape:
-                const RoundSliderOverlayShape(overlayRadius: 20),
                 trackHeight: 4,
-                overlayColor: ZienaColors.primary.withOpacity(0.1),
+                overlayColor: ZienaColors.primary.withValues(alpha: 0.1),
+                rangeThumbShape: const _BorderedRangeThumb(),
               ),
               child: RangeSlider(
                 values: _priceRange,
@@ -449,7 +452,7 @@ class _SectionCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: ZienaColors.white,
+        color: ZienaColors.bg2,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: ZienaColors.greyBorder, width: 0.5),
         boxShadow: [BoxShadow(
@@ -480,6 +483,7 @@ class _SectionCard extends StatelessWidget {
 class _DropdownField<T> extends StatelessWidget {
   final String hint;
   final T? value;
+  final double? h;
   final List<DropdownMenuItem<T>> items;
   final ValueChanged<T?> onChanged;
   final IconData? prefixIcon;
@@ -490,14 +494,17 @@ class _DropdownField<T> extends StatelessWidget {
     required this.onChanged,
     this.value,
     this.prefixIcon,
+    this.h = 45,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
+      height: h??45,
+      child: Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       decoration: BoxDecoration(
-        color: ZienaColors.bg1,
+        color: ZienaColors.bg3,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: ZienaColors.greyBorder, width: 0.8),
       ),
@@ -511,8 +518,15 @@ class _DropdownField<T> extends StatelessWidget {
             ],
             Text(hint,
                 style: const TextStyle(
-                    fontSize: 13, color: ZienaColors.textHint)),
+                    fontSize: 13, color: ZienaColors.textPrimary)),
           ]),
+          selectedItemBuilder: prefixIcon != null
+              ? (context) => items.map((item) => Row(children: [
+                    Icon(prefixIcon, size: 15, color: ZienaColors.primary),
+                    const SizedBox(width: 6),
+                    Flexible(child: item.child),
+                  ])).toList()
+              : null,
           isExpanded: true,
           icon: const Icon(Icons.keyboard_arrow_down,
               color: ZienaColors.textSecondary, size: 18),
@@ -524,6 +538,7 @@ class _DropdownField<T> extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
         ),
       ),
+    ),
     );
   }
 }
@@ -538,11 +553,10 @@ class _CategoryChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
       decoration: BoxDecoration(
-        color: ZienaColors.bg2,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: ZienaColors.primary.withOpacity(0.3)),
+        color: ZienaColors.bg3,
+        borderRadius: BorderRadius.circular(10),
       ),
       child: Row(mainAxisSize: MainAxisSize.min, children: [
         Text(label,
@@ -574,7 +588,7 @@ class _RadioDot extends StatelessWidget {
         shape: BoxShape.circle,
         color: Colors.transparent,
         border: Border.all(
-          color: selected ? ZienaColors.primary : ZienaColors.greyBorder,
+          color: ZienaColors.primary,
           width: 2,
         ),
       ),
@@ -585,6 +599,44 @@ class _RadioDot extends StatelessWidget {
             color: ZienaColors.primary, shape: BoxShape.circle),
       ))
           : null,
+    );
+  }
+}
+
+class _BorderedRangeThumb extends RangeSliderThumbShape {
+  const _BorderedRangeThumb();
+
+  static const double _radius = 10;
+
+  @override
+  Size getPreferredSize(bool isEnabled, bool isDiscrete) =>
+      const Size.fromRadius(_radius);
+
+  @override
+  void paint(
+    PaintingContext context,
+    Offset center, {
+    required Animation<double> activationAnimation,
+    required Animation<double> enableAnimation,
+    bool isDiscrete = false,
+    bool isEnabled = true,
+    bool isOnTop = false,
+    TextDirection textDirection = TextDirection.ltr,
+    required SliderThemeData sliderTheme,
+    Thumb thumb = Thumb.start,
+    bool isPressed = false,
+  }) {
+    final canvas = context.canvas;
+
+    canvas.drawCircle(center, _radius, Paint()..color = ZienaColors.bg3);
+
+    canvas.drawCircle(
+      center,
+      _radius,
+      Paint()
+        ..color = ZienaColors.primary
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 0.5,
     );
   }
 }

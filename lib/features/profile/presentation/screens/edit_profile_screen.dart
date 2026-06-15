@@ -26,6 +26,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   late final TextEditingController _emailCtrl;
 
   String? _selectedGender;
+  String? _genderError;
   File? _pickedImage;
   bool _agreedToTerms = false;
   bool _isSaving = false;
@@ -86,7 +87,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   Future<void> _save() async {
-    if (!(_formKey.currentState?.validate() ?? false)) return;
+    final formValid = _formKey.currentState?.validate() ?? false;
+    final genderValid = _selectedGender != null;
+    if (!genderValid) {
+      setState(() => _genderError = 'please_select_gender'.tr());
+    } else {
+      setState(() => _genderError = null);
+    }
+    if (!formValid || !genderValid) return;
     if (!_agreedToTerms) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text('please_agree_terms'.tr()),
@@ -174,6 +182,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 ctrl: _emailCtrl,
                 hint: 'saeed.alomar@gmail.com',
                 keyboardType: TextInputType.emailAddress,
+                required: true,
+                isEmail: true,
               ),
               const SizedBox(height: 16),
 
@@ -181,6 +191,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               _fieldLabel('gender'.tr()),
               const SizedBox(height: 8),
               _buildGenderDropdown(),
+              if (_genderError != null) ...[
+                const SizedBox(height: 6),
+                Text(_genderError!,
+                    style: const TextStyle(
+                        fontSize: 12, color: ZienaColors.error)),
+              ],
               const SizedBox(height: 20),
 
               // ── Terms checkbox ────────────────────────────────────────────
@@ -316,10 +332,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             hintStyle: const TextStyle(
                 fontSize: 13, color: ZienaColors.textHint),
             border: InputBorder.none,
+            errorBorder: InputBorder.none,
             filled: false,
             contentPadding: const EdgeInsets.symmetric(horizontal: 12),
             isDense: true,
           ),
+          validator: (v) {
+            if (v == null || v.trim().isEmpty) return 'this_field_required'.tr();
+            final digits = v.trim().replaceAll(RegExp(r'\D'), '');
+            if (digits.length < 7) return 'invalid_phone'.tr();
+            return null;
+          },
         )),
       ]),
     );
@@ -347,7 +370,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             value: g,
             child: Text(g, style: const TextStyle(fontSize: 14)),
           )).toList(),
-          onChanged: (v) => setState(() => _selectedGender = v),
+          onChanged: (v) => setState(() {
+            _selectedGender = v;
+            _genderError = null;
+          }),
           dropdownColor: ZienaColors.white,
           borderRadius: BorderRadius.circular(12),
           style: const TextStyle(
@@ -400,6 +426,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     required TextEditingController ctrl,
     required String hint,
     bool required = false,
+    bool isEmail = false,
     TextInputType keyboardType = TextInputType.text,
   }) {
     return TextFormField(
@@ -431,15 +458,26 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           borderRadius: BorderRadius.circular(14),
           borderSide: const BorderSide(color: ZienaColors.error),
         ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: ZienaColors.error, width: 1.5),
+        ),
         contentPadding: const EdgeInsets.symmetric(
             horizontal: 14, vertical: 14),
         isDense: true,
       ),
-      validator: required
-          ? (v) => (v == null || v.trim().isEmpty)
-          ? 'this_field_required'.tr()
-          : null
-          : null,
+      validator: (v) {
+        if (required && (v == null || v.trim().isEmpty)) {
+          return 'this_field_required'.tr();
+        }
+        if (isEmail && v != null && v.trim().isNotEmpty) {
+          final emailRegex = RegExp(r'^[\w\.\-]+@[\w\-]+\.[a-zA-Z]{2,}$');
+          if (!emailRegex.hasMatch(v.trim())) {
+            return 'invalid_email'.tr();
+          }
+        }
+        return null;
+      },
     );
   }
 }

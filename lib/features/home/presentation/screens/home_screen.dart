@@ -158,15 +158,44 @@ class _HomeScreenState extends State<HomeScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Row(
         children: [
-          Container(
-            width: 50,
-            height: 50,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: ZienaColors.bg3,
-              border: Border.all(color: ZienaColors.bg4, width: 2),
-            ),
-            child: const ClipOval(child: Icon(Icons.person, size: 30, color: ZienaColors.primary)),
+          BlocBuilder<ProfileCubit, ProfileState>(
+            builder: (_, state) {
+              final profile = state is ProfileLoaded ? state.profile : null;
+              return Container(
+                width: 50,
+                height: 50,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: ZienaColors.bg3,
+                  border: Border.all(color: ZienaColors.bg4, width: 2),
+                ),
+                child: ClipOval(
+                  child: profile?.image != null
+                      ? CachedNetworkImage(
+                          imageUrl: profile!.image!,
+                          width: 50,
+                          height: 50,
+                          fit: BoxFit.cover,
+                          placeholder: (_, _) => const Icon(
+                              Icons.person, size: 30, color: ZienaColors.primary),
+                          errorWidget: (_, _, _) => const Icon(
+                              Icons.person, size: 30, color: ZienaColors.primary),
+                        )
+                      : profile != null
+                          ? Center(
+                              child: Text(
+                                profile.initials,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                  color: ZienaColors.primary,
+                                ),
+                              ),
+                            )
+                          : const Icon(Icons.person, size: 30, color: ZienaColors.primary),
+                ),
+              );
+            },
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -723,13 +752,12 @@ Widget _buildAppointmentCard(UpcomingAppointment? appointment) {
           child: Row(
             children: [
 
-                _buildDatePanel(
+                _buildImage(
                   appointment,
                   borderRadius: const BorderRadiusDirectional.only(
                     topStart:    Radius.circular(18),
                     bottomStart: Radius.circular(18),
                   ),
-                  isRtl: isRtl
                 ),
 
               // ── Middle content ────────────────────────────────────────────
@@ -790,13 +818,13 @@ Widget _buildAppointmentCard(UpcomingAppointment? appointment) {
                 ),
               ),
 
-
-                _buildImage(
+                _buildDatePanel(
                   appointment,
                   borderRadius: const BorderRadiusDirectional.only(
                     topEnd:    Radius.circular(18),
                     bottomEnd: Radius.circular(18),
                   ),
+                  isRtl: isRtl,
                 ),
             ],
           ),

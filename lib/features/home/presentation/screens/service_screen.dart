@@ -957,7 +957,7 @@ class _DateTimeWorkerSheetState extends State<_DateTimeWorkerSheet> {
                       ],
                       if (others.isNotEmpty) ...[
                         const SizedBox(height: 12),
-                        Text('select_another_worker'.tr(),
+                        Text(preferred.isNotEmpty?'select_another_worker'.tr():'select_worker'.tr(),
                             style: const TextStyle(
                               fontSize: 13, fontWeight: FontWeight.w700,
                               color: ZienaColors.textSecondary,

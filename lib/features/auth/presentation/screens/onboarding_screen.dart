@@ -115,11 +115,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   ),
                 ),
                 const SizedBox(height: 28),
-                ZienaButton(
-                  text: _currentPage == _pages.length - 1
-                      ? 'get_started'.tr()
-                      : 'next'.tr(),
-                  onTap: _onNext,
+                SizedBox(
+                  width: MediaQuery.sizeOf(context).width * 0.5,
+                  child: ZienaButton(
+                    text: _currentPage == _pages.length - 1
+                        ? 'get_started'.tr()
+                        : 'next'.tr(),
+                    onTap: _onNext,
+                  ),
                 ),
               ],
             ),

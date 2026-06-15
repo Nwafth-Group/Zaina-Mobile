@@ -8,6 +8,7 @@ import 'package:zeina/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:zeina/features/auth/presentation/screens/phone_auth_screen.dart';
 import 'package:zeina/features/auth/presentation/screens/verification_submitted.dart';
 import '../../../../core/theme/theme.dart';
+import '../../../../widgets/ziena_step_indicator.dart';
 import '../cubit/verification_cubit.dart';
 import '../widgets/step_id_upload.dart';
 import '../widgets/step_review.dart';
@@ -173,17 +174,21 @@ class _VerificationFlowScreenState extends State<VerificationFlowScreen> {
         child: Row(children: [
           GestureDetector(
             onTap: _goBack,
-            child: const Icon(Icons.arrow_back_ios_new,
+            child: const Icon(Icons.arrow_back_rounded,
                 size: 18, color: ZienaColors.textPrimary),
           ),
           const SizedBox(width: 12),
-          Expanded(child: _StepIndicator(
-            currentStep: _step,
-            labels: _stepLabels,
-          )),
         ]),
       ),
-      const SizedBox(height: 8),
+      const SizedBox(height: 16),
+Padding(
+  padding: const EdgeInsets.symmetric(horizontal: 20.0),
+  child: ZienaStepIndicator(
+              currentStep: _step,
+              steps: _stepLabels,
+            ),
+),
+                const SizedBox(height: 8),
 
       // ── Page content ─────────────────────────────────────────────
       Expanded(
@@ -253,52 +258,3 @@ class _VerificationFlowScreenState extends State<VerificationFlowScreen> {
   }
 }
 
-// ── Step indicator ────────────────────────────────────────────────────────────
-class _StepIndicator extends StatelessWidget {
-  final int currentStep;
-  final List<String> labels;
-
-  const _StepIndicator({
-    required this.currentStep,
-    required this.labels,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: List.generate(labels.length, (i) {
-        final done   = i < currentStep;
-        final active = i == currentStep;
-        final isLast = i == labels.length - 1;
-
-        return Expanded(
-          child: Row(children: [
-            if (i > 0)
-              Expanded(child: Container(
-                height: 2,
-                color: done || active
-                    ? ZienaColors.primary
-                    : ZienaColors.greyBorder,
-              )),
-            Container(
-              width: 10, height: 10,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: active || done
-                    ? ZienaColors.primary
-                    : ZienaColors.greyBorder,
-              ),
-            ),
-            if (!isLast)
-              Expanded(child: Container(
-                height: 2,
-                color: done
-                    ? ZienaColors.primary
-                    : ZienaColors.greyBorder,
-              )),
-          ]),
-        );
-      }),
-    );
-  }
-}

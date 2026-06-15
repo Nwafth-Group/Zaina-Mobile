@@ -25,21 +25,25 @@ class StepReview extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
       child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
         // Title
-        Text('review_your_info'.tr(),
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-               fontSize: 18,
-              fontWeight: FontWeight.w700,
-              color: ZienaColors.textPrimary,
-            )),
+        Center(
+          child: Text('review_your_info'.tr(),
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                 fontSize: 20,
+                fontWeight: FontWeight.w700,
+                color: ZienaColors.textPrimary,
+              )),
+        ),
         const SizedBox(height: 6),
-        Text('confirm_before_submit'.tr(),
-            textAlign: TextAlign.center,
-
-            style: const TextStyle(
-               fontSize: 12,
-              color: ZienaColors.textSecondary,
-            )),
+        Center(
+          child: Text('confirm_before_submit'.tr(),
+              textAlign: TextAlign.center,
+          
+              style: const TextStyle(
+                 fontSize: 14,
+                color: ZienaColors.textSecondary,
+              )),
+        ),
         const SizedBox(height: 28),
 
         // ID Information

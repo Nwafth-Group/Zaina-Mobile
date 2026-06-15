@@ -3,11 +3,11 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:zeina/core/utils/app_navigator.dart';
 import 'package:zeina/widgets/custom_icon.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../injection_container.dart';
+import '../../../../widgets/custom_text_form_field.dart';
 import '../../../../widgets/ziena_button.dart';
 import '../../../../widgets/ziena_logo.dart';
 import '../../../main_screen.dart';
@@ -27,10 +27,17 @@ class PhoneAuthScreen extends StatefulWidget {
 
 class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
   final _formKey = GlobalKey<FormState>();
-  String _completePhone = '';
+  final _phoneCtrl = TextEditingController();
   bool _agreeTerms = false;
 
+  @override
+  void dispose() {
+    _phoneCtrl.dispose();
+    super.dispose();
+  }
+
   void _onLogin() {
+    if (!(_formKey.currentState?.validate() ?? false)) return;
     if (!_agreeTerms) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -40,16 +47,11 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
       );
       return;
     }
-    if (_completePhone.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('err_enter_phone'.tr()),
-          backgroundColor: ZienaColors.primaryDark,
-        ),
-      );
-      return;
-    }
-    context.read<AuthCubit>().sendOtp(_completePhone);
+    final number = _phoneCtrl.text.trim();
+    // Strip leading zero then prepend +20
+    final digits = number.startsWith('0') ? number.substring(1) : number;
+    final completePhone = '+20$digits';
+    context.read<AuthCubit>().sendOtp(completePhone);
   }
 
   @override
@@ -107,39 +109,33 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
                         ),
                   ),
                   const SizedBox(height: 10),
-                  IntlPhoneField(
-                    decoration: InputDecoration(
-                      hintText: '10 1234 5678',
-                      filled: true,
-                      fillColor: ZienaColors.bg1,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide: const BorderSide(color: ZienaColors.greyBorder),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide: const BorderSide(color: ZienaColors.greyBorder),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide: const BorderSide(color: ZienaColors.primary, width: 1.5),
-                      ),
-                      counterText: '',
-                    ),
-                    initialCountryCode: 'EG',
-                    onChanged: (phone) {
-                      // Build E.164 format: +{countryCode}{national number without leading 0}
-                      // final national = phone.number.replaceFirst(RegExp(r'^0+'), '');
-                      // _completePhone = '${phone.countryCode}$national';
-                      _completePhone = phone.completeNumber;
+                  CustomTextField(
+                    controller: _phoneCtrl,
+                    hintText: '10 1234 5678',
+                    keyboardType: TextInputType.phone,
+                    fillColor: ZienaColors.bg1,
+                    borderColor: ZienaColors.primary,
+                    borderRadius: 14,
+                    validator: (v) {
+                      if (v == null || v.trim().isEmpty) return 'err_enter_phone'.tr();
+                      final digits = v.trim().replaceAll(RegExp(r'\D'), '');
+                      if (digits.length < 7) return 'invalid_phone'.tr();
+                      return null;
                     },
-                    flagsButtonPadding: const EdgeInsets.only(left: 12),
-                    dropdownIconPosition: IconPosition.trailing,
-                    dropdownIcon: const Icon(Icons.keyboard_arrow_down, color: ZienaColors.textSecondary),
-                    style: const TextStyle(
-                      
-                      fontSize: 15,
-                      color: ZienaColors.textPrimary,
+                    prefixIcon: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8),
+                      child: Row(mainAxisSize: MainAxisSize.min, children: [
+                          ClipOval(
+                            child: Image.asset('assets/images/eg.png', width: 24, height: 24, fit: BoxFit.cover),
+                          ),
+                          const SizedBox(width: 6),
+                          const Text('+20',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                color: ZienaColors.textPrimary,
+                              )),
+                        ]),
                     ),
                   ),
                   const SizedBox(height: 16),

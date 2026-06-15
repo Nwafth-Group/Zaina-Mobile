@@ -66,18 +66,22 @@ class StepIdUpload extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         // Title
-        Text('verify_your_identity'.tr(),
-            style: const TextStyle(
-               fontSize: 22,
-              fontWeight: FontWeight.w700,
-              color: ZienaColors.textPrimary,
-            )),
+        Center(
+          child: Text('verify_your_identity'.tr(),
+              style: const TextStyle(
+                 fontSize: 20,
+                fontWeight: FontWeight.w700,
+                color: ZienaColors.textPrimary,
+              )),
+        ),
         const SizedBox(height: 6),
-        Text('upload_clear_id'.tr(),
-            style: const TextStyle(
-               fontSize: 13,
-              color: ZienaColors.textSecondary,
-            )),
+        Center(
+          child: Text('upload_clear_id'.tr(),
+              style: const TextStyle(
+                 fontSize: 14,
+                color: ZienaColors.textSecondary,
+              )),
+        ),
         const SizedBox(height: 28),
 
         // Front side
@@ -163,9 +167,7 @@ class _ImageUploadBox extends StatelessWidget {
       onTap: onTap,
       child: CustomPaint(
         painter: DashedBorderPainter(
-          color: hasFile
-              ? Colors.blue
-              : Colors.grey,
+          color: ZienaColors.primary,
           radius: 16,
         ),
         child: AnimatedContainer(

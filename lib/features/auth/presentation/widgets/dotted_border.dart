@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/theme/theme.dart';
 
 class DashedBorderPainter extends CustomPainter {
   final Color color;
@@ -8,7 +9,7 @@ class DashedBorderPainter extends CustomPainter {
   final double radius;
 
   DashedBorderPainter({
-    this.color = Colors.grey,
+    this.color = ZienaColors.primary,
     this.strokeWidth = 1,
     this.dashWidth = 6,
     this.dashSpace = 4,

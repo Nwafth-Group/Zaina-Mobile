@@ -17,8 +17,8 @@ class EmptyDataWidget extends StatelessWidget {
     this.message,
     this.onRetry,
     this.showRetryButton = false,
-    this.imageWidth = 160,
-    this.imageHeight = 160,
+    this.imageWidth = 200,
+    this.imageHeight = 200,
   });
 
   @override
@@ -43,7 +43,7 @@ class EmptyDataWidget extends StatelessWidget {
                 title!.tr(),
                 style: const TextStyle(
                   
-                  fontSize: 18,
+                  fontSize: 22,
                   fontWeight: FontWeight.w700,
                   color: ZienaColors.textPrimary,
                 ),

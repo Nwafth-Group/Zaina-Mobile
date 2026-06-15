@@ -101,7 +101,12 @@ class ProfileCubit extends Cubit<ProfileState> {
       if (image != null) {
         formData = FormData.fromMap({
           ...fields,
-          'files': await MultipartFile.fromFile(image.path, filename: 'profile.jpg'),
+          'files': [
+            await MultipartFile.fromFile(
+              image.path,
+              filename: image.path.split('/').last,
+            ),
+          ],
         });
       } else {
         formData = FormData.fromMap(fields);

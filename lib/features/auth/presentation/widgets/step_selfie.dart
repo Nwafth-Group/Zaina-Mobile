@@ -37,18 +37,22 @@ class StepSelfie extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         // Title
-        Text('take_a_selfie'.tr(),
-            style: const TextStyle(
-               fontSize: 22,
-              fontWeight: FontWeight.w700,
-              color: ZienaColors.textPrimary,
-            )),
+        Center(
+          child: Text('take_a_selfie'.tr(),
+              style: const TextStyle(
+                 fontSize: 20,
+                fontWeight: FontWeight.w700,
+                color: ZienaColors.textPrimary,
+              )),
+        ),
         const SizedBox(height: 6),
-        Text('take_selfie_desc'.tr(),
-            style: const TextStyle(
-               fontSize: 13,
-              color: ZienaColors.textSecondary,
-            )),
+        Center(
+          child: Text('take_selfie_desc'.tr(),
+              style: const TextStyle(
+                 fontSize: 14,
+                color: ZienaColors.textSecondary,
+              )),
+        ),
         const SizedBox(height: 32),
 
         // Selfie preview / placeholder
