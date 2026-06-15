@@ -188,12 +188,15 @@ class _OtpScreenState extends State<OtpScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 16),
-                Text(
-                  'verification_code'.tr(),
-                  style: Theme.of(context).textTheme.headlineMedium,
+                Center(
+                  child: Text(
+                    'verification_code'.tr(),
+                    style: Theme.of(context).textTheme.headlineMedium,
+                  ),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 16),
                 RichText(
+                  textAlign: TextAlign.center,
                   text: TextSpan(
                     text: '${'verification_code_hint'.tr()} ',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(height: 1.5),
@@ -204,6 +207,10 @@ class _OtpScreenState extends State<OtpScreen> {
                           color: ZienaColors.primary,
                           fontWeight: FontWeight.w600,
                         ),
+                      ),
+                      TextSpan(
+                        text:' ${'verification_code_hint2'.tr()}',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(height: 1.5),
                       ),
                     ],
                   ),
@@ -225,7 +232,13 @@ class _OtpScreenState extends State<OtpScreen> {
                         margin: EdgeInsets.symmetric(horizontal: 3),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(10),
-                          color: cell.isFocused ? ZienaColors.bg3 : Colors.grey[200],
+                          color: ZienaColors.bg1,
+                          border: Border.all(
+                            color: cell.isFocused
+                                ? ZienaColors.primary
+                                : ZienaColors.primaryLight,
+                            width: cell.isFocused ? 1 : 0.5,
+                          ),
                         ),
                         child: Center(
                           child: Text(
@@ -240,49 +253,40 @@ class _OtpScreenState extends State<OtpScreen> {
                 ),
                 const SizedBox(height: 16),
                 // Resend
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'code_sent'.tr(),
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 13),
-                    ),
-                    const SizedBox(width: 8),
-                    if (_secondsRemaining > 0)
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: ZienaColors.bg2,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          _timerText,
-                          style: const TextStyle(
-                            
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: ZienaColors.primary,
-                          ),
-                        ),
-                      )
-                    else
-                      GestureDetector(
-                        onTap: () {
-                          _startTimer();
-                          context.read<AuthCubit>().sendOtp(widget.mobileNumber);
-                        },
-                        child: Text(
-                          'resend'.tr(),
-                          style: TextStyle(
-                            
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: ZienaColors.primary,
-                            decoration: TextDecoration.underline,
-                          ),
-                        ),
+                Center(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text(
+                        'code_sent'.tr(),
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 13),
                       ),
-                  ],
+                      const SizedBox(width: 8),
+
+                      if (_secondsRemaining > 0)
+                        Text(
+                            "${'resend_in'.tr()} $_timerText",
+                            style: Theme.of(context).textTheme.bodyLarge
+                        )
+                      else
+                        GestureDetector(
+                          onTap: () {
+                            _startTimer();
+                            context.read<AuthCubit>().sendOtp(widget.mobileNumber);
+                          },
+                          child: Text(
+                            'resend'.tr(),
+                            style: TextStyle(
+
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: ZienaColors.primary,
+                              decoration: TextDecoration.underline,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
                 const Spacer(),
                 BlocBuilder<AuthCubit, AuthState>(

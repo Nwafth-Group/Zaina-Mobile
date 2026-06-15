@@ -5,7 +5,6 @@ import 'features/auth/presentation/screens/language_selection_screen.dart';
 import 'features/auth/presentation/screens/onboarding_screen.dart';
 import 'features/auth/presentation/screens/phone_auth_screen.dart';
 import 'features/auth/presentation/screens/success_screen.dart';
-import 'features/auth/presentation/screens/terms_screen.dart';
 import 'features/auth/presentation/cubit/auth_cubit.dart';
 import 'injection_container.dart';
 
@@ -25,8 +24,6 @@ class AppRouter {
             child: const PhoneAuthScreen(),
           ),
         );
-      case TermsScreen.routeName:
-        return _buildRoute(const TermsScreen());
       case SuccessScreen.routeName:
         return _buildRoute(const SuccessScreen());
       default:

@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:dio/dio.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/network/failure.dart';
@@ -8,6 +9,7 @@ abstract class AuthRemoteDataSource {
   Future<Map<String, dynamic>> sendOtp(String mobileNumber);
   Future<Map<String, dynamic>> verifyOtp(String mobileNumber, String otp);
   Future<Map<String, dynamic>> logout();
+  Future<void> updateDeviceToken(String fcmToken);
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
@@ -50,6 +52,21 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     try {
       final response = await _apiClient.post(AppConstants.logout);
       return response;
+    } on DioException catch (e) {
+      throw handleDioError(e);
+    }
+  }
+
+  @override
+  Future<void> updateDeviceToken(String fcmToken) async {
+    try {
+      await _apiClient.post(
+        AppConstants.updateDeviceToken,
+        data: {
+          'fcm_token': fcmToken,
+          'device_type': Platform.isIOS ? 'ios' : 'android',
+        },
+      );
     } on DioException catch (e) {
       throw handleDioError(e);
     }

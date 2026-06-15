@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import '../core/theme/theme.dart';
 
@@ -23,4 +25,31 @@ class ZienaLogo extends StatelessWidget {
       ),
     );
   }
+}
+
+Widget gradientBlurContainer({
+  required Widget child,
+  double circular = 16,
+  Color color = Colors.white,
+}) {
+  return ClipRRect(
+    borderRadius: BorderRadius.circular(circular),
+    child: BackdropFilter(
+      filter: ImageFilter.blur(
+        sigmaX: 6,
+        sigmaY: 6,
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(circular),
+          border: Border.all(
+            color: Colors.white,
+            width: 0.8,
+          ),
+        ),
+        child: child,
+      ),
+    ),
+  );
 }

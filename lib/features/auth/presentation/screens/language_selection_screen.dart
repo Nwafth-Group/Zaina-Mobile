@@ -39,27 +39,30 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
               const Spacer(),
               Text(
                 'select_language'.tr(),
-                style: Theme.of(context).textTheme.headlineMedium,
+                style: Theme.of(context).textTheme.headlineLarge,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 12),
-              Text(
-                'select_language_hint'.tr(),
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: ZienaColors.textSecondary,
-                    ),
-                textAlign: TextAlign.center,
+              SizedBox(
+                width: 260,
+                child: Text(
+                  'select_language_hint'.tr(),
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: ZienaColors.textSecondary,
+                      ),
+                  textAlign: TextAlign.center,
+                ),
               ),
               const SizedBox(height: 40),
               _LanguageTile(
-                flag: '🇺🇸',
+                flag: 'assets/images/us.png',
                 language: 'english'.tr(),
                 isSelected: _selectedLang == 'en',
                 onTap: () => setState(() => _selectedLang = 'en'),
               ),
               const SizedBox(height: 12),
               _LanguageTile(
-                flag: '🇪🇬',
+                flag: 'assets/images/eg.png',
                 language: 'arabic'.tr(),
                 isSelected: _selectedLang == 'ar',
                 onTap: () => setState(() => _selectedLang = 'ar'),
@@ -108,32 +111,23 @@ class _LanguageTile extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Text(flag, style: const TextStyle(fontSize: 24)),
+            Container(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: ZienaColors.bg1,
+              ),
+              child: ClipOval(
+                child: Image.asset(flag, width: 40, height: 40, fit: BoxFit.cover),
+              ),
+            ),
             const SizedBox(width: 16),
             Text(
               language,
               style: TextStyle(
                 fontSize: 16,
-                fontWeight: FontWeight.w500,
-                color: isSelected ? ZienaColors.primary : ZienaColors.textPrimary,
+                fontWeight: FontWeight.w700,
+                color: ZienaColors.textPrimary,
               ),
-            ),
-            const Spacer(),
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              width: 22,
-              height: 22,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: isSelected ? ZienaColors.primary : Colors.transparent,
-                border: Border.all(
-                  color: isSelected ? ZienaColors.primary : ZienaColors.greyBorder,
-                  width: 2,
-                ),
-              ),
-              child: isSelected
-                  ? const Icon(Icons.check, color: Colors.white, size: 14)
-                  : null,
             ),
           ],
         ),

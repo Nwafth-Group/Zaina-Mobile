@@ -167,9 +167,9 @@ class _PopularServiceCard extends StatelessWidget {
       child: Container(
         margin: const EdgeInsets.only(bottom: 14),
         decoration: BoxDecoration(
-          color: ZienaColors.white,
+          color: ZienaColors.bg2,
           borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: ZienaColors.greyBorder, width: 0.6),
+          border: Border.all(color: ZienaColors.primary, width: 0.4),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.04),
@@ -180,18 +180,18 @@ class _PopularServiceCard extends StatelessWidget {
         ),
         child: Row(
           children: [
+            SizedBox(width: 5),
             // ── Image ──────────────────────────────────────────────────────
             ClipRRect(
-              borderRadius: const BorderRadius.horizontal(
-                  left: Radius.circular(18)),
+              borderRadius: BorderRadius.circular(16),
               child: service.image != null
                   ? CachedNetworkImage(
                 imageUrl: service.image!,
-                width: 110,
+                width: 150,
                 height: 145,
                 fit: BoxFit.cover,
                 placeholder: (_, _) => Container(
-                    width: 110,
+                    width: 150,
                     height: 145,
                     color: ZienaColors.bg3),
                 errorWidget: (_, _, _) => _imgFallback(),
@@ -210,7 +210,7 @@ class _PopularServiceCard extends StatelessWidget {
                       service.localizedCategory(lang),
                       style: const TextStyle(
                         
-                        fontSize: 11,
+                        fontSize: 10,
                         color: ZienaColors.primary,
                         fontWeight: FontWeight.w500,
                       ),
@@ -220,7 +220,7 @@ class _PopularServiceCard extends StatelessWidget {
                       service.localizedName(lang),
                       style: const TextStyle(
                         
-                        fontSize: 15,
+                        fontSize: 14,
                         fontWeight: FontWeight.w700,
                         color: ZienaColors.textPrimary,
                       ),
@@ -237,7 +237,7 @@ class _PopularServiceCard extends StatelessWidget {
                           '${service.price.pricePerHour.toStringAsFixed(0)} ${service.price.currency} ',
                           style: const TextStyle(
                             
-                            fontSize: 15,
+                            fontSize: 18,
                             fontWeight: FontWeight.w700,
                             color: ZienaColors.primary,
                           ),
@@ -246,7 +246,7 @@ class _PopularServiceCard extends StatelessWidget {
                           text: _priceLabel(service.type),
                           style: const TextStyle(
                             
-                            fontSize: 11,
+                            fontSize: 12,
                             color: ZienaColors.textSecondary,
                           ),
                         ),

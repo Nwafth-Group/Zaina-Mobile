@@ -201,14 +201,6 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
 
-              // ── Address Label ─────────────────────────────────────────────
-              _buildTextField(
-                label: 'address_label'.tr(),
-                ctrl: _labelCtrl,
-                hint: 'Home',
-                required: true,
-              ),
-
               // ── Select from Map ───────────────────────────────────────────
               SizedBox(
                 width: double.infinity,
@@ -234,6 +226,14 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
                 ),
               ),
               const SizedBox(height: 16),
+
+              // ── Address Label ─────────────────────────────────────────────
+              _buildTextField(
+                label: 'address_label'.tr(),
+                ctrl: _labelCtrl,
+                hint: 'Home',
+                required: true,
+              ),
 
               // ── Country / Governorate + City / Area ───────────────────────
               BlocBuilder<FilterCubit, FilterState>(

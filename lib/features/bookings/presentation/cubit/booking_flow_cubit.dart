@@ -187,6 +187,7 @@ class BookingFlowCubit extends Cubit<BookingFlowState> {
         'date': flow.selectedDate,
         'start_time': flow.selectedStartTime,
         'periods_count': 1,
+        'payment_method': flow.paymentMethod ?? 'points',
       };
       if (flow.couponCode != null && flow.couponCode!.isNotEmpty) {
         body['coupon_code'] = flow.couponCode;

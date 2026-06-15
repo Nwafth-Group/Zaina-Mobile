@@ -6,6 +6,7 @@ import '../../../../core/theme/theme.dart';
 import '../../../../core/utils/shared_pref_helper.dart';
 import '../../../../injection_container.dart';
 import '../../../../widgets/custom_icon.dart';
+import '../../../profile/presentation/cubit/cards_cubit.dart';
 import '../../data/models/wallet_model.dart';
 import '../cubit/cubit.dart';
 import 'add_money_screen.dart';
@@ -115,6 +116,8 @@ class _WalletScreenState extends State<WalletScreen> {
                     ...state.data.transactions
                         .take(5)
                         .map((tx) => _TransactionTile(tx: tx)),
+                  const SizedBox(height: 30),
+
                 ],
               ),
             ),

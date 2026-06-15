@@ -27,11 +27,13 @@ class _ReviewSheetState extends State<ReviewSheet> {
   void initState() {
     super.initState();
     _workerRatings = {};
-    if (widget.booking.worker != null) {
-      _workerRatings[widget.booking.worker!.id] = {
-        'rating': 0,
-        'comment': TextEditingController(),
-      };
+    if (widget.booking.worker != null && widget.booking.worker!.isNotEmpty) {
+      for(int i=0; i<widget.booking.worker!.length; i++) {
+        _workerRatings[widget.booking.worker![i].id] = {
+          'rating': 0,
+          'comment': TextEditingController(),
+        };
+      }
     }
   }
 
@@ -168,7 +170,7 @@ class _ReviewSheetState extends State<ReviewSheet> {
                       color: ZienaColors.textPrimary,
                     )),
                 const SizedBox(height: 12),
-                _workerRatingCard(widget.booking.worker!),
+                ...List.generate(widget.booking.worker!.length, (index) => _workerRatingCard(widget.booking.worker![index])),
                 const SizedBox(height: 20),
               ],
 

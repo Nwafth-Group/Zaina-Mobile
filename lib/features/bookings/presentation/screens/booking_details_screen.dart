@@ -11,6 +11,7 @@ import 'package:zeina/injection_container.dart';
 import 'package:zeina/features/bookings/presentation/screens/review_sheet.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../widgets/ziena_button.dart';
+import '../../../../widgets/ziena_step_indicator.dart';
 import '../../data/model/booking_model.dart';
 import '../cubit/bookings_cubit.dart';
 
@@ -164,7 +165,7 @@ class BookingDetailScreen extends StatelessWidget {
 
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 20, 16, 130),
+                  padding: const EdgeInsets.fromLTRB(16, 20, 16, 30),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -208,7 +209,7 @@ class BookingDetailScreen extends StatelessWidget {
                         _buildCancelledBadge()
                       else
                         _buildStepper(status),
-                      const SizedBox(height: 20),
+                      Divider(color: ZienaColors.primary.withOpacity(0.10), height: 30, thickness: 3,),
 
                       // ── Important notes ────────────────────────────────────
                       if (!isCancelled && b.importantNotes.isNotEmpty) ...[
@@ -327,7 +328,7 @@ class BookingDetailScreen extends StatelessWidget {
                               color: ZienaColors.textSecondary,
                             )),
                         const SizedBox(height: 10),
-                        _WorkerCard(worker: b.worker!),
+                        ...List.generate( b.worker!.length, (index) => _WorkerCard(worker: b.worker![index])),
                         const SizedBox(height: 20),
                       ],
 
@@ -370,17 +371,13 @@ class BookingDetailScreen extends StatelessWidget {
                               )),
                         ]),
                       ),
+                      SizedBox(height: 16),
+                      _buildBottomBar(context, b, isUpcoming, isInService, isCompleted, isCancelled)
                     ],
                   ),
                 ),
               ),
             ],
-          ),
-
-          // ── Bottom action bar ──────────────────────────────────────────────
-          Positioned(
-            bottom: 0, left: 0, right: 0,
-            child: _buildBottomBar(context, b, isUpcoming, isInService, isCompleted, isCancelled),
           ),
         ],
       ),
@@ -388,34 +385,21 @@ class BookingDetailScreen extends StatelessWidget {
   }
 
   Widget _buildStepper(BookingStatusEnum status) {
-    final steps = ['upcoming'.tr(), 'in_service'.tr(), 'completed'.tr()];
     int activeIndex = 0;
     if (status == BookingStatusEnum.inService) activeIndex = 1;
     if (status == BookingStatusEnum.completed) activeIndex = 2;
 
-    return Row(
-      children: List.generate(steps.length, (i) {
-        final active = i <= activeIndex;
-        return Expanded(
-          child: Column(children: [
-            Container(
-              height: 6,
-              margin: EdgeInsets.only(right: i < steps.length - 1 ? 4 : 0),
-              decoration: BoxDecoration(
-                color: active ? ZienaColors.primary : ZienaColors.greyBorder,
-                borderRadius: BorderRadius.circular(3),
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(steps[i],
-                style: TextStyle(
-                   fontSize: 10,
-                  fontWeight: FontWeight.w500,
-                  color: active ? ZienaColors.primary : ZienaColors.textHint,
-                )),
-          ]),
-        );
-      }),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: ZienaStepIndicator(
+        steps: [
+          'upcoming'.tr(),
+          'in_service'.tr(),
+          'completed'.tr(),
+        ],
+        currentStep: activeIndex,
+        currentDotSize: 24,
+      ),
     );
   }
 
@@ -454,14 +438,13 @@ class BookingDetailScreen extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.warning_amber_rounded,
-                color: Color(0xFFE53935), size: 22),
+            ImageAsset('assets/images/cancelled.png', height: 33, width: 33,),
             const SizedBox(width: 8),
             Text('cancelled'.tr(),
                 style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFFE53935),
+                  fontSize: 24,
+                  fontWeight: FontWeight.w600,
+                  color: ZienaColors.primary,
                 )),
           ],
         ),
@@ -470,7 +453,7 @@ class BookingDetailScreen extends StatelessWidget {
             textAlign: TextAlign.center,
             style: const TextStyle(
               fontSize: 13,
-              color: ZienaColors.textSecondary,
+              color: ZienaColors.textPrimary,
             )),
       ],
     );
@@ -480,96 +463,86 @@ class BookingDetailScreen extends StatelessWidget {
       bool isUpcoming, bool isInService, bool isCompleted, bool isCancelled) {
     if (!isUpcoming && !isInService && !isCompleted && !isCancelled) return const SizedBox();
 
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 30),
-      decoration: BoxDecoration(
-        color: ZienaColors.white,
-        boxShadow: [BoxShadow(
-          color: Colors.black.withOpacity(0.07),
-          blurRadius: 16, offset: const Offset(0, -4),
-        )],
-      ),
-      child: Row(children: [
-        if (isUpcoming) ...[
-          Expanded(child: ZienaButton(
-            text: 'reschedule'.tr(),
-            onTap: () => showModalBottomSheet(
-              context: context,
-              isScrollControlled: true,
-              backgroundColor: Colors.transparent,
-              builder: (_) => MultiBlocProvider(
-                providers: [
-                  BlocProvider.value(
-                      value: context.read<BookingDetailCubit>()),
-                  BlocProvider(
-                    create: (_) => sl<RescheduleShiftsCubit>(),
-                  ),
-                ],
-                child: RescheduleSheet(bookingId: b.id),
-              ),
+    return Row(children: [
+      if (isUpcoming) ...[
+        Expanded(child: ZienaButton(
+          text: 'reschedule'.tr(),
+          onTap: () => showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            backgroundColor: Colors.transparent,
+            builder: (_) => MultiBlocProvider(
+              providers: [
+                BlocProvider.value(
+                    value: context.read<BookingDetailCubit>()),
+                BlocProvider(
+                  create: (_) => sl<RescheduleShiftsCubit>(),
+                ),
+              ],
+              child: RescheduleSheet(bookingId: b.id),
             ),
-          )),
-          const SizedBox(width: 12),
-          Expanded(child: OutlinedButton(
-            onPressed: () => _showCancelDialog(context, b.id),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: ZienaColors.primary,
-              side: const BorderSide(color: ZienaColors.primary),
-              minimumSize: const Size(double.infinity, 50),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14)),
+          ),
+        )),
+        const SizedBox(width: 12),
+        Expanded(child: OutlinedButton(
+          onPressed: () => _showCancelDialog(context, b.id),
+          style: OutlinedButton.styleFrom(
+            foregroundColor: ZienaColors.primary,
+            side: const BorderSide(color: ZienaColors.primary),
+            minimumSize: const Size(double.infinity, 50),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14)),
+          ),
+          child: Text('cancel'.tr(),
+              style: const TextStyle(
+                 fontSize: 15,
+                fontWeight: FontWeight.w600, color: ZienaColors.primary,
+              )),
+        )),
+      ],
+      if (isInService)
+        Expanded(child: ZienaButton(
+          text: 'report'.tr(),
+          onTap: () => showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            backgroundColor: Colors.transparent,
+            builder: (_) => BlocProvider.value(
+              value: context.read<BookingDetailCubit>(),
+              child: ReportSheet(bookingId: b.id),
             ),
-            child: Text('cancel'.tr(),
-                style: const TextStyle(
-                   fontSize: 15,
-                  fontWeight: FontWeight.w600, color: ZienaColors.primary,
-                )),
-          )),
-        ],
-        if (isInService)
-          Expanded(child: ZienaButton(
-            text: 'report'.tr(),
-            onTap: () => showModalBottomSheet(
-              context: context,
-              isScrollControlled: true,
-              backgroundColor: Colors.transparent,
-              builder: (_) => BlocProvider.value(
-                value: context.read<BookingDetailCubit>(),
-                child: ReportSheet(bookingId: b.id),
-              ),
+          ),
+        )),
+      if (isCompleted) ...[
+        Expanded(child: ZienaButton(
+          text: 'report'.tr(),
+          onTap: () => showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            backgroundColor: Colors.transparent,
+            builder: (_) => BlocProvider.value(
+              value: context.read<BookingDetailCubit>(),
+              child: ReportSheet(bookingId: b.id),
             ),
-          )),
-        if (isCompleted) ...[
-          Expanded(child: ZienaButton(
-            text: 'report'.tr(),
-            onTap: () => showModalBottomSheet(
-              context: context,
-              isScrollControlled: true,
-              backgroundColor: Colors.transparent,
-              builder: (_) => BlocProvider.value(
-                value: context.read<BookingDetailCubit>(),
-                child: ReportSheet(bookingId: b.id),
-              ),
+          ),
+          backgroundColor: ZienaColors.bg2,
+          textColor: ZienaColors.primary,
+        )),
+        const SizedBox(width: 12),
+        Expanded(child: ZienaButton(
+          text: 'rate'.tr(),
+          onTap: () => showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            backgroundColor: Colors.transparent,
+            builder: (_) => BlocProvider.value(
+              value: context.read<BookingDetailCubit>(),
+              child: ReviewSheet(booking: b),
             ),
-            backgroundColor: ZienaColors.bg2,
-            textColor: ZienaColors.primary,
-          )),
-          const SizedBox(width: 12),
-          Expanded(child: ZienaButton(
-            text: 'rate'.tr(),
-            onTap: () => showModalBottomSheet(
-              context: context,
-              isScrollControlled: true,
-              backgroundColor: Colors.transparent,
-              builder: (_) => BlocProvider.value(
-                value: context.read<BookingDetailCubit>(),
-                child: ReviewSheet(booking: b),
-              ),
-            ),
-          )),
-        ],
-      ]),
-    );
+          ),
+        )),
+      ],
+    ]);
   }
 
   void _showCancelDialog(BuildContext context, int bookingId) {
@@ -736,11 +709,11 @@ class _InfoPill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
       decoration: BoxDecoration(
         color: ZienaColors.bg2,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: ZienaColors.greyBorder, width: 0.6),
+        border: Border.all(color: ZienaColors.primary, width: 0.6),
       ),
       child: Row(
           mainAxisAlignment: MainAxisAlignment.center,

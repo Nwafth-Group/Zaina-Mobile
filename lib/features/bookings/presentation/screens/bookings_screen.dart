@@ -68,6 +68,7 @@ class _BookingsScreenState extends State<BookingsScreen> {
             Expanded(
               child: _buildList(),
             ),
+            const SizedBox(height: 30),
           ],
         ):SignInRequiredWidget(tabKey: 'bookings'),
       ),

@@ -9,6 +9,8 @@ import 'package:zeina/features/home/presentation/screens/popular_services_screen
 import 'package:zeina/features/home/presentation/screens/service_categories_screen.dart';
 import 'package:zeina/features/home/presentation/screens/service_screen.dart';
 import 'package:zeina/features/home/presentation/screens/subcategories_screen.dart';
+import 'package:zeina/widgets/custom_icon.dart';
+import 'package:zeina/widgets/ziena_button.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../injection_container.dart';
 import '../../../auth/presentation/cubit/verification_cubit.dart' show ProfileCubit, ProfileLoaded, ProfileState;
@@ -137,7 +139,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),),
                         const SizedBox(height: 14),
                         _buildPopularServices(data.popularServices),
-                        const SizedBox(height: 100),
+                        const SizedBox(height: 60),
                       ],
                     ),
                   ),
@@ -147,15 +149,6 @@ class _HomeScreenState extends State<HomeScreen> {
             },
           ),
         )
-    );
-  }
-
-  Widget _addressSkeleton() {
-    return Container(
-      width: 140, height: 10,
-      decoration: BoxDecoration(
-          color: ZienaColors.greyBorder,
-          borderRadius: BorderRadius.circular(5)),
     );
   }
 
@@ -338,11 +331,11 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           child: Row(
             children: [
-              const Icon(Icons.search, color: ZienaColors.primary, size: 22),
+              const ImageAsset('assets/images/search.png', height: 20, width: 20,),
               const SizedBox(width: 10),
               Text('search'.tr(), style: const TextStyle(color: ZienaColors.textHint)),
               const Spacer(),
-              const Icon(Icons.tune_rounded, color: ZienaColors.primaryLight, size: 18),
+              const ImageAsset('assets/images/setting.png', height: 20, width: 20,),
             ],
           ),
         ),
@@ -376,7 +369,7 @@ class _HomeScreenState extends State<HomeScreen> {
   // ── Categories (UPDATED) ───────────────────────────────────────────────────
   Widget _buildCategories(List<CategoryModel> categories) {
     return SizedBox(
-      height: 88,
+      height: 80,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -458,6 +451,15 @@ class _BannerCard extends StatelessWidget {
             Text(banner.title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
             const SizedBox(height: 8),
             Text(banner.description, style: const TextStyle(color: Colors.white, fontSize: 12), maxLines: 2),
+            const SizedBox(height: 8),
+            ZienaButton(
+              text: 'book_now'.tr(),
+              onTap: () {},
+              backgroundColor: Colors.white,
+              textColor: ZienaColors.primary,
+              height: 40,
+              width: 120,
+            )
           ],
         ),
       ),
@@ -469,23 +471,42 @@ class _CategoryChip extends StatelessWidget {
   final CategoryModel category;
   const _CategoryChip({required this.category});
 
+  String _imageFor(CategoryModel cat) {
+    final name = '${cat.nameEn}${cat.nameAr}'.toLowerCase();
+    if (name.contains('clean')) return 'assets/images/cleaning.png';
+    if (name.contains('baby') || name.contains('sitter')) return 'assets/images/babysitter.png';
+    return 'assets/images/event.png';
+  }
+
   @override
   Widget build(BuildContext context) {
     final locale = context.locale.languageCode;
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(color: ZienaColors.bg1, borderRadius: BorderRadius.circular(16), border: Border.all(color: ZienaColors.primary, width: 0.5)),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: ZienaColors.bg2,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: ZienaColors.primary, width: 0.5),
+      ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
             width: 45,
             height: 45,
-            decoration: BoxDecoration(color: ZienaColors.bg2, shape: BoxShape.circle),
-            child: const Icon(Icons.category, color: ZienaColors.primary, size: 25,),
+            decoration: const BoxDecoration(color: ZienaColors.bg2, shape: BoxShape.circle),
+            child: ClipOval(
+              child: Image.asset(
+                _imageFor(category),
+                fit: BoxFit.cover,
+              ),
+            ),
           ),
-          const SizedBox(width: 4),
-          Text(locale == 'ar' ? category.nameAr : category.nameEn, style: const TextStyle(fontSize: 12, color: ZienaColors.black)),
+          const SizedBox(width: 8),
+          Text(
+            locale == 'ar' ? category.nameAr : category.nameEn,
+            style: const TextStyle(fontSize: 12, color: ZienaColors.black),
+          ),
         ],
       ),
     );
@@ -514,9 +535,9 @@ class _ServiceCard extends StatelessWidget {
       },
       child: Container(
         width: 180,
-        padding: const EdgeInsets.all(12), // Adjusted for proper spacing
+        padding: const EdgeInsets.all(8), // Adjusted for proper spacing
         decoration: BoxDecoration(
-      color: Colors.white,
+      color: ZienaColors.bg2,
       borderRadius: BorderRadius.circular(18),
       border: Border.all(color: ZienaColors.greyBorder),
         ),
@@ -552,7 +573,7 @@ class _ServiceCard extends StatelessWidget {
             Text(
               service.localizedCategory(locale),
               style: const TextStyle(
-                color: Color(0xFFE91E63), // Replace with your exact pink accent color code
+                color: ZienaColors.primary, // Replace with your exact pink accent color code
                 fontSize: 10,
                 fontWeight: FontWeight.w500,
               ),
@@ -563,9 +584,9 @@ class _ServiceCard extends StatelessWidget {
             Text(
               service.localizedName(locale),
               style: const TextStyle(
-                fontSize: 12,
+                fontSize: 14,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF1A237E), // Dark blue/slate color as seen in screenshot
+                color: ZienaColors.black, // Dark blue/slate color as seen in screenshot
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -576,9 +597,9 @@ class _ServiceCard extends StatelessWidget {
             Text(
               "${service.price.basePrice} ${service.price.currency}",
               style: const TextStyle(
-                fontSize: 14,
+                fontSize: 15,
                 fontWeight: FontWeight.bold, // Heavy bold for price emphasis
-                color: Color(0xFF1A237E),
+                color: ZienaColors.black,
               ),
             ),
             const SizedBox(height: 5),
@@ -589,7 +610,7 @@ class _ServiceCard extends StatelessWidget {
                 Text(
                   service.avgRating.toStringAsFixed(1),
                   style: const TextStyle(
-                    fontSize: 13,
+                    fontSize: 10,
                     fontWeight: FontWeight.bold,
                     color: Colors.grey,
                   ),
@@ -688,7 +709,7 @@ Widget _buildAppointmentCard(UpcomingAppointment? appointment) {
         child: Container(
           height: 108,
           decoration: BoxDecoration(
-            color: ZienaColors.bg1,
+            color: ZienaColors.bg2,
             borderRadius: BorderRadius.circular(18),
             border: Border.all(color: ZienaColors.greyBorder, width: 0.5),
             boxShadow: [
@@ -723,7 +744,7 @@ Widget _buildAppointmentCard(UpcomingAppointment? appointment) {
                       Text(
                         appointment.localizedName(locale),
                         style: const TextStyle(
-                          fontSize: 15,
+                          fontSize: 14,
                           fontWeight: FontWeight.w700,
                           color: ZienaColors.textPrimary,
                         ),
@@ -734,7 +755,7 @@ Widget _buildAppointmentCard(UpcomingAppointment? appointment) {
                       Text(
                         '${appointment.price} ${appointment.currency}',
                         style: const TextStyle(
-                          fontSize: 15,
+                          fontSize: 20,
                           fontWeight: FontWeight.w700,
                           color: ZienaColors.primary,
                         ),
@@ -749,17 +770,17 @@ Widget _buildAppointmentCard(UpcomingAppointment? appointment) {
                               label: appointment.status,
                               color: _statusColor(appointment.status),
                             ),
-                            const SizedBox(width: 8),
+                            const SizedBox(width: 3),
                             const _InfoChip(
                               icon: Icons.location_on_outlined,
                               label: 'Home',
-                              color: ZienaColors.textSecondary,
+                              color: ZienaColors.primary,
                             ),
-                            const SizedBox(width: 8),
+                            const SizedBox(width: 3),
                             _InfoChip(
                               icon: Icons.access_time_rounded,
                               label: appointment.durationText,
-                              color: ZienaColors.textSecondary,
+                              color: ZienaColors.primary,
                             ),
                           ],
                         ),
@@ -830,34 +851,32 @@ Widget _buildDatePanel(
       color: ZienaColors.primary,
       borderRadius: borderRadius,
     ),
-    child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Text(
-          appointment.dateDay,
-          style: const TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.w700,
-            color: Colors.white,
-          ),
-        ),
-        Text(
-          appointment.dateMonth,
-          style: const TextStyle(
-            fontSize: 13,
-            color: Colors.white70,
-          ),
-        ),
-        const SizedBox(height: 6),
-        Container(
-          width: 26,
-          height: 26,
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.2),
-            shape: BoxShape.circle,
-          ),
-          child: Icon(isRtl?Icons.chevron_left:Icons.chevron_right,
-              color: Colors.white, size: 16),
+        Icon(!isRtl?Icons.chevron_left:Icons.chevron_right,
+            color: Colors.white, size: 22),
+        const SizedBox(width: 3),
+        Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              appointment.dateDay,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+              ),
+            ),
+            Text(
+              appointment.dateMonth,
+              style: const TextStyle(
+                fontSize: 14,
+                color: Colors.white70,
+              ),
+            ),
+
+          ],
         ),
       ],
     ),
@@ -888,7 +907,6 @@ class _InfoChip extends StatelessWidget {
           style: TextStyle(
             fontSize: 10,
             color: color,
-            fontWeight: FontWeight.w500,
           ),
         ),
       ],

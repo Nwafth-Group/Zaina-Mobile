@@ -1,18 +1,20 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:zeina/core/utils/app_navigator.dart';
+import 'package:zeina/widgets/custom_icon.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../injection_container.dart';
 import '../../../../widgets/ziena_button.dart';
 import '../../../../widgets/ziena_logo.dart';
 import '../../../main_screen.dart';
+import '../../../profile/presentation/screens/terms_screen.dart';
 import '../cubit/auth_cubit.dart';
 import '../cubit/verification_cubit.dart';
 import 'otp_screen.dart';
-import 'terms_screen.dart';
-import 'dart:ui' as ui;
 
 
 class PhoneAuthScreen extends StatefulWidget {
@@ -86,7 +88,7 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 40),
-                  Center(child: ZienaLogo(size: 80)),
+                  Center(child: ZienaLogo(size: 140)),
                   const SizedBox(height: 40),
                   Text(
                     'enter_phone'.tr(),
@@ -95,7 +97,7 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
                   const SizedBox(height: 8),
                   Text(
                     'enter_phone_hint'.tr(),
-                    style: Theme.of(context).textTheme.bodyMedium,
+                    style: Theme.of(context).textTheme.bodySmall!.copyWith(color: Colors.black87),
                   ),
                   const SizedBox(height: 28),
                   Text(
@@ -127,9 +129,9 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
                     initialCountryCode: 'EG',
                     onChanged: (phone) {
                       // Build E.164 format: +{countryCode}{national number without leading 0}
-                      final national = phone.number.replaceFirst(RegExp(r'^0+'), '');
+                      // final national = phone.number.replaceFirst(RegExp(r'^0+'), '');
                       // _completePhone = '${phone.countryCode}$national';
-                      _completePhone = '${phone.number}';
+                      _completePhone = phone.completeNumber;
                     },
                     flagsButtonPadding: const EdgeInsets.only(left: 12),
                     dropdownIconPosition: IconPosition.trailing,
@@ -210,32 +212,38 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
                   ),
                   const SizedBox(height: 20),
                   // Social buttons
-                  ZienaButton(
+                  ZienaButton2(
                     text: 'continue_google'.tr(),
                     isOutlined: true,
                     onTap: () {},
                     prefixIcon: SizedBox(
-                      width: 22,
-                      height: 22,
-                      child: const _GoogleIcon(),
+                      width: 18,
+                      height: 18,
+                      child: const ImageAsset('assets/images/google.png'),
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  ZienaButton(
-                    text: 'continue_apple'.tr(),
-                    isOutlined: true,
-                    onTap: () {},
-                    prefixIcon: const Icon(Icons.apple, size: 22, color: ZienaColors.textPrimary),
-                  ),
+                  if(Platform.isIOS)...[
+                    const SizedBox(height: 12),
+                    ZienaButton2(
+                      text: 'continue_apple'.tr(),
+                      isOutlined: true,
+                      onTap: () {},
+                      prefixIcon: const Icon(Icons.apple, size: 28, color: ZienaColors.textPrimary),
+                    ),
+                  ],
                   const SizedBox(height: 12),
                   ZienaButton(
                     text: 'continue_guest'.tr(),
-                    isOutlined: false,
                     backgroundColor: ZienaColors.bg3,
                     textColor: ZienaColors.primaryDark,
                     onTap: () {
                       AppNavigator.pushAndRemoveUntil(MainScreen());
                     },
+                    prefixIcon: SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: const ImageAsset('assets/images/guest.png'),
+                    ),
                   ),
                   const SizedBox(height: 32),
                 ],
@@ -248,40 +256,3 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
   }
 }
 
-class _GoogleIcon extends StatelessWidget {
-  const _GoogleIcon();
-
-  @override
-  Widget build(BuildContext context) {
-    return CustomPaint(painter: _GooglePainter());
-  }
-}
-
-class _GooglePainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.width / 2;
-
-    // Draw a simple colorful G
-    final textPainter = TextPainter(
-      text: const TextSpan(
-        text: 'G',
-        style: TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.w700,
-          color: Color(0xFF4285F4),
-        ),
-      ),
-      textDirection: ui.TextDirection.ltr,
-    );
-    textPainter.layout();
-    textPainter.paint(
-      canvas,
-      Offset(center.dx - textPainter.width / 2, center.dy - textPainter.height / 2),
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}

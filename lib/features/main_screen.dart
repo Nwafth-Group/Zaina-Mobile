@@ -50,7 +50,6 @@ class _MainScreenState extends State<MainScreen> {
     MoreScreen(isLoggedIn: SharedPrefHelper.isLoggedIn())
   ];
 
-
   Widget _buildBottomNav() {
     final items = [
       ('assets/images/active_home.png', 'assets/images/non_active_home.png', 'home'),
@@ -59,22 +58,17 @@ class _MainScreenState extends State<MainScreen> {
       ('assets/images/active_more.png', 'assets/images/non_active_more.png', 'more'),
     ];
 
-    return Container(
-      decoration: BoxDecoration(
-        color: ZienaColors.bg4,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 20,
-            offset: const Offset(0, -4),
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.only(left: 30,right: 30, bottom: 12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 3),
+          decoration: BoxDecoration(
+            color: ZienaColors.bg3,
+            borderRadius: BorderRadius.circular(20),
           ),
-        ],
-      ),
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: List.generate(items.length, (i) {
               final isActive = _selectedIndex == i;
               final item = items[i];
@@ -85,11 +79,11 @@ class _MainScreenState extends State<MainScreen> {
                   curve: Curves.easeInOut,
                   padding: EdgeInsets.symmetric(
                     horizontal: isActive ? 20 : 12,
-                    vertical: 10,
+                    vertical: 12,
                   ),
                   decoration: BoxDecoration(
-                    color: isActive ? ZienaColors.primary : Colors.transparent,
-                    borderRadius: BorderRadius.circular(30),
+                    color: isActive ? ZienaColors.primary : ZienaColors.bg4,
+                    borderRadius: BorderRadius.circular(!isActive?50:16),
                   ),
                   child: Row(
                     children: [
@@ -126,14 +120,20 @@ class _MainScreenState extends State<MainScreen> {
       // 2. The body changes based on the selected index
       // IndexedStack is used to keep the state (scroll position, etc.) of the screens alive
       body: SafeArea(
-        child: IndexedStack(
-          index: _selectedIndex,
-          children: _pages,
+        child: Stack(
+          alignment: AlignmentGeometry.bottomCenter,
+          children: [
+            IndexedStack(
+              index: _selectedIndex,
+              children: _pages,
+            ),
+            _buildBottomNav()
+          ],
         ),
       ),
 
       // 3. The Bottom Navigation Bar
-      bottomNavigationBar: _buildBottomNav(),
+      // bottomNavigationBar: _buildBottomNav(),
 
     );
   }

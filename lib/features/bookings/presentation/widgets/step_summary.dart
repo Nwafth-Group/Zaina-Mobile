@@ -3,13 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../widgets/custom_text_form_field.dart';
+import '../../../../widgets/success_dialog.dart';
 import '../../../../widgets/ziena_button.dart';
 import '../../data/model/booking_flow_model.dart';
 import '../cubit/booking_flow_cubit.dart';
 import '../../../main_screen.dart';
 import '../../../wallet/presentation/cubit/cubit.dart';
 import '../../../home/presentation/cubit/address_cubit.dart';
-import '../../../home/data/model/address_model.dart';
 
 class StepSummary extends StatefulWidget {
   const StepSummary({super.key});
@@ -55,6 +55,20 @@ class _StepSummaryState extends State<StepSummary> {
 
   void _onBook() {
     context.read<BookingFlowCubit>().submitBooking();
+  }
+
+  void _showBookingErrorDialog(BuildContext context, String message) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => SuccessDialog(
+        imageAsset: 'assets/images/error.png',
+        title: 'booking_failed'.tr(),
+        message: message,
+        buttonText: 'cancel'.tr(),
+        onButtonTap: () => Navigator.pop(context),
+      ),
+    );
   }
 
   void _showBookingSuccessDialog(BuildContext context, String ref) {
@@ -111,17 +125,22 @@ class _StepSummaryState extends State<StepSummary> {
   @override
   Widget build(BuildContext context) {
     return BlocListener<BookingFlowCubit, BookingFlowState>(
-      listenWhen: (prev, curr) => prev.bookingRef == null && curr.bookingRef != null,
+      listenWhen: (prev, curr) =>
+          (prev.bookingRef == null && curr.bookingRef != null) ||
+          (prev.error == null && curr.error != null),
       listener: (context, state) {
-        context.read<WalletCubit>().fetchWallet();
-        _showBookingSuccessDialog(context, state.bookingRef ?? '');
+        if (state.bookingRef != null) {
+          context.read<WalletCubit>().fetchWallet();
+          _showBookingSuccessDialog(context, state.bookingRef ?? '');
+        } else if (state.error != null) {
+          _showBookingErrorDialog(context, state.error!);
+        }
       },
       child: Scaffold(
       appBar: AppBar(
         title: Text('book_now'.tr()),
       ),
-      body: BlocBuilder<BookingFlowCubit, BookingFlowState>(
-        builder: (context, state) {
+      body: BlocBuilder<BookingFlowCubit, BookingFlowState>(builder: (context, state) {
           final flow = state.flow;
 
           if (flow == null) {
@@ -359,7 +378,7 @@ BlocBuilder<AddressCubit, AddressState>(
 
   Widget _buildBottomBar(
       BuildContext context, BookingFlowData flow, BookingFlowState state) {
-    final walletOnly = _paymentMethod == 'card';
+    final isCardSelected = _paymentMethod == 'card';
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 14, 20, 30),
       decoration: BoxDecoration(
@@ -390,11 +409,11 @@ BlocBuilder<AddressCubit, AddressState>(
         ZienaButton(
           text: 'book_now'.tr(),
           isLoading: state.submitting,
-          onTap: (state.submitting || walletOnly) ? null : _onBook,
+          onTap: (state.submitting || isCardSelected) ? null : _onBook,
           disabledBackgroundColor: ZienaColors.primary.withValues(alpha: 0.5),
           disabledTextColor: Colors.white,
         ),
-        if (walletOnly) ...[
+        if (isCardSelected) ...[
           const SizedBox(height: 8),
           Text(
             'payment_not_available'.tr(),

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../injection_container.dart';
+import '../../../../widgets/custom_icon.dart';
 import '../../../../widgets/custom_text_form_field.dart';
 import '../../data/model/filter_models.dart';
 import '../../data/model/service_model.dart';
@@ -68,144 +69,121 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildSearchBar(),
-            Expanded(
-              child: BlocBuilder<SearchCubit, SearchState>(
-                builder: (context, state) {
-                  // ── Loading (first page) ──────────────────────────────
-                  if (state is SearchLoading) {
-                    return const Center(
-                      child: CircularProgressIndicator(
-                          color: ZienaColors.primary, strokeWidth: 2),
-                    );
-                  }
+      appBar: AppBar(title: Text('search'.tr()), centerTitle: false,),
+      body: Column(
+        children: [
+          _buildSearchBar(),
+          Expanded(
+            child: BlocBuilder<SearchCubit, SearchState>(
+              builder: (context, state) {
+                // ── Loading (first page) ──────────────────────────────
+                if (state is SearchLoading) {
+                  return const Center(
+                    child: CircularProgressIndicator(
+                        color: ZienaColors.primary, strokeWidth: 2),
+                  );
+                }
 
-                  // ── Suggestions ───────────────────────────────────────
-                  if (state is SearchSuggestions || state is SearchInitial) {
-                    final chips = state is SearchSuggestions
-                        ? state.suggestions
-                        : <String>[];
-                    return _buildSuggestions(chips);
-                  }
+                // ── Suggestions ───────────────────────────────────────
+                if (state is SearchSuggestions || state is SearchInitial) {
+                  final chips = state is SearchSuggestions
+                      ? state.suggestions
+                      : <String>[];
+                  return _buildSuggestions(chips);
+                }
 
-                  // ── No results ────────────────────────────────────────
-                  if (state is SearchEmpty) {
-                    return _buildNoResults(state.query);
-                  }
+                // ── No results ────────────────────────────────────────
+                if (state is SearchEmpty) {
+                  return _buildNoResults(state.query);
+                }
 
-                  // ── Results + load-more ───────────────────────────────
-                  if (state is SearchResults ||
-                      state is SearchLoadingMore) {
-                    final results = state is SearchResults
-                        ? state.results
-                        : (state as SearchLoadingMore).currentResults;
-                    final hasMore = state is SearchResults
-                        ? state.hasMore
-                        : true;
-                    return _buildResults(results, loadingMore: hasMore && state is SearchLoadingMore);
-                  }
+                // ── Results + load-more ───────────────────────────────
+                if (state is SearchResults ||
+                    state is SearchLoadingMore) {
+                  final results = state is SearchResults
+                      ? state.results
+                      : (state as SearchLoadingMore).currentResults;
+                  final hasMore = state is SearchResults
+                      ? state.hasMore
+                      : true;
+                  return _buildResults(results, loadingMore: hasMore && state is SearchLoadingMore);
+                }
 
-                  // ── Error ─────────────────────────────────────────────
-                  if (state is SearchError) {
-                    return Center(
-                      child: Text(state.message,
-                          style: const TextStyle(
-                              
-                              color: ZienaColors.textSecondary)),
-                    );
-                  }
+                // ── Error ─────────────────────────────────────────────
+                if (state is SearchError) {
+                  return Center(
+                    child: Text(state.message,
+                        style: const TextStyle(
 
-                  return _buildSuggestions([]);
-                },
-              ),
+                            color: ZienaColors.textSecondary)),
+                  );
+                }
+
+                return _buildSuggestions([]);
+              },
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
   // ── Search bar ──────────────────────────────────────────────────────────────
   Widget _buildSearchBar() {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
-      decoration: BoxDecoration(
-        color: ZienaColors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          // Back Button
-          GestureDetector(
-            onTap: () => Navigator.pop(context),
-            child: const Icon(Icons.arrow_back_ios_new,
-                size: 20, color: ZienaColors.textPrimary),
-          ),
-          const SizedBox(width: 12),
-
-          // Search Field using CustomTextField
-          Expanded(
-            child: ValueListenableBuilder<TextEditingValue>(
-              valueListenable: _ctrl,
-              builder: (context, value, _) {
-                return CustomTextField(
-                  controller: _ctrl,
-                  hintText: 'search'.tr(),
-                  onChanged: (q) => context.read<SearchCubit>().onQueryChanged(q),
-                  // Note: CustomTextField currently uses TextFormField which uses
-                  // onFieldSubmitted, but your snippet showed onChanged.
-                  // If you need onSubmitted, you might need to add it to your CustomTextField class.
-                  prefixIcon: const Icon(Icons.search, color: ZienaColors.primary, size: 20),
-                  suffixIcon: value.text.isNotEmpty
-                      ? GestureDetector(
-                    onTap: _onClear,
-                    child: const Icon(Icons.cancel, color: ZienaColors.textSecondary, size: 20),
-                  )
-                      : GestureDetector(
-                    onTap: () async {
-                      final result = await Navigator.push<FilterParams>(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => BlocProvider(
-                            create: (_) => sl<FilterCubit>(),
-                            child: FilterScreen(
-                              initialParams: _activeFilter,
-                            ),
-                          ),
-                        ),
-                      );
-                      if (result != null) {
-                        setState(() => _activeFilter = result);
-                        // Apply filter — replaces search results
-                        context.read<SearchCubit>().applyFilter(result);
-                      }
-                    },
-                    child: Container(
-                      width: 48,
-                      height: 48,
-                      padding: EdgeInsets.all(5),
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle, // Matched the rounded style of your custom field
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 5),
+      child: ValueListenableBuilder<TextEditingValue>(
+        valueListenable: _ctrl,
+        builder: (context, value, _) {
+          return CustomTextField(
+            controller: _ctrl,
+            hintText: 'search'.tr(),
+            fillColor: ZienaColors.bg1,
+            onChanged: (q) => context.read<SearchCubit>().onQueryChanged(q),
+            // Note: CustomTextField currently uses TextFormField which uses
+            // onFieldSubmitted, but your snippet showed onChanged.
+            // If you need onSubmitted, you might need to add it to your CustomTextField class.
+            prefixIcon: Padding(
+              padding: const EdgeInsets.all(15.0),
+              child: Image.asset('assets/images/search.png', height: 20, width: 20, fit: BoxFit.contain,),
+            ),
+            suffixIcon: value.text.isNotEmpty
+                ? GestureDetector(
+              onTap: _onClear,
+              child: const Icon(Icons.cancel, color: ZienaColors.textSecondary, size: 20),
+            )
+                : GestureDetector(
+              onTap: () async {
+                final result = await Navigator.push<FilterParams>(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => BlocProvider(
+                      create: (_) => sl<FilterCubit>(),
+                      child: FilterScreen(
+                        initialParams: _activeFilter,
                       ),
-                      child: const Icon(Icons.tune_rounded,
-                          color: ZienaColors.primary, size: 20),
                     ),
                   ),
                 );
+                if (result != null) {
+                  setState(() => _activeFilter = result);
+                  // Apply filter — replaces search results
+                  context.read<SearchCubit>().applyFilter(result);
+                }
               },
+              child: Container(
+                width: 48,
+                height: 48,
+                padding: EdgeInsets.all(5),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle, // Matched the rounded style of your custom field
+                ),
+                child: const Icon(Icons.tune_rounded,
+                    color: ZienaColors.primary, size: 20),
+              ),
             ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }
@@ -226,10 +204,10 @@ class _SearchScreenState extends State<SearchScreen> {
               color: ZienaColors.textPrimary,
             ),
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 10),
           Wrap(
-            spacing: 10,
-            runSpacing: 10,
+            spacing: 5,
+            runSpacing: 5,
             children: chips
                 .map((s) => _SuggestionChip(
               label: s,
@@ -324,17 +302,16 @@ class _SuggestionChip extends StatelessWidget {
         padding:
         const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: ZienaColors.bg1,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: ZienaColors.bg4, width: 0.8),
+          color: ZienaColors.bg2,
+          borderRadius: BorderRadius.circular(10),
         ),
         child: Text(
           label,
           style: const TextStyle(
             
-            fontSize: 13,
+            fontSize: 12,
             fontWeight: FontWeight.w500,
-            color: ZienaColors.textPrimary,
+            color: ZienaColors.primary,
           ),
         ),
       ),

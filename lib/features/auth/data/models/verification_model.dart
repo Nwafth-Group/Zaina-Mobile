@@ -29,6 +29,7 @@ class UserProfile {
   final String mobileNumber;
   final String? email;
   final String? image;
+  final String? gender;
   final double? walletBalance;
   final String? preferredLanguage;
 
@@ -42,6 +43,7 @@ class UserProfile {
     required this.mobileNumber,
     this.email,
     this.image,
+    this.gender,
     this.walletBalance,
     this.preferredLanguage,
   });
@@ -55,6 +57,7 @@ class UserProfile {
       firstName: data['first_name'],
       lastName: data['last_name'],
       fullName: data['full_name'],
+      gender: data['gender'],
       verificationStatus: VerificationStatusExt.fromString(
           data['verification_status']),
       rejectionReason: data['rejection_reason'],

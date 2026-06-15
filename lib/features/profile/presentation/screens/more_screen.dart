@@ -4,6 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:zeina/core/utils/shared_pref_helper.dart';
 import 'package:zeina/features/auth/data/models/verification_model.dart';
+import 'package:zeina/features/profile/presentation/screens/privacy_screen.dart';
+import 'package:zeina/features/profile/presentation/screens/rating_scree.dart';
+import 'package:zeina/features/profile/presentation/screens/reports_Screen.dart';
+import 'package:zeina/features/profile/presentation/screens/terms_screen.dart';
 import 'package:zeina/widgets/custom_icon.dart';
 import 'package:zeina/widgets/signin_required_widget.dart';
 import '../../../../core/theme/theme.dart';
@@ -13,6 +17,13 @@ import '../../../auth/presentation/cubit/verification_cubit.dart';
 import '../../../auth/presentation/screens/phone_auth_screen.dart';
 import '../../../home/presentation/cubit/address_cubit.dart';
 import '../../../home/presentation/screens/my_addresses_screen.dart';
+import '../cubit/cards_cubit.dart';
+import '../cubit/coupons_cubit.dart';
+import '../cubit/points_cubit.dart';
+import 'edit_profile_screen.dart';
+import 'my_cards_screen.dart';
+import 'my_coupons_screen.dart';
+import 'my_points_scree.dart';
 
 class MoreScreen extends StatefulWidget {
   final bool isLoggedIn;
@@ -36,7 +47,8 @@ class _MoreScreenState extends State<MoreScreen> {
     return Scaffold(
       backgroundColor: ZienaColors.bg1,
       body: SafeArea(
-        child: Column(
+        child: widget.isLoggedIn
+            ?Column(
           children: [
             // ── Title ────────────────────────────────────────────────────────
             Padding(
@@ -52,12 +64,10 @@ class _MoreScreenState extends State<MoreScreen> {
             ),
 
             Expanded(
-              child: widget.isLoggedIn
-                  ? _buildLoggedIn()
-                  : _buildGuest(),
+              child:  _buildLoggedIn(),
             ),
           ],
-        ),
+        ):_buildGuest(),
       ),
     );
   }
@@ -84,10 +94,19 @@ class _MoreScreenState extends State<MoreScreen> {
               // ── Account section ──────────────────────────────────────────
               _MenuGroup(
                 items: [
+                  // In _buildLoggedIn() → Profile menu item:
                   _MenuItem(
                     icon: 'assets/images/profile.png',
                     label: 'profile'.tr(),
-                    onTap: () {},
+                    onTap: () {
+                      if (profile == null) return;
+                      Navigator.push(context, MaterialPageRoute(
+                        builder: (_) => BlocProvider.value(
+                          value: context.read<ProfileCubit>(),
+                          child: EditProfileScreen(profile: profile),
+                        ),
+                      ));
+                    },
                   ),
                   _MenuItem(
                     icon: 'assets/images/addresses.png',
@@ -102,20 +121,36 @@ class _MoreScreenState extends State<MoreScreen> {
                       ),
                     ),
                   ),
+                  // My Cards menu item:
                   _MenuItem(
                     icon: 'assets/images/cards.png',
                     label: 'my_cards'.tr(),
-                    onTap: () {},
+                    onTap: () => Navigator.push(context, MaterialPageRoute(
+                      builder: (_) => BlocProvider(
+                        create: (_) => sl<CardsCubit>(),
+                        child: const MyCardsScreen(),
+                      ),
+                    )),
                   ),
                   _MenuItem(
                     icon: 'assets/images/coupons.png',
                     label: 'my_coupon'.tr(),
-                    onTap: () {},
+                    onTap: () => Navigator.push(context, MaterialPageRoute(
+                      builder: (_) => BlocProvider(
+                        create: (_) => sl<CouponsCubit>(),
+                        child: const MyCouponsScreen(),
+                      ),
+                    )),
                   ),
                   _MenuItem(
                     icon: 'assets/images/my_points.png',
                     label: 'my_points'.tr(),
-                    onTap: () {},
+                    onTap: () => Navigator.push(context, MaterialPageRoute(
+                      builder: (_) => BlocProvider(
+                        create: (_) => sl<PointsCubit>(),
+                        child: const MyPointsScreen(),
+                      ),
+                    )),
                   ),
                   _MenuItem(
                     icon: 'assets/images/languages.png',
@@ -132,12 +167,16 @@ class _MoreScreenState extends State<MoreScreen> {
                   _MenuItem(
                     icon: 'assets/images/ratings.png',
                     label: 'rating'.tr(),
-                    onTap: () {},
+                    onTap: () => Navigator.push(context,
+                        MaterialPageRoute(builder: (_) => const RatingScreen())),
                   ),
                   _MenuItem(
                     icon: 'assets/images/report.png',
                     label: 'report'.tr(),
-                    onTap: () {},
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const ReportScreen()),
+                    ),
                   ),
                   _MenuItem(
                     icon: 'assets/images/support.png',
@@ -147,12 +186,18 @@ class _MoreScreenState extends State<MoreScreen> {
                   _MenuItem(
                     icon: 'assets/images/terms.png',
                     label: 'terms_and_conditions'.tr(),
-                    onTap: () {},
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const TermsScreen()),
+                    ),
                   ),
                   _MenuItem(
                     icon: 'assets/images/privacy.png',
                     label: 'privacy_policy'.tr(),
-                    onTap: () {},
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const PrivacyScreen()),
+                    ),
                   ),
                 ],
               ),
@@ -160,7 +205,7 @@ class _MoreScreenState extends State<MoreScreen> {
 
               // ── Logout ───────────────────────────────────────────────────
               _LogoutButton(onTap: () => _confirmLogout(context)),
-              const SizedBox(height: 16),
+              const SizedBox(height: 50),
             ],
           ),
         );
@@ -591,10 +636,10 @@ class _LanguageSheet extends StatelessWidget {
                 fontSize: 17, fontWeight: FontWeight.w700,
                 color: ZienaColors.textPrimary,
               )),
-          const SizedBox(height: 20),
+const SizedBox(height: 20),
 
           _LangOption(
-            flag: '🇺🇸',
+            flag: 'assets/images/us.png',
             label: 'English',
             isSelected: currentLang == 'en',
             onTap: () {
@@ -604,7 +649,7 @@ class _LanguageSheet extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           _LangOption(
-            flag: '🇪🇬',
+            flag: 'assets/images/eg.png',
             label: 'العربية',
             isSelected: currentLang == 'ar',
             onTap: () {
@@ -644,10 +689,20 @@ class _LangOption extends StatelessWidget {
           border: Border.all(
             color: isSelected ? ZienaColors.primary : ZienaColors.greyBorder,
             width: isSelected ? 1.5 : 0.8,
-          ),
+),
         ),
-        child: Row(children: [
-          Text(flag, style: const TextStyle(fontSize: 22)),
+child: Row(children: [
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: ZienaColors.bg1,
+            ),
+            child: ClipOval(
+              child: Image.asset(flag, width: 28, height: 20, fit: BoxFit.cover),
+            ),
+          ),
           const SizedBox(width: 14),
           Expanded(child: Text(label,
               style: TextStyle(
@@ -656,13 +711,6 @@ class _LangOption extends StatelessWidget {
                     ? ZienaColors.primary
                     : ZienaColors.textPrimary,
               ))),
-          if (isSelected)
-            Container(
-              width: 22, height: 22,
-              decoration: const BoxDecoration(
-                  color: ZienaColors.primary, shape: BoxShape.circle),
-              child: const Icon(Icons.check, color: Colors.white, size: 14),
-            ),
         ]),
       ),
     );

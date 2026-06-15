@@ -19,6 +19,10 @@ import 'features/home/presentation/cubit/filter_cubit.dart';
 import 'features/home/presentation/cubit/home_cubti.dart';
 import 'features/home/presentation/cubit/search_cubit.dart';
 import 'features/home/presentation/cubit/service_cubit.dart';
+import 'features/profile/presentation/cubit/cards_cubit.dart';
+import 'features/profile/presentation/cubit/coupons_cubit.dart';
+import 'features/profile/presentation/cubit/points_cubit.dart';
+import 'features/profile/presentation/cubit/reports_cubit.dart';
 import 'features/wallet/presentation/cubit/cubit.dart';
 
 final sl = GetIt.instance;
@@ -94,6 +98,9 @@ void setupDependencies() {
   sl.registerFactory<ProfileCubit>(
           () => ProfileCubit(sl<ApiClient>()));
   sl.registerFactory<FilterCubit>(() => FilterCubit(sl<ApiClient>()));
-
+  sl.registerFactory<PointsCubit>(() => PointsCubit(sl<ApiClient>()));
+  sl.registerFactory<EarnPointsCubit>(() => EarnPointsCubit(sl<ApiClient>()));
+  sl.registerFactory<ReportsCubit>(() => ReportsCubit(sl<ApiClient>()));
+  sl.registerFactory<CouponsCubit>(() => CouponsCubit(sl<ApiClient>()));
 
 }

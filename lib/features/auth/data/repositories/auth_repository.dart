@@ -5,6 +5,7 @@ abstract class AuthRepository {
   Future<Map<String, dynamic>> sendOtp(String mobileNumber);
   Future<Map<String, dynamic>> verifyOtp(String mobileNumber, String otp);
   Future<Map<String, dynamic>> logout();
+  Future<void> updateDeviceToken(String fcmToken);
 }
 
 class AuthRepositoryImpl implements AuthRepository {
@@ -37,6 +38,15 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<Map<String, dynamic>> logout() async {
     try {
       return await _remoteDataSource.logout();
+    } on Failure {
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> updateDeviceToken(String fcmToken) async {
+    try {
+      await _remoteDataSource.updateDeviceToken(fcmToken);
     } on Failure {
       rethrow;
     }

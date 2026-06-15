@@ -74,6 +74,58 @@ class ProfileCubit extends Cubit<ProfileState> {
       return profile;
     }
   }
+
+  // Add to ProfileCubit class:
+
+  Future<bool> updateProfile({
+    required String firstName,
+    required String lastName,
+    required String phoneNumber,
+    required String email,
+    required String gender,
+    String? idNumber,
+    File? image,
+  }) async {
+    emit(ProfileLoading());
+    try {
+      final fields = <String, dynamic>{
+        'first_name':   firstName,
+        'last_name':    lastName,
+        'phone_number': phoneNumber,
+        'email':        email,
+        'gender':       gender,
+        if (idNumber != null && idNumber.isNotEmpty) 'id_number': idNumber,
+      };
+
+      FormData formData;
+      if (image != null) {
+        formData = FormData.fromMap({
+          ...fields,
+          'files': await MultipartFile.fromFile(image.path, filename: 'profile.jpg'),
+        });
+      } else {
+        formData = FormData.fromMap(fields);
+      }
+
+      final res = await _api.dio.put(
+        'customer/profile/complete',
+        data: formData,
+        options: Options(contentType: 'multipart/form-data'),
+      );
+
+      _profile = UserProfile.fromJson(res.data['data']);
+      emit(ProfileLoaded(_profile!));
+      return true;
+    } on DioException catch (e) {
+      emit(ProfileError(handleDioError(e).message));
+      // Restore previous profile
+      if (_profile != null) emit(ProfileLoaded(_profile!));
+      return false;
+    } catch (_) {
+      if (_profile != null) emit(ProfileLoaded(_profile!));
+      return false;
+    }
+  }
 }
 
 abstract class VerificationState {}

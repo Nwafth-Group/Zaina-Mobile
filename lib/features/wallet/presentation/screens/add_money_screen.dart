@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/theme.dart';
+import '../../../profile/presentation/cubit/cards_cubit.dart';
 import '../../data/models/wallet_model.dart';
 import '../cubit/cubit.dart';
 import 'add_card_screen.dart';

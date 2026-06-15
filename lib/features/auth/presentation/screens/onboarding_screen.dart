@@ -88,10 +88,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               children: [
                 Text(
                   _pages[_currentPage].title.tr(),
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  style: Theme.of(context).textTheme.displayLarge?.copyWith(
                     fontWeight: FontWeight.w700,
-                    fontSize: 22,
-                    height: 1.3,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -99,8 +97,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 Text(
                   _pages[_currentPage].description.tr(),
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    height: 1.6,
-                    fontSize: 13,
+                    height: 1.2,
+                    fontSize: 14,
                   ),
                   textAlign: TextAlign.center,
                 ),

@@ -35,7 +35,7 @@ class CustomTextField extends StatelessWidget {
     this.suffixIcon,
     this.maxLines = 1,
     this.border = 1,
-    this.borderRadius = 50,
+    this.borderRadius = 20,
     this.fillColor,
     this.borderColor,
     this.contentPadding,
@@ -84,6 +84,8 @@ class CustomTextField extends StatelessWidget {
 
         // ✅ FOCUSED
         focusedBorder: _border(borderColor ?? ZienaColors.primary, width: border),
+
+        border: _border(borderColor ?? ZienaColors.primary, width: border),
 
         // ✅ ERROR (keeps same radius)
         errorBorder: _border(Colors.red, width: border),

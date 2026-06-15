@@ -6,6 +6,7 @@ import '../../../../core/theme/theme.dart';
 import '../../../../injection_container.dart';
 import '../../../../widgets/empty_data_widget.dart';
 import '../../../../widgets/ziena_button.dart';
+import '../../../../widgets/ziena_logo.dart';
 import '../../data/model/banner_model.dart';
 import '../cubit/category_cubit.dart';
 import 'services_category_screen.dart';
@@ -63,7 +64,9 @@ class _SubcategoriesScreenViewState extends State<_SubcategoriesScreenView> {
     return Scaffold(
       backgroundColor: ZienaColors.bg1,
       appBar: AppBar(
-        
+        backgroundColor: ZienaColors.bg1,
+        surfaceTintColor: ZienaColors.bg1,
+        scrolledUnderElevation: 0,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new,
@@ -221,29 +224,28 @@ class _CategoryCard extends StatelessWidget {
                 left: 18,
                 bottom: 18,
                 right: 18,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      category.localizedName(lang),
-                      style: const TextStyle(
-                        
-                        fontSize: 17,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
-                      ),
+                child: gradientBlurContainer(
+                  color: Colors.white10,
+                  circular: 10,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 6),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          category.localizedName(lang),
+                          style: const TextStyle(
+
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const Icon(Icons.arrow_forward,
+                            color: Colors.white, size: 18),
+                      ],
                     ),
-                    Container(
-                      width: 30,
-                      height: 30,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.25),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(Icons.arrow_forward_ios,
-                          color: Colors.white, size: 14),
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ],

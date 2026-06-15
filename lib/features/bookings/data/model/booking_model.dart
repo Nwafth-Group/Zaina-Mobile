@@ -110,7 +110,7 @@ class BookingModel {
   final String fullDate;
   final String timeSlot;
   final BookingAddress? address;
-  final BookingWorkerModel? worker;
+  final List<BookingWorkerModel>? worker;
   final BookingPriceSummary? priceSummary;
   final List<String> importantNotes;
 
@@ -153,8 +153,8 @@ class BookingModel {
       address: json['address'] != null
           ? BookingAddress.fromJson(json['address'])
           : null,
-      worker: json['worker'] != null
-          ? BookingWorkerModel.fromJson(json['worker'])
+      worker: json['workers'] != null
+          ? List.of(json['workers']??[]).map((e)=> BookingWorkerModel.fromJson(e)).toList()
           : null,
       priceSummary: json['price_summary'] != null
           ? BookingPriceSummary.fromJson(json['price_summary'])

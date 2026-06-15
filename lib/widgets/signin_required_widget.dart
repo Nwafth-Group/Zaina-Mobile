@@ -25,8 +25,8 @@ class SignInRequiredWidget extends StatelessWidget {
             // Image
             Image.asset(
               'assets/images/signin_required.png',
-              width: 200,
-              height: 200,
+              width: MediaQuery.of(context).size.width*0.8,
+              height: MediaQuery.of(context).size.width*0.8,
             ),
             const SizedBox(height: 28),
 
@@ -41,20 +41,19 @@ class SignInRequiredWidget extends StatelessWidget {
             ),
             const SizedBox(height: 10),
 
-            Text(
-              'signin_required_desc_$tabKey'.tr(),
-              style: const TextStyle(
-                fontSize: 14,
-                color: ZienaColors.textSecondary,
-                height: 1.6,
+            SizedBox(
+              width: MediaQuery.of(context).size.width*0.6,
+              child: Text(
+                'signin_required_desc_$tabKey'.tr(),
+                style: TextTheme.of(context).bodyLarge!.copyWith(color: Colors.black54),
+                textAlign: TextAlign.center,
               ),
-              textAlign: TextAlign.center,
             ),
             const SizedBox(height: 36),
 
             // Sign In button
-            ZienaButton(
-              text: 'log_in'.tr(),
+            ZienaSecondaryButton(
+              text: 'sign_in'.tr(),
               onTap: () {
                 if(SharedPrefHelper.getToken() != null) {
                   context.read<AuthCubit>().logout();

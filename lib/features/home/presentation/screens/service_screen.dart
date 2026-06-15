@@ -8,8 +8,6 @@ import '../../../../injection_container.dart';
 import '../../../../widgets/custom_icon.dart';
 import '../../../../widgets/ziena_button.dart';
 import '../../../../widgets/signin_required_widget.dart';
-import '../../../auth/presentation/cubit/auth_cubit.dart';
-import '../../../auth/presentation/screens/phone_auth_screen.dart';
 import '../../../bookings/data/model/booking_flow_model.dart';
 import '../../../bookings/presentation/cubit/booking_flow_cubit.dart';
 import '../../../bookings/presentation/widgets/step_summary.dart';
@@ -277,8 +275,8 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                       ...ReviewModel.mockReviews
                           .take(2)
                           .map((r) => _ReviewCard(review: r)),
-                      const SizedBox(height: 4),
-                      _buildSeeMoreReviews(),
+                      // const SizedBox(height: 4),
+                      // _buildSeeMoreReviews(),
                       const SizedBox(height: 30),
 
                     ],

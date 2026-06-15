@@ -5,6 +5,7 @@ class AppConstants {
   static const String sendOtp = 'customer/auth/send-otp';
   static const String verifyOtp = 'customer/auth/verify-otp';
   static const String logout = 'customer/auth/logout';
+  static const String updateDeviceToken = 'customer/notification/update-device-token';
 
   // Storage keys
   static const String tokenKey = 'auth_token';

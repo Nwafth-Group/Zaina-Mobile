@@ -1,3 +1,4 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../data/repositories/auth_repository.dart';
 import '../../../../core/network/failure.dart';
@@ -28,11 +29,21 @@ class AuthCubit extends Cubit<AuthState> {
       final result = await _authRepository.verifyOtp(mobileNumber, otp);
       print("rrrrrrr $result");
       emit(OtpVerifySuccess(result));
+      _sendFcmToken();
     } on Failure catch (e) {
       emit(AuthError(e.message));
     } catch (e) {
       emit(AuthError('Invalid code. Please try again.'));
     }
+  }
+
+  Future<void> _sendFcmToken() async {
+    try {
+      final token = await FirebaseMessaging.instance.getToken();
+      if (token != null) {
+        await _authRepository.updateDeviceToken(token);
+      }
+    } catch (_) {}
   }
 
   Future<void> logout() async {

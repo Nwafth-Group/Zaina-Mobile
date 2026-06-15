@@ -84,27 +84,14 @@ class SuccessDialog extends StatelessWidget {
   Widget _buildHeaderGraphic() {
     // 1. Exact Map/Asset Image variant layout match
     if (imageAsset != null) {
-      return Container(
-        width: 140,
-        height: 140,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFFE56B8F).withOpacity(0.15),
-              blurRadius: 20,
-              spreadRadius: 5,
-            ),
-          ],
-        ),
-        child: ClipOval(
-          child: Padding(
-            padding: const EdgeInsets.all(8.0), // Padding around vector map
-            child: Image.asset(
-              imageAsset!,
-              fit: BoxFit.contain,
-            ),
+      return SizedBox(
+        width: 220,
+        height: 220,
+        child: Padding(
+          padding: const EdgeInsets.all(8.0), // Padding around vector map
+          child: Image.asset(
+            imageAsset!,
+            fit: BoxFit.contain,
           ),
         ),
       );

@@ -50,19 +50,18 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyDXfBSPQQ94-rRDOUYu2ycdYV4p69Ga164',
-    appId: '1:1025258124299:android:3a478c4bb0f6cf6a3dc30e',
-    messagingSenderId: '1025258124299',
-    projectId: 'ziena-c5969',
-    storageBucket: 'ziena-c5969.firebasestorage.app',
+    apiKey: 'AIzaSyBCAxvS9eiJtxwFMJ12DdO9ebuB5bx4MDo',
+    appId: '1:248433725269:android:0e9468171d41ec7ca4a9dc',
+    messagingSenderId: '248433725269',
+    projectId: 'ziena-d7f98',
+    storageBucket: 'ziena-d7f98.firebasestorage.app',
   );
-
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyBkCJvBOdCNEGFiCBYY0sBoGZpuX6rI49A',
-    appId: '1:1025258124299:ios:05d79c000593f2863dc30e',
-    messagingSenderId: '1025258124299',
-    projectId: 'ziena-c5969',
-    storageBucket: 'ziena-c5969.firebasestorage.app',
+    apiKey: 'AIzaSyBgK8phsNtPRxYBYXnL2uNEA4JEnWfhf1E',
+    appId: '1:248433725269:ios:84ba5f07ffc2694ba4a9dc',
+    messagingSenderId: '248433725269',
+    projectId: 'ziena-d7f98',
+    storageBucket: 'ziena-d7f98.firebasestorage.app',
     iosBundleId: 'com.example.zeinaApp',
   );
 }

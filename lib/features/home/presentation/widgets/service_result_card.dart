@@ -24,9 +24,9 @@ class ServiceResultCard extends StatelessWidget {
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(
-          color: ZienaColors.white,
+          color: ZienaColors.bg2,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: ZienaColors.greyBorder, width: 0.8),
+          border: Border.all(color: ZienaColors.primary, width: 0.4),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.04),
@@ -37,14 +37,15 @@ class ServiceResultCard extends StatelessWidget {
         ),
         child: Row(
           children: [
+            SizedBox(width: 5),
             // ── Image ──────────────────────────────────────────────────────
             ClipRRect(
               borderRadius:
-              const BorderRadius.horizontal(left: Radius.circular(16)),
+              BorderRadius.circular(15),
               child: service.image != null
                   ? Image.network(
                 service.image!,
-                width: 90,
+                width: 140,
                 height: 90,
                 fit: BoxFit.cover,
                 errorBuilder: (_, _, _) => _imagePlaceholder(),
@@ -65,7 +66,7 @@ class ServiceResultCard extends StatelessWidget {
                       categoryName,
                       style: const TextStyle(
                         
-                        fontSize: 11,
+                        fontSize: 10,
                         color: ZienaColors.primary,
                         fontWeight: FontWeight.w500,
                       ),
@@ -96,7 +97,7 @@ class ServiceResultCard extends StatelessWidget {
                             '${service.price.pricePerHour.toStringAsFixed(0)} ${service.price.currency} ',
                             style: const TextStyle(
                               
-                              fontSize: 14,
+                              fontSize: 18,
                               fontWeight: FontWeight.w700,
                               color: ZienaColors.primary,
                             ),
@@ -105,7 +106,7 @@ class ServiceResultCard extends StatelessWidget {
                             text: _priceLabel(service.type),
                             style: const TextStyle(
                               
-                              fontSize: 11,
+                              fontSize: 12,
                               color: ZienaColors.textSecondary,
                             ),
                           ),
