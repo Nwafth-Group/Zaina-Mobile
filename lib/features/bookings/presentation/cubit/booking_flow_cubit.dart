@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/network/failure.dart';
+import '../../../profile/data/models/coupon_model.dart';
 import '../../data/model/booking_flow_model.dart';
 
 class BookingFlowState {
@@ -123,32 +124,25 @@ class BookingFlowCubit extends Cubit<BookingFlowState> {
     }
   }
 
-  // ── Validate coupon ────────────────────────────────────────────────────────
-  Future<void> validateCoupon(String code, double? discount) async {
-    emit(state.copyWith(couponLoading: true, clearCouponError: true));
-    try {
-      _flow = _flow.copyWith(couponCode: code, couponDiscount: discount);
-      emit(state.copyWith(
-        couponLoading: false,
-        flow: _flow,
-        clearCouponError: true,
-      ));
-    } on DioException catch (e) {
-      final msg = handleDioError(e).message;
-      _flow = _flow.copyWith(couponCode: '', couponDiscount: 0);
-      emit(state.copyWith(
-        couponLoading: false,
-        flow: _flow,
-        couponError: msg,
-      ));
-    } catch (_) {
-      _flow = _flow.copyWith(couponCode: '', couponDiscount: 0);
-      emit(state.copyWith(
-        couponLoading: false,
-        flow: _flow,
-        couponError: 'invalid_coupon',
-      ));
+  // ── Apply coupon ───────────────────────────────────────────────────────────
+  void applyCoupon(CouponModel coupon) {
+    final subtotal = _flow.subtotal;
+
+    if (coupon.minBookingAmount != null && subtotal < coupon.minBookingAmount!) {
+      emit(state.copyWith(couponError: 'invalid_coupon'));
+      return;
     }
+
+    double discount = coupon.type == 'percentage'
+        ? subtotal * coupon.value / 100
+        : coupon.value;
+    if (coupon.maxDiscount != null && discount > coupon.maxDiscount!) {
+      discount = coupon.maxDiscount!;
+    }
+    if (discount > subtotal) discount = subtotal;
+
+    _flow = _flow.copyWith(couponCode: coupon.code, couponDiscount: discount);
+    emit(state.copyWith(flow: _flow, clearCouponError: true));
   }
 
   void removeCoupon() {

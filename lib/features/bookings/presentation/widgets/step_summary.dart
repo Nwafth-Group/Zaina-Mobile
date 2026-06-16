@@ -48,9 +48,8 @@ class _StepSummaryState extends State<StepSummary> {
     });
   }
 
-  void _applyCoupon(String code, double? discount) {
-    if (code.isEmpty) return;
-    context.read<BookingFlowCubit>().validateCoupon(code, discount);
+  void _applyCoupon(CouponModel coupon) {
+    context.read<BookingFlowCubit>().applyCoupon(coupon);
   }
 
   void _openSelectCouponSheet(BuildContext ctx, String? currentCode) {
@@ -63,7 +62,7 @@ class _StepSummaryState extends State<StepSummary> {
         create: (_) => sl<CouponsCubit>()..fetchCoupons(),
         child: _SelectCouponSheet(
           currentCode: currentCode,
-          onApply: (code, discount) => _applyCoupon(code, discount),
+          onApply: (coupon) => _applyCoupon(coupon),
         ),
       ),
     );
@@ -745,7 +744,7 @@ class _SummaryRow extends StatelessWidget {
 
 // ── Select coupon bottom sheet ──────────────────────────────────────────────
 class _SelectCouponSheet extends StatefulWidget {
-  final void Function(String code, double? discount) onApply;
+  final void Function(CouponModel coupon) onApply;
   final String? currentCode;
   const _SelectCouponSheet({required this.onApply, this.currentCode});
 
@@ -842,7 +841,7 @@ class _SelectCouponSheetState extends State<_SelectCouponSheet> {
             onTap: _selected != null
                 ? () {
               Navigator.pop(context);
-              widget.onApply(_selected!.code, _selected!.maxDiscount);
+              widget.onApply(_selected!);
             }
                 : null,
             disabledBackgroundColor: ZienaColors.greyBorder,
