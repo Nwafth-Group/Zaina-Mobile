@@ -19,6 +19,7 @@ import 'features/home/presentation/cubit/filter_cubit.dart';
 import 'features/home/presentation/cubit/home_cubti.dart';
 import 'features/home/presentation/cubit/search_cubit.dart';
 import 'features/home/presentation/cubit/service_cubit.dart';
+import 'features/notifications/presentation/cubit/notifications_cubit.dart';
 import 'features/profile/presentation/cubit/cards_cubit.dart';
 import 'features/profile/presentation/cubit/coupons_cubit.dart';
 import 'features/profile/presentation/cubit/points_cubit.dart';
@@ -82,6 +83,10 @@ void setupDependencies() {
           () => SubcategoriesCubit(sl<CategoriesRepository>()));
   sl.registerFactory<ServiceDetailCubit>(
           () => ServiceDetailCubit(sl<ApiClient>()));
+  sl.registerFactory<ServiceReviewsCubit>(
+          () => ServiceReviewsCubit(sl<ApiClient>()));
+  sl.registerFactory<NotificationsCubit>(
+          () => NotificationsCubit(sl<ApiClient>()));
   sl.registerFactory<PopularServicesCubit>(
           () => PopularServicesCubit(sl<ApiClient>()));
   sl.registerFactory<BookingsCubit>(() => BookingsCubit(sl<ApiClient>()));

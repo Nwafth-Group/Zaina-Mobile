@@ -2,6 +2,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:zeina/app.dart';
 import 'package:zeina/core/utils/shared_pref_helper.dart';
 import 'package:zeina/features/auth/data/models/verification_model.dart';
 import 'package:zeina/features/profile/presentation/screens/privacy_screen.dart';
@@ -11,6 +13,7 @@ import 'package:zeina/features/profile/presentation/screens/terms_screen.dart';
 import 'package:zeina/widgets/custom_icon.dart';
 import 'package:zeina/widgets/signin_required_widget.dart';
 import '../../../../core/theme/theme.dart';
+import '../../../../core/utils/constants.dart';
 import '../../../../injection_container.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/verification_cubit.dart';
@@ -181,7 +184,7 @@ class _MoreScreenState extends State<MoreScreen> {
                   _MenuItem(
                     icon: 'assets/images/support.png',
                     label: 'support'.tr(),
-                    onTap: () {},
+                    onTap: () => _openWhatsAppSupport(),
                   ),
                   _MenuItem(
                     icon: 'assets/images/terms.png',
@@ -226,6 +229,11 @@ class _MoreScreenState extends State<MoreScreen> {
           borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
       builder: (_) => _LanguageSheet(),
     );
+  }
+
+  Future<void> _openWhatsAppSupport() async {
+    final uri = Uri.parse('https://wa.me/966567181328');
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 
   void _confirmLogout(BuildContext context) {
@@ -642,9 +650,12 @@ const SizedBox(height: 20),
             flag: 'assets/images/us.png',
             label: 'English',
             isSelected: currentLang == 'en',
-            onTap: () {
-              context.setLocale(const Locale('en'));
+            onTap: () async {
+              lng='en';
+              await context.setLocale(Locale(lng));
+              await SharedPrefHelper.saveLng(lng);
               Navigator.pop(context);
+              RestartWidget.restartApp(context);
             },
           ),
           const SizedBox(height: 10),
@@ -652,9 +663,12 @@ const SizedBox(height: 20),
             flag: 'assets/images/eg.png',
             label: 'العربية',
             isSelected: currentLang == 'ar',
-            onTap: () {
-              context.setLocale(const Locale('ar'));
+            onTap: () async {
+              lng='ar';
+              await context.setLocale(Locale(lng));
+              await SharedPrefHelper.saveLng(lng);
               Navigator.pop(context);
+              RestartWidget.restartApp(context);
             },
           ),
         ],

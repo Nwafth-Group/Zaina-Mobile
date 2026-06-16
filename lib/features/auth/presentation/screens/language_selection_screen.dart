@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:zeina/core/utils/shared_pref_helper.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../core/utils/constants.dart';
 import '../../../../widgets/ziena_button.dart';
@@ -20,6 +21,7 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
   void _onNext() {
     lng = _selectedLang;
     context.setLocale(Locale(lng));
+    SharedPrefHelper.saveLng(lng);
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (_) => const OnboardingScreen()),

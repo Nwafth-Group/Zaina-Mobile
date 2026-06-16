@@ -124,15 +124,9 @@ class BookingFlowCubit extends Cubit<BookingFlowState> {
   }
 
   // ── Validate coupon ────────────────────────────────────────────────────────
-  Future<void> validateCoupon(String code) async {
+  Future<void> validateCoupon(String code, double? discount) async {
     emit(state.copyWith(couponLoading: true, clearCouponError: true));
     try {
-      final res = await _api.post(
-        'customer/coupons/validate',
-        data: {'code': code},
-      );
-      final data = res['data'] as Map<String, dynamic>? ?? {};
-      final discount = (data['discount_amount'] as num?)?.toDouble() ?? 0.0;
       _flow = _flow.copyWith(couponCode: code, couponDiscount: discount);
       emit(state.copyWith(
         couponLoading: false,

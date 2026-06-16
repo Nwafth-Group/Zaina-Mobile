@@ -72,20 +72,8 @@ class _OtpScreenState extends State<OtpScreen> {
   void _handlePostOtpNavigation(BuildContext context, VerificationStatus status) {
     switch (status) {
       case VerificationStatus.approved:
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (_) => SuccessDialog(
-            title: 'success_title'.tr(),
-            message: 'success_message'.tr(),
-            buttonText: 'done'.tr(),
-            imageAsset: 'assets/images/success.png',
-            onButtonTap: () {
-              Navigator.pop(context);
-              AppNavigator.pushAndRemoveUntil(const MainScreen());
-            },
-          ),
-        );
+        AppNavigator.pushAndRemoveUntil(const MainScreen());
+
 
       case VerificationStatus.pending:
         Navigator.pushAndRemoveUntil(
@@ -141,19 +129,33 @@ class _OtpScreenState extends State<OtpScreen> {
           (route) => false,
         );
 
-      default: // unverified
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(
-            builder: (_) => BlocProvider(
-              create: (_) => sl<VerificationCubit>(),
-              child: VerificationWelcomeScreen(
-                onVerified: () => AppNavigator.pushAndRemoveUntil(const MainScreen()),
-              ),
-            ),
+      default:// unverified
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (_) => SuccessDialog(
+            title: 'success_title'.tr(),
+            message: 'success_message'.tr(),
+            buttonText: 'done'.tr(),
+            imageAsset: 'assets/images/success.png',
+            onButtonTap: () {
+              Navigator.pop(context);
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => BlocProvider(
+                    create: (_) => sl<VerificationCubit>(),
+                    child: VerificationWelcomeScreen(
+                      onVerified: () => AppNavigator.pushAndRemoveUntil(const MainScreen()),
+                    ),
+                  ),
+                ),
+                    (route) => false,
+              );
+            },
           ),
-          (route) => false,
         );
+
     }
   }
 

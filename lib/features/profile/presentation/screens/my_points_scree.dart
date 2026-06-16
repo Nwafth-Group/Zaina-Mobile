@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:zeina/widgets/custom_icon.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../injection_container.dart';
 import '../../data/models/points_model.dart';
@@ -167,7 +168,7 @@ class _TotalPointsCard extends StatelessWidget {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [ZienaColors.primary, ZienaColors.primaryDark],
+          colors: [ZienaColors.primary, ZienaColors.primaryLight],
           begin: Alignment.topLeft, end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(18),
@@ -186,28 +187,15 @@ class _TotalPointsCard extends StatelessWidget {
                   fontWeight: FontWeight.w500,
                 )),
             const SizedBox(height: 6),
-            Text('$points Pts',
+            Text('$points ${"Pts".tr()}',
                 style: const TextStyle(
                   fontSize: 28, fontWeight: FontWeight.w700,
                   color: Colors.white,
                 )),
           ],
         )),
-        Container(
+        ImageAsset('assets/images/points.png',
           width: 54, height: 54,
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.2),
-            shape: BoxShape.circle,
-            border: Border.all(
-                color: Colors.white.withOpacity(0.3), width: 2),
-          ),
-          child: const Center(
-            child: Text('Z',
-                style: TextStyle(
-                  fontSize: 24, fontWeight: FontWeight.w900,
-                  color: Colors.white,
-                )),
-          ),
         ),
       ]),
     );
@@ -471,13 +459,14 @@ class _SectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(title,
-            style: const TextStyle(
-              fontSize: 16, fontWeight: FontWeight.w700,
-              color: ZienaColors.textPrimary,
-            )),
+        Expanded(
+          child: Text(title,
+              style: const TextStyle(
+                fontSize: 16, fontWeight: FontWeight.w700,
+                color: ZienaColors.textPrimary,
+              )),
+        ),
         if (onSeeAll != null)
           GestureDetector(
             onTap: onSeeAll,

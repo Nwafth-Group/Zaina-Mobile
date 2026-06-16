@@ -47,13 +47,15 @@ void main() async {
   final prefs = await SharedPreferences.getInstance();
   SharedPrefHelper.init(prefs);
   lng = (await SharedPrefHelper.getLng())??'en';
-  runApp(EasyLocalization(
-    supportedLocales: const [
-      Locale('ar'),
-      Locale('en'),
-    ],
-    path: 'assets/translations',
-    fallbackLocale:  Locale(lng),
-    startLocale: Locale(lng),
-    child: const ZienaApp(),
+  runApp(RestartWidget(
+    child: EasyLocalization(
+      supportedLocales: const [
+        Locale('ar'),
+        Locale('en'),
+      ],
+      path: 'assets/translations',
+      fallbackLocale:  Locale(lng),
+      startLocale: Locale(lng),
+      child: const ZienaApp(),
+    ),
   ));}

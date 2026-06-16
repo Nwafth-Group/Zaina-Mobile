@@ -28,6 +28,29 @@ class ServiceDetailCubit extends Cubit<ServiceDetailState> {
 }
 
 // ═══════════════════════════════════════════════════════
+// SERVICE REVIEWS CUBIT
+// ═══════════════════════════════════════════════════════
+class ServiceReviewsCubit extends Cubit<ServiceReviewsState> {
+  final ApiClient _api;
+  ServiceReviewsCubit(this._api) : super(ServiceReviewsInitial());
+
+  Future<void> fetchReviews(int serviceId) async {
+    emit(ServiceReviewsLoading());
+    try {
+      final res = await _api.get('customer/reviews/$serviceId');
+      final items = (res['data']['items'] as List<dynamic>? ?? [])
+          .map((e) => ReviewModel.fromJson(e))
+          .toList();
+      emit(ServiceReviewsLoaded(items));
+    } on DioException catch (e) {
+      emit(ServiceReviewsError(handleDioError(e).message));
+    } catch (e) {
+      emit(ServiceReviewsError('Something went wrong'));
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════════════
 // POPULAR SERVICES CUBIT
 // ═══════════════════════════════════════════════════════
 class PopularServicesCubit extends Cubit<PopularServicesState> {
@@ -121,6 +144,19 @@ class ServiceDetailLoaded extends ServiceDetailState {
 class ServiceDetailError extends ServiceDetailState {
   final String message;
   ServiceDetailError(this.message);
+}
+
+// ── Service Reviews States ────────────────────────────────────────────────────
+abstract class ServiceReviewsState {}
+class ServiceReviewsInitial extends ServiceReviewsState {}
+class ServiceReviewsLoading extends ServiceReviewsState {}
+class ServiceReviewsLoaded extends ServiceReviewsState {
+  final List<ReviewModel> reviews;
+  ServiceReviewsLoaded(this.reviews);
+}
+class ServiceReviewsError extends ServiceReviewsState {
+  final String message;
+  ServiceReviewsError(this.message);
 }
 
 // ── Popular Services States ───────────────────────────────────────────────────

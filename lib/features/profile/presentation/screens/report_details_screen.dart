@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../widgets/ziena_button.dart';
 import '../../../../widgets/ziena_step_indicator.dart';
@@ -10,6 +11,11 @@ class ReportDetailScreen extends StatelessWidget {
   const ReportDetailScreen({super.key, required this.report});
 
   static const _steps = ['Submitted', 'Under Review', 'Resolved'];
+
+  Future<void> _openWhatsAppSupport() async {
+    final uri = Uri.parse('https://wa.me/966567181328');
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -169,7 +175,7 @@ class ReportDetailScreen extends StatelessWidget {
             color: ZienaColors.bg1,
             child: ZienaButton(
               text: 'support'.tr(),
-              onTap: () {},
+              onTap: () => _openWhatsAppSupport(),
             ),
           ),
         ),

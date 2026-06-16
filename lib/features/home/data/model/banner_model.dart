@@ -2,21 +2,18 @@ import 'package:zeina/features/home/data/model/service_model.dart';
 
 class BannerModel {
   final int id;
-  final String title;
-  final String description;
+  final String? link;
   final String? image;
 
-  BannerModel({required this.id, required this.title, required this.description, this.image});
+  BannerModel({required this.id, required this.link, this.image});
 
   factory BannerModel.fromJson(Map<String, dynamic> json) {
-    print("jjjjj ");
-
+    print("jsonnnn $json");
     return BannerModel(
       id: json['id'],
-      title: json['title'],
-      description: json['description'],
+      link: json['link'],
       // JSON shows "media" as list, adjust based on your actual media parsing logic
-      image: (json['media'] as List).isNotEmpty ? json['media'][0]['url'] : null,
+      image: json['image'],
     );
   }
 }

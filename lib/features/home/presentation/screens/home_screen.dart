@@ -26,6 +26,7 @@ import '../../../../widgets/signin_required_widget.dart';
 import 'add_edit_address_screen.dart';
 import 'my_addresses_screen.dart';
 import 'search_screen.dart';
+import '../../../notifications/presentation/screens/notification_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   static const String routeName = '/home';
@@ -326,7 +327,11 @@ class _HomeScreenState extends State<HomeScreen> {
             onTap: () {
               if (!SharedPrefHelper.isLoggedIn()) {
                 _showAddressDialog();
+                return;
               }
+              Navigator.push(context, MaterialPageRoute(
+                builder: (_) => const NotificationScreen(),
+              ));
             },
             child: Container(
               width: 44,
@@ -467,30 +472,11 @@ class _BannerCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Container(
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
-          gradient: const LinearGradient(colors: [ZienaColors.primary, Color(0xFFFF8FA3)]),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(banner.title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
-            const SizedBox(height: 8),
-            Text(banner.description, style: const TextStyle(color: Colors.white, fontSize: 12), maxLines: 2),
-            const SizedBox(height: 8),
-            ZienaButton(
-              text: 'book_now'.tr(),
-              onTap: () {},
-              backgroundColor: Colors.white,
-              textColor: ZienaColors.primary,
-              height: 40,
-              width: 120,
-            )
-          ],
-        ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: Image.network(banner.image??'', width: double.infinity, height: 200,
+        errorBuilder: (context, error, stackTrace) =>
+            Container(height: 200, width: double.infinity, color: ZienaColors.primaryLight, child: Icon(Icons.image, size: 40, color: Colors.white,),)),
       ),
     );
   }
@@ -882,9 +868,8 @@ Widget _buildDatePanel(
     child: Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(!isRtl?Icons.chevron_left:Icons.chevron_right,
-            color: Colors.white, size: 22),
-        const SizedBox(width: 3),
+        const SizedBox(width: 6),
+
         Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -903,9 +888,11 @@ Widget _buildDatePanel(
                 color: Colors.white70,
               ),
             ),
-
           ],
         ),
+        const SizedBox(width: 3),
+        Icon(isRtl?Icons.chevron_left:Icons.chevron_right,
+            color: Colors.white, size: 22),
       ],
     ),
   );

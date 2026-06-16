@@ -69,65 +69,67 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       
-      body: Column(
-        children: [
-          Expanded(
-            child: PageView.builder(
-              controller: _pageController,
-              onPageChanged: (i) => setState(() => _currentPage = i),
-              itemCount: _pages.length,
-              itemBuilder: (_, i) => _OnboardingPage(data: _pages[i]),
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              child: PageView.builder(
+                controller: _pageController,
+                onPageChanged: (i) => setState(() => _currentPage = i),
+                itemCount: _pages.length,
+                itemBuilder: (_, i) => _OnboardingPage(data: _pages[i]),
+              ),
             ),
-          ),
-          Container(
-            decoration: BoxDecoration(
-                color:_pages[_currentPage].gradientBottom
+            Container(
+              decoration: BoxDecoration(
+                  color:_pages[_currentPage].gradientBottom
+              ),
+              padding: const EdgeInsets.fromLTRB(24, 24, 24, 36),
+              child: Column(
+                children: [
+                  Text(
+                    _pages[_currentPage].title.tr(),
+                    style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    _pages[_currentPage].description.tr(),
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      height: 1.2,
+                      fontSize: 14,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 28),
+                  SmoothPageIndicator(
+                    controller: _pageController,
+                    count: _pages.length,
+                    effect: ExpandingDotsEffect(
+                      dotColor: ZienaColors.bg4,
+                      activeDotColor: ZienaColors.primary,
+                      dotHeight: 8,
+                      dotWidth: 8,
+                      expansionFactor: 3,
+                    ),
+                  ),
+                  const SizedBox(height: 28),
+                  SizedBox(
+                    width: MediaQuery.sizeOf(context).width * 0.5,
+                    child: ZienaButton(
+                      text: _currentPage == _pages.length - 1
+                          ? 'get_started'.tr()
+                          : 'next'.tr(),
+                      onTap: _onNext,
+                    ),
+                  ),
+                ],
+              ),
             ),
-            padding: const EdgeInsets.fromLTRB(24, 24, 24, 36),
-            child: Column(
-              children: [
-                Text(
-                  _pages[_currentPage].title.tr(),
-                  style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  _pages[_currentPage].description.tr(),
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    height: 1.2,
-                    fontSize: 14,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 28),
-                SmoothPageIndicator(
-                  controller: _pageController,
-                  count: _pages.length,
-                  effect: ExpandingDotsEffect(
-                    dotColor: ZienaColors.bg4,
-                    activeDotColor: ZienaColors.primary,
-                    dotHeight: 8,
-                    dotWidth: 8,
-                    expansionFactor: 3,
-                  ),
-                ),
-                const SizedBox(height: 28),
-                SizedBox(
-                  width: MediaQuery.sizeOf(context).width * 0.5,
-                  child: ZienaButton(
-                    text: _currentPage == _pages.length - 1
-                        ? 'get_started'.tr()
-                        : 'next'.tr(),
-                    onTap: _onNext,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

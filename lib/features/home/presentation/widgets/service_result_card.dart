@@ -139,7 +139,7 @@ class ServiceResultCard extends StatelessWidget {
   String _priceLabel(String type) {
     switch (type) {
       case 'hourly':
-        return 'Per Hour';
+        return 'Per Hour'.tr();
       case 'moqema':
         return 'Resident';
       default:

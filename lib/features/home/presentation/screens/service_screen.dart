@@ -33,6 +33,7 @@ class ServiceDetailScreen extends StatefulWidget {
 class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
   bool _agreedToTerms = false;
   String? _token;
+  bool _showAllReviews = false;
 
   // ── Booking selections (shown on page after sheet closes) ─────────────────
   String? _selectedDate;
@@ -67,9 +68,17 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) =>
-      sl<ServiceDetailCubit>()..fetchServiceDetail(widget.serviceId),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (_) =>
+          sl<ServiceDetailCubit>()..fetchServiceDetail(widget.serviceId),
+        ),
+        BlocProvider(
+          create: (_) =>
+          sl<ServiceReviewsCubit>()..fetchReviews(widget.serviceId),
+        ),
+      ],
       child: BlocBuilder<ServiceDetailCubit, ServiceDetailState>(
         builder: (context, state) {
           if (state is ServiceDetailLoading) {
@@ -281,11 +290,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                       // ── Reviews ───────────────────────────────────────────
                       _sectionTitle('reviews'.tr()),
                       const SizedBox(height: 14),
-                      ...ReviewModel.mockReviews
-                          .take(2)
-                          .map((r) => _ReviewCard(review: r)),
-                      const SizedBox(height: 4),
-                      _buildSeeMoreReviews(),
+                      _buildReviewsSection(),
                       const SizedBox(height: 30),
 
                     ],
@@ -311,23 +316,17 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
     return GestureDetector(
       onTap: () => _openDateTimeSheet(ctx, service),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
         decoration: BoxDecoration(
           color: ZienaColors.bg1,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: ZienaColors.bg4.withOpacity(0.5)),
         ),
         child: Row(children: [
-          Container(
-            width: 42, height: 42,
-            decoration: BoxDecoration(
-              color: ZienaColors.bg3,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: const Icon(Icons.people_outline_rounded,
-                color: ZienaColors.primary, size: 20),
-          ),
-          const SizedBox(width: 12),
+          ImageAsset(
+            width: 45, height: 45,
+              'assets/images/worker_duration.png'),
+              const SizedBox(width: 12),
           Expanded(child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -336,29 +335,21 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                     fontSize: 14, fontWeight: FontWeight.w600,
                     color: ZienaColors.textPrimary,
                   )),
-              const SizedBox(height: 2),
-              Text(
-                _hasSelections
-                    ? '$_selectedDate  ·  $_selectedStartTime - $_selectedEndTime'
-                    : 'tap_to_select'.tr(),
-                style: TextStyle(
-                  fontSize: 11,
-                  color: _hasSelections
-                      ? ZienaColors.primary
-                      : ZienaColors.textSecondary,
-                ),
-              ),
+              // const SizedBox(height: 2),
+              // Text(
+              //   _hasSelections
+              //       ? '$_selectedDate  ·  $_selectedStartTime - $_selectedEndTime'
+              //       : 'tap_to_select'.tr(),
+              //   style: TextStyle(
+              //     fontSize: 11,
+              //     color: _hasSelections
+              //         ? ZienaColors.primary
+              //         : ZienaColors.textSecondary,
+              //   ),
+              // ),
             ],
           )),
-          Container(
-            width: 38, height: 38,
-            decoration: BoxDecoration(
-              color: ZienaColors.bg3,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: const Icon(Icons.add_rounded,
-                color: ZienaColors.primary, size: 22),
-          ),
+          ImageAsset('assets/images/add_btn.png', width: 100, height: 60,)
         ]),
       ),
     );
@@ -572,11 +563,51 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
     );
   }
 
+  Widget _buildReviewsSection() {
+    return BlocBuilder<ServiceReviewsCubit, ServiceReviewsState>(
+      builder: (context, state) {
+        if (state is ServiceReviewsLoading) {
+          return const Padding(
+            padding: EdgeInsets.symmetric(vertical: 12),
+            child: Center(child: CircularProgressIndicator(
+                color: ZienaColors.primary, strokeWidth: 2)),
+          );
+        }
+        if (state is ServiceReviewsError) {
+          return Text(state.message,
+              style: const TextStyle(
+                  fontSize: 13, color: ZienaColors.textSecondary));
+        }
+        if (state is ServiceReviewsLoaded) {
+          final reviews = state.reviews;
+          if (reviews.isEmpty) {
+            return Text('no_reviews_yet'.tr(),
+                style: const TextStyle(
+                    fontSize: 13, color: ZienaColors.textSecondary));
+          }
+          final visible =
+          _showAllReviews ? reviews : reviews.take(2).toList();
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ...visible.map((r) => _ReviewCard(review: r)),
+              if (!_showAllReviews && reviews.length > 2) ...[
+                const SizedBox(height: 4),
+                _buildSeeMoreReviews(),
+              ],
+            ],
+          );
+        }
+        return const SizedBox();
+      },
+    );
+  }
+
   Widget _buildSeeMoreReviews() {
     return SizedBox(
       width: double.infinity,
       child: OutlinedButton(
-        onPressed: () {},
+        onPressed: () => setState(() => _showAllReviews = true),
         style: OutlinedButton.styleFrom(
           foregroundColor: ZienaColors.primary,
           side: const BorderSide(color: ZienaColors.primary),
@@ -684,7 +715,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
 
   String _priceLabel(String type) {
     switch (type) {
-      case 'hourly':  return 'Per Hour';
+      case 'hourly':  return 'Per Hour'.tr();
       case 'moqema': return 'Resident';
       default:        return 'Per Session';
     }

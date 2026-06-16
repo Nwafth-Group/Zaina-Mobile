@@ -284,7 +284,7 @@ class _PopularServiceCard extends StatelessWidget {
 
   String _priceLabel(String type) {
     switch (type) {
-      case 'hourly': return 'Per Hour';
+      case 'hourly': return 'Per Hour'.tr();
       case 'moqema': return 'Resident';
       default: return 'Per Session';
     }

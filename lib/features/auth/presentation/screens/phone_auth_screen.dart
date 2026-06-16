@@ -49,7 +49,8 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
     }
     final number = _phoneCtrl.text.trim();
     // Strip leading zero then prepend +20
-    final digits = number.startsWith('0') ? number.substring(1) : number;
+    final digits =  number;
+    // final digits = number.startsWith('0') ? number.substring(1) : number;
     final completePhone = '+20$digits';
     context.read<AuthCubit>().sendOtp(completePhone);
   }

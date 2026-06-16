@@ -98,7 +98,7 @@ class _BookingsScreenState extends State<BookingsScreen> {
                 ),
               ),
               child: Text(
-                s.label,
+                s.label.tr(),
                 style: TextStyle(
                   
                   fontSize: 13,

@@ -174,6 +174,18 @@ class ReviewModel {
     required this.timeAgo,
   });
 
+  factory ReviewModel.fromJson(Map<String, dynamic> json) {
+    final customer = json['customer'] as Map<String, dynamic>? ?? {};
+    final firstName = customer['first_name'] ?? '';
+    final lastName = customer['last_name'] ?? '';
+    return ReviewModel(
+      name: '$firstName $lastName'.trim(),
+      rating: (json['rating'] as num?)?.toDouble() ?? 0,
+      comment: json['comment'] ?? '',
+      timeAgo: json['created_since'] ?? '',
+    );
+  }
+
   static List<ReviewModel> get mockReviews => const [
     ReviewModel(
         name: 'Keith Ralph P.',

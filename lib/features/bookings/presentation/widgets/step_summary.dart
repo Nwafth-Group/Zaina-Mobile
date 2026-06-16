@@ -3,9 +3,12 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/theme.dart';
-import '../../../../widgets/custom_text_form_field.dart';
+import '../../../../injection_container.dart';
+import '../../../../widgets/custom_icon.dart';
 import '../../../../widgets/success_dialog.dart';
 import '../../../../widgets/ziena_button.dart';
+import '../../../profile/data/models/coupon_model.dart';
+import '../../../profile/presentation/cubit/coupons_cubit.dart';
 import '../../../profile/presentation/cubit/points_cubit.dart';
 import '../../data/model/booking_flow_model.dart';
 import '../cubit/booking_flow_cubit.dart';
@@ -26,8 +29,6 @@ class _StepSummaryState extends State<StepSummary> {
   String _paymentMethod = 'points';
   bool _agreedToTerms = false;
   bool _showSummary = false;
-  final _couponCtrl = TextEditingController();
-
 
   @override
   void initState() {
@@ -47,16 +48,25 @@ class _StepSummaryState extends State<StepSummary> {
     });
   }
 
-  @override
-  void dispose() {
-    _couponCtrl.dispose();
-    super.dispose();
+  void _applyCoupon(String code, double? discount) {
+    if (code.isEmpty) return;
+    context.read<BookingFlowCubit>().validateCoupon(code, discount);
   }
 
-  void _applyCoupon() {
-    final code = _couponCtrl.text.trim();
-    if (code.isEmpty) return;
-    context.read<BookingFlowCubit>().validateCoupon(code);
+  void _openSelectCouponSheet(BuildContext ctx, String? currentCode) {
+    showModalBottomSheet(
+      context: ctx,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      useSafeArea: true,
+      builder: (_) => BlocProvider(
+        create: (_) => sl<CouponsCubit>()..fetchCoupons(),
+        child: _SelectCouponSheet(
+          currentCode: currentCode,
+          onApply: (code, discount) => _applyCoupon(code, discount),
+        ),
+      ),
+    );
   }
 
   void _onBook() {
@@ -189,7 +199,7 @@ class _StepSummaryState extends State<StepSummary> {
                     // ── Coupon ──────────────────────────────────────────────
                     _sectionTitle('coupon'.tr()),
                     const SizedBox(height: 10),
-                    _buildCouponField(state),
+                    _buildCouponTile(context, flow, state),
                     if (state.couponError != null) ...[
                       const SizedBox(height: 6),
                       Text(state.couponError!.tr(),
@@ -204,7 +214,6 @@ class _StepSummaryState extends State<StepSummary> {
                         label: '-${flow.couponDiscount.toStringAsFixed(0)} ${flow.currency}',
                         code: flow.couponCode!,
                         onRemove: () {
-                          _couponCtrl.clear();
                           context.read<BookingFlowCubit>().removeCoupon();
                         },
                       ),
@@ -309,9 +318,9 @@ class _StepSummaryState extends State<StepSummary> {
 
   Widget _buildPaymentOptions(BookingFlowData flow) {
     final methods = [
-      ('points', 'points'.tr(), Icons.stars_rounded),
-      ('wallet', 'Wallet', Icons.account_balance_wallet_outlined),
-      ('card', 'Card', Icons.credit_card_rounded),
+      ('points', 'points'.tr(), 'assets/images/my_points.png'),
+      ('wallet', 'Wallet', 'assets/images/wallet.png'),
+      ('card', 'Card', 'assets/images/card.png'),
     ];
     return BlocBuilder<PointsCubit, PointsState>(
       builder: (context, pointsState) {
@@ -344,9 +353,7 @@ class _StepSummaryState extends State<StepSummary> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(children: [
-                          Icon(m.$3,
-                              color: sel ? ZienaColors.primary : ZienaColors.textSecondary,
-                              size: 20),
+                          ImageAsset(m.$3),
                           const SizedBox(width: 12),
                           Expanded(child: Text(m.$2,
                               style: TextStyle(
@@ -406,37 +413,38 @@ class _StepSummaryState extends State<StepSummary> {
     );
   }
 
-  Widget _buildCouponField(BookingFlowState state) {
-    final applied = state.flow?.couponCode?.isNotEmpty == true &&
-        state.flow!.couponDiscount > 0;
-    return Row(children: [
-      Expanded(
-        child: CustomTextField(
-          controller: _couponCtrl,
-          hintText: 'enter_coupon'.tr(),
-          fillColor: ZienaColors.bg1,
-          borderColor: ZienaColors.greyBorder,
-          contentPadding: EdgeInsets.zero,
-          maxLines: 1,
-          borderRadius: 15,
-          prefixIcon: const Padding(
-            padding: EdgeInsets.only(left: 12, right: 8),
-            child: Icon(Icons.local_offer_outlined,
-                color: ZienaColors.primary, size: 18),
-          ),
+  Widget _buildCouponTile(
+      BuildContext context, BookingFlowData flow, BookingFlowState state) {
+    final applied = flow.couponCode?.isNotEmpty == true && flow.couponDiscount > 0;
+    return GestureDetector(
+      onTap: () => _openSelectCouponSheet(context, applied ? flow.couponCode : null),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+        decoration: BoxDecoration(
+          color: ZienaColors.bg1,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: ZienaColors.bg4.withOpacity(0.5)),
         ),
+        child: Row(children: [
+          ImageAsset(
+            width: 45, height: 45,
+              'assets/images/select_coupon.png'),
+              const SizedBox(width: 12),
+          Expanded(child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(applied ? flow.couponCode! : 'select_coupon'.tr(),
+                  style: const TextStyle(
+                    fontSize: 14, fontWeight: FontWeight.w600,
+                    color: ZienaColors.textPrimary,
+                  )),
+            ],
+          )),
+          if (!applied)
+            ImageAsset('assets/images/add_btn.png', width: 100, height: 60,),
+        ]),
       ),
-      const SizedBox(width: 10),
-      ZienaButton(
-        text: 'apply'.tr(),
-        isLoading: state.couponLoading,
-        onTap: (applied || state.couponLoading) ? null : _applyCoupon,
-        width: 100,
-        height: 50,
-        disabledBackgroundColor: ZienaColors.greyBorder,
-        disabledTextColor: Colors.white,
-      ),
-    ]);
+    );
   }
 
   Widget _buildBottomBar(
@@ -445,115 +453,79 @@ class _StepSummaryState extends State<StepSummary> {
     final canBook = !state.submitting && !isCardSelected && _agreedToTerms;
     final duration = flow.selectedDurationHours ?? 1;
 
-    return Container(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
-      decoration: BoxDecoration(
-        color: ZienaColors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.07),
-            blurRadius: 16,
-            offset: const Offset(0, -4),
-          ),
-        ],
-      ),
-      child: Column(mainAxisSize: MainAxisSize.min, children: [
-        // ── Total row ──────────────────────────────────────────────────────
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text('total'.tr(),
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: ZienaColors.primary,
-                )),
-            Text(
-              '${flow.total.toStringAsFixed(0)} ${flow.currency}',
+    return Column(mainAxisSize: MainAxisSize.min, children: [
+      GestureDetector(
+        onTap: () => setState(() => _showSummary = !_showSummary),
+        child: Row(children: [
+          Text('booking_summary'.tr(),
               style: const TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.w800,
+                fontSize: 13,
                 color: ZienaColors.primary,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
+                decoration: TextDecoration.underline,
+                decorationColor: ZienaColors.primary,
+              )),
+          const SizedBox(width: 4),
+          Icon(
+            _showSummary
+                ? Icons.keyboard_arrow_up_rounded
+                : Icons.keyboard_arrow_down_rounded,
+            size: 18,
+            color: ZienaColors.primary,
+          ),
+        ]),
+      ),
 
-        // ── Booking summary toggle ─────────────────────────────────────────
-        GestureDetector(
-          onTap: () => setState(() => _showSummary = !_showSummary),
-          child: Row(children: [
-            Text('booking_summary'.tr(),
-                style: const TextStyle(
-                  fontSize: 13,
-                  color: ZienaColors.primary,
-                  decoration: TextDecoration.underline,
-                  decorationColor: ZienaColors.primary,
-                )),
-            const SizedBox(width: 4),
-            Icon(
-              _showSummary
-                  ? Icons.keyboard_arrow_up_rounded
-                  : Icons.keyboard_arrow_down_rounded,
-              size: 18,
-              color: ZienaColors.primary,
+      // ── Breakdown card ─────────────────────────────────────────────────
+      AnimatedCrossFade(
+        firstChild: const SizedBox(width: double.infinity),
+        secondChild: Container(
+          margin: const EdgeInsets.only(top: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: ZienaColors.bg2,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: ZienaColors.primary.withValues(alpha: 0.3)),
+          ),
+          child: Column(children: [
+            _SummaryRow(
+              label: '${'service_price'.tr()} x$duration ${'hours'.tr()}',
+              value: '${flow.subtotal.toStringAsFixed(0)} ${flow.currency}',
             ),
+            if (flow.couponDiscount > 0) ...[
+              const SizedBox(height: 8),
+              _SummaryRow(
+                label: 'coupon_discount'.tr(),
+                value: '-${flow.couponDiscount.toStringAsFixed(0)} ${flow.currency}',
+                valueColor: Colors.green,
+              ),
+            ],
           ]),
         ),
+        crossFadeState: _showSummary
+            ? CrossFadeState.showSecond
+            : CrossFadeState.showFirst,
+        duration: const Duration(milliseconds: 250),
+      ),
 
-        // ── Breakdown card ─────────────────────────────────────────────────
-        AnimatedCrossFade(
-          firstChild: const SizedBox(width: double.infinity),
-          secondChild: Container(
-            margin: const EdgeInsets.only(top: 10),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: ZienaColors.bg2,
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: ZienaColors.primary.withValues(alpha: 0.3)),
-            ),
-            child: Column(children: [
-              _SummaryRow(
-                label: '${'service_price'.tr()} x$duration ${'hours'.tr()}',
-                value: '${flow.subtotal.toStringAsFixed(0)} ${flow.currency}',
-              ),
-              if (flow.couponDiscount > 0) ...[
-                const SizedBox(height: 8),
-                _SummaryRow(
-                  label: 'coupon_discount'.tr(),
-                  value: '-${flow.couponDiscount.toStringAsFixed(0)} ${flow.currency}',
-                  valueColor: Colors.green,
-                ),
-              ],
-            ]),
-          ),
-          crossFadeState: _showSummary
-              ? CrossFadeState.showSecond
-              : CrossFadeState.showFirst,
-          duration: const Duration(milliseconds: 250),
+      const SizedBox(height: 14),
+
+      // ── Book button ────────────────────────────────────────────────────
+      ZienaButton(
+        text: 'book_now'.tr(),
+        isLoading: state.submitting,
+        onTap: canBook ? _onBook : null,
+        disabledBackgroundColor: ZienaColors.primary.withValues(alpha: 0.4),
+        disabledTextColor: Colors.white,
+      ),
+      if (isCardSelected) ...[
+        const SizedBox(height: 8),
+        Text(
+          'payment_not_available'.tr(),
+          style: const TextStyle(fontSize: 12, color: ZienaColors.textSecondary),
+          textAlign: TextAlign.center,
         ),
-
-        const SizedBox(height: 14),
-
-        // ── Book button ────────────────────────────────────────────────────
-        ZienaButton(
-          text: 'book_now'.tr(),
-          isLoading: state.submitting,
-          onTap: canBook ? _onBook : null,
-          disabledBackgroundColor: ZienaColors.primary.withValues(alpha: 0.4),
-          disabledTextColor: Colors.white,
-        ),
-        if (isCardSelected) ...[
-          const SizedBox(height: 8),
-          Text(
-            'payment_not_available'.tr(),
-            style: const TextStyle(fontSize: 12, color: ZienaColors.textSecondary),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ]),
-    );
+      ],
+    ]);
   }
 
   Widget _sectionTitle(String t) => Text(t,
@@ -571,9 +543,9 @@ class _ServiceHeader extends StatelessWidget {
 
   String _priceLabel(String type) {
     switch (type) {
-      case 'hourly':  return 'Per Hour';
-      case 'moqema': return 'Resident';
-      default:        return 'Per Session';
+      case 'hourly':  return 'Per Hour'.tr();
+      case 'moqema': return 'Resident'.tr();
+      default:        return 'Per Session'.tr();
     }
   }
 
@@ -767,6 +739,169 @@ class _SummaryRow extends StatelessWidget {
               color: valueColor ?? ZienaColors.textPrimary,
             )),
       ],
+    );
+  }
+}
+
+// ── Select coupon bottom sheet ──────────────────────────────────────────────
+class _SelectCouponSheet extends StatefulWidget {
+  final void Function(String code, double? discount) onApply;
+  final String? currentCode;
+  const _SelectCouponSheet({required this.onApply, this.currentCode});
+
+  @override
+  State<_SelectCouponSheet> createState() => _SelectCouponSheetState();
+}
+
+class _SelectCouponSheetState extends State<_SelectCouponSheet> {
+  CouponModel? _selected;
+  bool _preselected = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: ZienaColors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      padding: EdgeInsets.fromLTRB(
+          20, 12, 20, MediaQuery.of(context).viewInsets.bottom + 24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Handle
+          Center(child: Container(
+            width: 40, height: 4,
+            decoration: BoxDecoration(
+                color: ZienaColors.greyBorder,
+                borderRadius: BorderRadius.circular(2)),
+          )),
+          const SizedBox(height: 16),
+          Center(child: Text('select_coupon'.tr(),
+              style: const TextStyle(
+                fontSize: 17, fontWeight: FontWeight.w700,
+                color: ZienaColors.textPrimary,
+              ))),
+          const SizedBox(height: 16),
+
+          BlocBuilder<CouponsCubit, CouponsState>(
+            builder: (context, state) {
+              if (state is CouponsLoading) {
+                return const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 24),
+                  child: Center(child: CircularProgressIndicator(
+                      color: ZienaColors.primary, strokeWidth: 2)),
+                );
+              }
+              if (state is CouponsError) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 24),
+                  child: Text(state.message,
+                      style: const TextStyle(color: ZienaColors.textSecondary)),
+                );
+              }
+              if (state is CouponsLoaded) {
+                final coupons = state.coupons.where((c) => !c.isExpired).toList();
+                if (!_preselected && widget.currentCode != null) {
+                  _preselected = true;
+                  final match = coupons.where((c) => c.code == widget.currentCode);
+                  if (match.isNotEmpty) {
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      if (mounted) setState(() => _selected = match.first);
+                    });
+                  }
+                }
+                if (coupons.isEmpty) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 24),
+                    child: Text('no_coupons_yet'.tr(),
+                        style: const TextStyle(color: ZienaColors.textSecondary)),
+                  );
+                }
+                return ConstrainedBox(
+                  constraints: BoxConstraints(
+                      maxHeight: MediaQuery.of(context).size.height * 0.5),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: coupons.map((c) => _CouponSelectRow(
+                        coupon: c,
+                        isSelected: _selected?.id == c.id,
+                        onTap: () => setState(() => _selected = c),
+                      )).toList(),
+                    ),
+                  ),
+                );
+              }
+              return const SizedBox();
+            },
+          ),
+
+          const SizedBox(height: 16),
+          ZienaButton(
+            text: 'apply'.tr(),
+            onTap: _selected != null
+                ? () {
+              Navigator.pop(context);
+              widget.onApply(_selected!.code, _selected!.maxDiscount);
+            }
+                : null,
+            disabledBackgroundColor: ZienaColors.greyBorder,
+            disabledTextColor: Colors.white,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CouponSelectRow extends StatelessWidget {
+  final CouponModel coupon;
+  final bool isSelected;
+  final VoidCallback onTap;
+  const _CouponSelectRow({
+    required this.coupon,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          color: isSelected ? ZienaColors.bg3 : ZienaColors.bg1,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: isSelected ? ZienaColors.primary : ZienaColors.primaryLight,
+            width: isSelected ? 0.7 : 0.5,
+          ),
+        ),
+        child: Row(children: [
+          Expanded(
+            child: Text(coupon.displayValue,
+                style: TextStyle(
+                  fontSize: 15, fontWeight: FontWeight.w700,
+                  color: isSelected ? ZienaColors.primary : ZienaColors.textPrimary,
+                )),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: isSelected ? ZienaColors.bg3 : ZienaColors.bg1,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: !isSelected ? ZienaColors.primaryLight:ZienaColors.primary, width: isSelected ? 0.7 : 0.5,),
+            ),
+            child: Text(coupon.code,
+                style: const TextStyle(
+                  fontSize: 13, fontWeight: FontWeight.w700,
+                  color: ZienaColors.textSecondary,
+                )),
+          ),
+        ]),
+      ),
     );
   }
 }

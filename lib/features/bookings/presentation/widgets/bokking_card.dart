@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:easy_localization/easy_localization.dart' show StringTranslateExtension;
 import 'package:flutter/material.dart';
 import '../../../../core/theme/theme.dart';
 import '../../data/model/booking_model.dart';
@@ -74,7 +75,7 @@ class BookingCard extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           _Chip(Icons.bookmark_outline_rounded,
-                              status.label, status.color),
+                              status.label.tr(), status.color),
                           const SizedBox(width: 6),
                           _Chip(Icons.location_on_outlined,
                               booking.address?.label ?? 'Home',
