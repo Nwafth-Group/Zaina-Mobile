@@ -94,7 +94,7 @@ void setupDependencies() {
           () => BookingDetailCubit(sl<ApiClient>()));
   sl.registerFactory<BookingFlowCubit>(() => BookingFlowCubit(sl<ApiClient>()));
   sl.registerFactory<RescheduleShiftsCubit>(() => RescheduleShiftsCubit(sl<ApiClient>()));
-  sl.registerLazySingleton<AddressCubit>(() => AddressCubit(sl<ApiClient>()));
+  sl.registerFactory<AddressCubit>(() => AddressCubit(sl<ApiClient>()));
   sl.registerFactory<WalletCubit>(() => WalletCubit(sl<ApiClient>()));
   sl.registerFactory<CardsCubit>(() => CardsCubit(sl<ApiClient>()));
   sl.registerFactory<TopUpCubit>(() => TopUpCubit(sl<ApiClient>()));

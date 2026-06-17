@@ -55,7 +55,6 @@ void main() async {
       ],
       path: 'assets/translations',
       fallbackLocale:  Locale(lng),
-      startLocale: Locale(lng),
       child: const ZienaApp(),
     ),
   ));}

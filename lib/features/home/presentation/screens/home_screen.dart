@@ -781,13 +781,13 @@ Widget _buildAppointmentCard(UpcomingAppointment? appointment) {
                           children: [
                             _InfoChip(
                               icon: Icons.bookmark_outline_rounded,
-                              label: appointment.status,
+                              label: appointment.status.tr(),
                               color: _statusColor(appointment.status),
                             ),
                             const SizedBox(width: 3),
-                            const _InfoChip(
+                            _InfoChip(
                               icon: Icons.location_on_outlined,
-                              label: 'Home',
+                              label: 'Home'.tr(),
                               color: ZienaColors.primary,
                             ),
                             const SizedBox(width: 3),

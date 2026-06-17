@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:zeina/app.dart';
+import 'package:zeina/core/utils/app_navigator.dart';
 import 'package:zeina/core/utils/shared_pref_helper.dart';
 import 'package:zeina/features/auth/data/models/verification_model.dart';
 import 'package:zeina/features/profile/presentation/screens/privacy_screen.dart';
@@ -655,7 +656,7 @@ const SizedBox(height: 20),
               await context.setLocale(Locale(lng));
               await SharedPrefHelper.saveLng(lng);
               Navigator.pop(context);
-              RestartWidget.restartApp(context);
+              RestartWidget.restartApp(AppNavigator.navigatorKey.currentContext!);
             },
           ),
           const SizedBox(height: 10),
@@ -668,7 +669,7 @@ const SizedBox(height: 20),
               await context.setLocale(Locale(lng));
               await SharedPrefHelper.saveLng(lng);
               Navigator.pop(context);
-              RestartWidget.restartApp(context);
+              RestartWidget.restartApp(AppNavigator.navigatorKey.currentContext!);
             },
           ),
         ],
