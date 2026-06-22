@@ -1,3 +1,5 @@
+import 'dart:ui' show ImageFilter;
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -170,11 +172,16 @@ class _CategoryCard extends StatelessWidget {
 
   const _CategoryCard({required this.category, required this.onTap});
 
+  bool get _isActive {
+    final name = '${category.nameEn}${category.nameAr}'.toLowerCase();
+    return name.contains('clean') || category.nameAr.contains('تنظيف');
+  }
+
   @override
   Widget build(BuildContext context) {
     final lang = context.locale.languageCode;
     return GestureDetector(
-      onTap: onTap,
+      onTap: _isActive ? onTap : null,
       child: Container(
         height: 120,
         margin: const EdgeInsets.only(bottom: 14),
@@ -197,13 +204,21 @@ class _CategoryCard extends StatelessWidget {
               // ── Background image ────────────────────────────────────────
               category.image != null
                   ? CachedNetworkImage(
-                imageUrl: category.image!,
-                fit: BoxFit.cover,
-                placeholder: (_, _) => Container(color: ZienaColors.bg3),
-                errorWidget: (_, _, _) => _imageFallback(),
-              )
+                      imageUrl: category.image!,
+                      fit: BoxFit.cover,
+                      placeholder: (_, _) => Container(color: ZienaColors.bg3),
+                      errorWidget: (_, _, _) => _imageFallback(),
+                    )
                   : _imageFallback(),
 
+              // ── Blur + Coming Soon overlay (inactive only) ───────────────
+              if (!_isActive)
+                Positioned.fill(
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 3, sigmaY: 3),
+                    child: Container(color: Colors.black.withOpacity(0.35)),
+                  ),
+                ),
 
               // ── Name + arrow ────────────────────────────────────────────
               Positioned(
@@ -220,15 +235,32 @@ class _CategoryCard extends StatelessWidget {
                       children: [
                         Text(
                           category.localizedName(lang),
-                          style: const TextStyle(
-
+                          style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w700,
-                            color: Colors.white,
+                            color: _isActive ? Colors.white : Colors.white70,
                           ),
                         ),
-                        const Icon(Icons.arrow_forward,
-                            color: Colors.white, size: 18),
+                        if (_isActive)
+                          const Icon(Icons.arrow_forward,
+                              color: Colors.white, size: 18)
+                        else
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: ZienaColors.primary,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              'coming_soon'.tr(),
+                              style: const TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
                       ],
                     ),
                   ),
@@ -243,8 +275,7 @@ class _CategoryCard extends StatelessWidget {
 
   Widget _imageFallback() {
     return const Center(
-      child: Icon(Icons.category_rounded,
-          color: ZienaColors.bg3, size: 44),
+      child: Icon(Icons.category_rounded, color: ZienaColors.bg3, size: 44),
     );
   }
 }

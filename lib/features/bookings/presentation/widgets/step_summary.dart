@@ -154,7 +154,8 @@ class _StepSummaryState extends State<StepSummary> {
       appBar: AppBar(
         title: Text('book_now'.tr()),
       ),
-      body: BlocBuilder<BookingFlowCubit, BookingFlowState>(builder: (context, state) {
+      body: BlocBuilder<BookingFlowCubit, BookingFlowState>(
+        builder: (context, state) {
           final flow = state.flow;
 
           if (flow == null) {

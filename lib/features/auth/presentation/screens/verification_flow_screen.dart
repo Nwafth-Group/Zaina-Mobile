@@ -169,6 +169,7 @@ class _VerificationFlowScreenState extends State<VerificationFlowScreen> {
   Widget _buildVerificationFlow() {
     return Column(children: [
       // ── Top bar with step indicator ──────────────────────────────
+      if(widget.fromSplash || _step>0)
       Padding(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
         child: Row(children: [

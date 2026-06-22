@@ -400,6 +400,10 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  bool _isCleaning(CategoryModel cat) =>
+      '${cat.nameEn}${cat.nameAr}'.toLowerCase().contains('clean') ||
+      cat.nameAr.contains('تنظيف');
+
   // ── Categories (UPDATED) ───────────────────────────────────────────────────
   Widget _buildCategories(List<CategoryModel> categories) {
     return SizedBox(
@@ -409,11 +413,15 @@ class _HomeScreenState extends State<HomeScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 20),
         itemCount: categories.length,
         separatorBuilder: (_, _) => const SizedBox(width: 12),
-        itemBuilder: (_, i) => InkWell(
-            onTap: () {
-              AppNavigator.push(SubcategoriesScreen(category: categories[i]));
-            },
-            child: _CategoryChip(category: categories[i])),
+        itemBuilder: (_, i) {
+          final isActive = _isCleaning(categories[i]);
+          return InkWell(
+            onTap: isActive
+                ? () => AppNavigator.push(SubcategoriesScreen(category: categories[i]))
+                : null,
+            child: _CategoryChip(category: categories[i], isActive: isActive),
+          );
+        },
       ),
     );
   }
@@ -484,11 +492,12 @@ class _BannerCard extends StatelessWidget {
 
 class _CategoryChip extends StatelessWidget {
   final CategoryModel category;
-  const _CategoryChip({required this.category});
+  final bool isActive;
+  const _CategoryChip({required this.category, required this.isActive});
 
   String _imageFor(CategoryModel cat) {
     final name = '${cat.nameEn}${cat.nameAr}'.toLowerCase();
-    if (name.contains('clean')) return 'assets/images/cleaning.png';
+    if (name.contains('clean') || cat.nameAr.contains('تنظيف')) return 'assets/images/cleaning.png';
     if (name.contains('baby') || name.contains('sitter')) return 'assets/images/babysitter.png';
     return 'assets/images/event.png';
   }
@@ -496,34 +505,63 @@ class _CategoryChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final locale = context.locale.languageCode;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: ZienaColors.bg2,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: ZienaColors.primary, width: 0.5),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 45,
-            height: 45,
-            decoration: const BoxDecoration(color: ZienaColors.bg2, shape: BoxShape.circle),
-            child: ClipOval(
-              child: Image.asset(
-                _imageFor(category),
-                fit: BoxFit.cover,
-              ),
+    return Stack(
+      alignment: Alignment.topRight,
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          decoration: BoxDecoration(
+            color: isActive ? ZienaColors.bg2 : ZienaColors.bg3,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: isActive ? ZienaColors.primary : ZienaColors.greyBorder,
+              width: 0.5,
             ),
           ),
-          const SizedBox(width: 8),
-          Text(
-            locale == 'ar' ? category.nameAr : category.nameEn,
-            style: const TextStyle(fontSize: 12, color: ZienaColors.black),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Opacity(
+                opacity: isActive ? 1.0 : 0.45,
+                child: Container(
+                  width: 45,
+                  height: 45,
+                  decoration: BoxDecoration(
+                    color: isActive ? ZienaColors.bg2 : ZienaColors.bg3,
+                    shape: BoxShape.circle,
+                  ),
+                  child: ClipOval(
+                    child: Image.asset(_imageFor(category), fit: BoxFit.cover),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    locale == 'ar' ? category.nameAr : category.nameEn,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: isActive ? ZienaColors.black : ZienaColors.textHint,
+                    ),
+                  ),
+                  if (!isActive)
+                    Text(
+                      'coming_soon'.tr(),
+                      style: const TextStyle(
+                        fontSize: 9,
+                        fontWeight: FontWeight.w600,
+                        color: ZienaColors.primary,
+                      ),
+                    ),
+                ],
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
