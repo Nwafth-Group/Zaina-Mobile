@@ -321,5 +321,10 @@
   "check_status_manually": "التحقق من الحالة يدوياً",
   "verification_failed": "فشل التحقق",
   "try_again": "حاول مرة أخرى",
-  "to": "إلى"
+  "to": "إلى",
+  "Duration": "المدة",
+  "Expected Arrival Time": "وقت الوصول المتوقع",
+  "Choose the Suitable Service": "اختر الخدمة المناسبة",
+  "Hourly Services": "الخدمات بالساعة",
+  "Other Services": "خدمات أخرى"
 }

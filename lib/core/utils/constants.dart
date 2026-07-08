@@ -58,6 +58,15 @@ class AppStrings {
 
   // Terms
   static const String termsAndConditions = 'Terms & Conditions';
+
+  static const String duration = 'Duration';
+  static const String expectedArrivalTime = 'Expected Arrival Time';
+  static const String chooseTheSuitableService = 'Choose the Suitable Service';
+  static const String hourlyServices = 'Hourly Services';
+  static const String otherServices = 'Other Services';
+
+
+
 }
 
 String lng = 'en';

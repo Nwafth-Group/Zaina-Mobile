@@ -3,7 +3,6 @@ import 'package:dio/dio.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/network/failure.dart';
 import '../model/banner_model.dart';
-import '../model/service_model.dart';
 
 abstract class HomeRemoteDataSource {
   Future<HomeData> getHomeData();
@@ -27,8 +26,6 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
       
       return HomeData(
         banners: List.of(data['banners'] ?? []).map((e) => BannerModel.fromJson(e)).toList(),
-        categories: List.of(data['categories'] ?? []).map((e) => CategoryModel.fromJson(e)).toList(),
-        popularServices: List.of(data['popular_services']??[]).map((e) => ServiceModel.fromJson(e)).toList(),
         upcomingAppointment: upcomingAppointment,
       );
     } on DioException catch (e) {

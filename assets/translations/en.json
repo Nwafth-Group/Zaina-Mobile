@@ -315,5 +315,10 @@
   "tip_all_edges_visible": "Make sure all edges are visible",
   "tip_good_lighting": "Use good lighting",
   "check_status_manually": "Check status manually",
-  "gallery": "Gallery"
+  "gallery": "Gallery",
+  "Duration": "Duration",
+  "Expected Arrival Time": "Expected Arrival Time",
+  "Choose the Suitable Service": "Choose the Suitable Service",
+  "Hourly Services": "Hourly Services",
+  "Other Services": "Other Services"
 }

@@ -9,7 +9,6 @@ import 'features/auth/presentation/cubit/verification_cubit.dart';
 import 'features/auth/presentation/screens/splash_screen.dart';
 import 'features/bookings/presentation/cubit/bookings_cubit.dart';
 import 'features/home/presentation/cubit/address_cubit.dart';
-import 'features/home/presentation/cubit/category_cubit.dart';
 import 'features/home/presentation/cubit/home_cubti.dart';
 import 'features/profile/presentation/cubit/points_cubit.dart';
 import 'features/wallet/presentation/cubit/cubit.dart';
@@ -58,12 +57,6 @@ class ZienaApp extends StatelessWidget {
         ),
         BlocProvider<BookingsCubit>(
           create: (_) => sl<BookingsCubit>(),
-        ),
-        BlocProvider<CategoriesCubit>(
-          create: (_) => sl<CategoriesCubit>(),
-        ),
-        BlocProvider<CategoryServicesCubit>(
-          create: (_) => sl<CategoryServicesCubit>(),
         ),
         BlocProvider<WalletCubit>(
           create: (_) => sl<WalletCubit>(),

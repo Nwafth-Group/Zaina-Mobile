@@ -15,7 +15,6 @@ import '../cubit/booking_flow_cubit.dart';
 import '../../../main_screen.dart';
 import '../../../wallet/presentation/cubit/cubit.dart';
 import '../../../home/presentation/cubit/address_cubit.dart';
-import '../../../home/presentation/widgets/service_result_card.dart';
 import '../../../profile/presentation/screens/terms_screen.dart';
 
 class StepSummary extends StatefulWidget {
@@ -618,7 +617,7 @@ class _ServiceHeader extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 4),
-                  StarRating(rating: flow.avgRating, size: 14),
+                  // StarRating(rating: flow.avgRating, size: 14),
                   const SizedBox(height: 4),
                   RichText(
                     text: TextSpan(children: [

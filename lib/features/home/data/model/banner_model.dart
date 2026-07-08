@@ -1,4 +1,3 @@
-import 'package:zeina/features/home/data/model/service_model.dart';
 
 class BannerModel {
   final int id;
@@ -18,70 +17,6 @@ class BannerModel {
   }
 }
 
-class CategoryModel {
-  final int id;
-  final String nameAr;
-  final String nameEn;
-  final String? image;
-  final bool? hasSubcategories;
-  final String status;
-
-  const CategoryModel({
-    required this.id,
-    required this.nameAr,
-    required this.nameEn,
-    this.image,
-    this.hasSubcategories,
-    required this.status,
-  });
-
-  factory CategoryModel.fromJson(Map<String, dynamic> json) {
-    print("cccccc ");
-
-    return CategoryModel(
-      id: json['id'],
-      nameAr: json['name_ar'] ?? '',
-      nameEn: json['name_en'] ?? '',
-      image: json['image'],
-      hasSubcategories: json['has_subcategories'],
-      status: json['status'] ?? 'active',
-    );
-  }
-
-  String localizedName(String langCode) =>
-      langCode == 'ar' ? nameAr : nameEn;
-}
-
-class PaginatedCategories {
-  final List<CategoryModel> items;
-  final int currentPage;
-  final int lastPage;
-  final int total;
-
-  const PaginatedCategories({
-    required this.items,
-    required this.currentPage,
-    required this.lastPage,
-    required this.total,
-  });
-
-  bool get hasMore => currentPage < lastPage;
-
-  factory PaginatedCategories.fromJson(Map<String, dynamic> json) {
-    print("yyyyy ");
-    final data = json['data'] as Map<String, dynamic>;
-    final meta = data['meta'] as Map<String, dynamic>? ?? {};
-    return PaginatedCategories(
-      items: (data['items'] as List<dynamic>? ?? [])
-          .map((e) => CategoryModel.fromJson(e))
-          .toList(),
-      currentPage: meta['current_page'] ?? 1,
-      lastPage: meta['last_page'] ?? 1,
-      total: meta['total'] ?? 0,
-    );
-  }
-}
-
 class UpcomingAppointment {
   final int id;
   final String bookingRef;
@@ -95,6 +30,7 @@ class UpcomingAppointment {
   final String dateDay;
   final String dateMonth;
   final String time;
+  final String expectedArrivalTime;
 
   const UpcomingAppointment({
     required this.id,
@@ -109,6 +45,7 @@ class UpcomingAppointment {
     required this.dateDay,
     required this.dateMonth,
     required this.time,
+    required this.expectedArrivalTime
   });
 
   factory UpcomingAppointment.fromJson(Map<String, dynamic> json) {
@@ -125,6 +62,7 @@ class UpcomingAppointment {
       dateDay: json['date_day'] ?? '',
       dateMonth: json['date_month'] ?? '',
       time: json['time'] ?? '',
+      expectedArrivalTime: json['expected_arrival_time'] ?? ''
     );
   }
 
@@ -134,14 +72,10 @@ class UpcomingAppointment {
 
 class HomeData {
   final List<BannerModel> banners;
-  final List<CategoryModel> categories;
-  final List<ServiceModel> popularServices;
   final UpcomingAppointment? upcomingAppointment;
 
   HomeData({
     required this.banners,
-    required this.categories,
-    required this.popularServices,
     this.upcomingAppointment,
   });
 }
