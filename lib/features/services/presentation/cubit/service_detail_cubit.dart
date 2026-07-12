@@ -2,7 +2,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:zeina/features/services/data/model/review_customer_model.dart';
-import 'package:zeina/features/services/data/model/service_feature_model.dart';
+import 'package:zeina/features/services/data/model/service_detail_model.dart';
 import '../../../../core/network/failure.dart';
 import '../../data/repository/services_repository.dart';
 

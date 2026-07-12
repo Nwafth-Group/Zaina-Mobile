@@ -1,3 +1,4 @@
+
 import 'visit_type_model.dart';
 
 class ServiceFeatureModel {
@@ -78,6 +79,13 @@ class ServiceShiftModel {
     return '${parts[0].padLeft(2, '0')}:${parts[1].padLeft(2, '0')}';
   }
 
+  /// "HH:mm" without seconds, for display.
+  String get endLabel {
+    final parts = endTime.split(':');
+    if (parts.length < 2) return endTime;
+    return '${parts[0].padLeft(2, '0')}:${parts[1].padLeft(2, '0')}';
+  }
+
   /// Localization key — add 'morning' / 'evening' to en.json / ar.json.
   String get periodLabelKey => isMorning ? 'morning' : 'evening';
 }
@@ -143,6 +151,17 @@ class ServiceDetailModel {
   final List<String> availableDays;
   final List<ServiceShiftModel> availableShifts;
 
+  /// New (service 2+ style) fields — empty/default for services that don't
+  /// send them, so this stays backward-compatible with service 1's response.
+  final List<String> workerGenderOptions;
+  final String pricingType; // e.g. "per_hour"
+  final String status; // e.g. "active"
+
+  /// True for services where the user configures start time/duration/gender/
+  /// worker count THEN checks availability (Hospitality Worker-style), as
+  /// opposed to picking from fixed pre-set shifts (Domestic Helper-style).
+  bool get isConfigurableHourly => workerGenderOptions.isNotEmpty;
+
   ServiceDetailModel({
     required this.id,
     required this.addressId,
@@ -170,6 +189,9 @@ class ServiceDetailModel {
     required this.availableDates,
     required this.availableDays,
     required this.availableShifts,
+    this.workerGenderOptions = const [],
+    this.pricingType = '',
+    this.status = '',
   });
 
   factory ServiceDetailModel.fromJson(Map<String, dynamic> json) {
@@ -213,6 +235,11 @@ class ServiceDetailModel {
       availableShifts: (json['available_shifts'] as List<dynamic>? ?? [])
           .map((e) => ServiceShiftModel.fromJson(e as Map<String, dynamic>))
           .toList(),
+      workerGenderOptions: (json['worker_gender_options'] as List<dynamic>? ?? [])
+          .map((e) => e.toString())
+          .toList(),
+      pricingType: json['pricing_type'] ?? '',
+      status: json['status'] ?? '',
     );
   }
 

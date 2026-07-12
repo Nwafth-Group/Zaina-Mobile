@@ -174,8 +174,45 @@ class _ServicesListViewState extends State<_ServicesListView> {
       return;
     }
 
-    // Both checks passed → proceed to visit-type selection.
+    // Coverage passed → find out how many visit types this service offers
+    // BEFORE deciding whether to show the picker at all.
     if (!context.mounted) return;
+    setState(() => _checkingServiceId = service.id);
+    List<VisitTypeModel> visitTypes = [];
+    String? visitTypesError;
+    try {
+      visitTypes = await context.read<ServicesCubit>().fetchVisitTypes(service.id);
+    } catch (_) {
+      visitTypesError = 'err_generic'.tr();
+    }
+    if (!mounted) return;
+    setState(() => _checkingServiceId = null);
+
+    if (visitTypesError != null || visitTypes.isEmpty) {
+      showCoverageErrorDialog(
+        context,
+        message: visitTypesError ?? 'err_generic'.tr(),
+      );
+      return;
+    }
+
+    if (!context.mounted) return;
+
+    // Only one option → skip the picker sheet entirely.
+    if (visitTypes.length == 1) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ServiceDetailScreen(
+            serviceId: service.id,
+            visitType: visitTypes.first,
+          ),
+        ),
+      );
+      return;
+    }
+
+    // Multiple options → let the user choose.
     showVisitTypeSheet(
       context: context,
       service: service,

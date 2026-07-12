@@ -1,7 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:zeina/features/services/data/model/booking_selection_data.dart';
-import 'package:zeina/features/services/data/model/service_feature_model.dart';
+import 'package:zeina/features/services/data/model/service_detail_model.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../injection_container.dart';
 import '../../data/model/booking_validation_model.dart';

@@ -348,5 +348,13 @@
   "service_cost": "تكلفة الخدمة",
   "service_discount": "خصم الخدمة",
   "change": "تغيير",
-  "wallet_balance_placeholder": "-- جنيه"
+  "wallet_balance_placeholder": "-- جنيه",
+  "start_service_time": "وقت بدء الخدمة",
+  "service_duration": "مدة الخدمة",
+  "service_providers_gender": "جنس مقدمي الخدمة",
+  "service_providers_number": "عدد مقدمي الخدمة",
+  "check_availability": "التحقق من التوفر",
+  "kindly_select_date": "يرجى اختيار التاريخ",
+  "Male": "ذكر",
+  "Female": "أنثى"
 }

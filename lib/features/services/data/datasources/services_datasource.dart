@@ -19,6 +19,8 @@ abstract class ServicesRemoteDataSource {
   Future<Map<String, dynamic>> validateBooking(Map<String, dynamic> fields);
 
   Future<Map<String, dynamic>> createBooking(Map<String, dynamic> body);
+
+  Future<Map<String, dynamic>> getAvailableDates(Map<String, dynamic> query);
 }
 
 class ServicesRemoteDataSourceImpl implements ServicesRemoteDataSource {
@@ -98,6 +100,36 @@ class ServicesRemoteDataSourceImpl implements ServicesRemoteDataSource {
       final data = e.response?.data;
       if (data is Map<String, dynamic>) {
         final message = data['message']?.toString() ?? 'Booking failed';
+        final paramsRaw = data['params'];
+        final params = <String, String>{};
+        if (paramsRaw is Map) {
+          paramsRaw.forEach((key, value) {
+            params['$key'] = value.toString();
+          });
+        }
+        throw BookingValidationException(message: message, params: params);
+      }
+      rethrow;
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> getAvailableDates(Map<String, dynamic> query) async {
+    // Bypassing ApiClient.get() deliberately here too — it only re-throws a
+    // generic string, not something our BookingValidationException catch
+    // blocks recognize, so the real server message (e.g. "Selected hours
+    // must be within the service window...") was getting swallowed in favor
+    // of a generic fallback.
+    try {
+      final response = await _api.dio.get(
+        'customer/bookings/available-dates',
+        queryParameters: query,
+      );
+      return response.data as Map<String, dynamic>;
+    } on DioException catch (e) {
+      final data = e.response?.data;
+      if (data is Map<String, dynamic>) {
+        final message = data['message']?.toString() ?? 'Failed to fetch available dates';
         final paramsRaw = data['params'];
         final params = <String, String>{};
         if (paramsRaw is Map) {

@@ -42,7 +42,7 @@ class ApiClient {
           developer.log('Query Parameters: ${options.queryParameters}', name: 'API');
         }
         if (options.data != null) {
-          developer.log('Body: ${options.data}', name: 'API');
+          developer.log('Body: ${_describeBody(options.data)}', name: 'API');
         }
         developer.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
@@ -65,6 +65,7 @@ class ApiClient {
         developer.log('❌ ERROR', name: 'API');
         developer.log('URL: ${error.requestOptions.baseUrl}${error.requestOptions.path}', name: 'API');
         developer.log('Method: ${error.requestOptions.method}', name: 'API');
+        developer.log('Body: ${_describeBody(error.requestOptions.data)}', name: 'API');
         developer.log('Status Code: ${error.response?.statusCode}', name: 'API');
         developer.log('Error Type: ${error.type}', name: 'API');
         developer.log('Error Message: ${error.message}', name: 'API');
@@ -82,6 +83,26 @@ class ApiClient {
         return handler.next(error);
       },
     ));
+  }
+
+  /// FormData has no useful toString() (it just prints "Instance of
+  /// 'FormData'"), so build a readable representation of its fields/files
+  /// for logging. Falls back to the raw value for JSON bodies (Map/List/etc).
+  static String _describeBody(dynamic data) {
+    if (data is FormData) {
+      final fieldsStr = data.fields
+          .map((e) => '${e.key}: ${e.value}')
+          .join(', ');
+      final filesStr = data.files
+          .map((e) => '${e.key}: <file:${e.value.filename}>')
+          .join(', ');
+      final parts = [
+        if (fieldsStr.isNotEmpty) fieldsStr,
+        if (filesStr.isNotEmpty) filesStr,
+      ];
+      return '{ ${parts.join(', ')} }';
+    }
+    return '$data';
   }
 
   Future<Map<String, dynamic>> get(String endpoint, {Map<String, dynamic>? queryParameters, Map<String, dynamic>? data}) async {

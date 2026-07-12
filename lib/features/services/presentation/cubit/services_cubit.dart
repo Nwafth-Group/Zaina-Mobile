@@ -29,6 +29,14 @@ class ServicesCubit extends Cubit<ServicesState> {
   Future<CoverageModel> checkCoverage(int serviceId) {
     return _repo.checkCoverage(serviceId);
   }
+
+  /// Pass-through, same reasoning as [checkCoverage] — a one-off call
+  /// triggered by tapping a tile, not a list-rebuilding action. Used to
+  /// decide whether to skip the visit-type picker when a service only
+  /// offers one option.
+  Future<List<VisitTypeModel>> fetchVisitTypes(int serviceId) {
+    return _repo.fetchAvailableVisitTypes(serviceId);
+  }
 }
 
 abstract class ServicesState {}
@@ -59,7 +67,7 @@ class VisitTypesCubit extends Cubit<VisitTypesState> {
       emit(VisitTypesLoaded(types));
     } on DioException catch (e) {
       emit(VisitTypesError(handleDioError(e).message));
-    } catch (e) {
+    } catch (_) {
       emit(VisitTypesError('Something went wrong'));
     }
   }

@@ -3,15 +3,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:zeina/features/services/data/model/booking_selection_data.dart';
 import 'package:zeina/features/services/data/model/review_customer_model.dart';
-import 'package:zeina/features/services/data/model/service_feature_model.dart';
 import 'package:zeina/features/services/presentation/cubit/service_detail_cubit.dart';
 import 'package:zeina/features/services/presentation/cubit/services_cubit.dart';
-import 'package:zeina/features/services/presentation/screens/checkout_screen.dart';
 import 'package:zeina/features/services/presentation/widgets/booking_bottom_sheet.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../injection_container.dart';
 import '../../data/model/booking_validation_model.dart';
+import '../../data/model/service_detail_model.dart';
 import '../../data/model/visit_type_model.dart';
+import '../widgets/date_selection_bottom_sheet.dart';
+import '../widgets/hourly_config_bottom_sheet.dart';
+import 'checkout_screen.dart';
 
 class ServiceDetailScreen extends StatelessWidget {
   static const String routeName = '/service-detail';
@@ -293,29 +295,64 @@ class _LoadedBody extends StatelessWidget {
             child: SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () => showBookingBottomSheet(
-                  context: context,
-                  service: detail,
-                  visitType: visitType,
-                  onProceed: (BookingSelectionData data, BookingValidationModel validation) {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => CheckoutScreen(
-                          service: detail,
-                          selection: data,
-                          validation: validation,
-                        ),
-                      ),
-                    );
-                  },
-                ),
+                onPressed: () => _onBookNow(context, detail),
                 child: Text('book_now'.tr()),
               ),
             ),
           ),
         ),
       ],
+    );
+  }
+
+  Future<void> _onBookNow(BuildContext context, ServiceDetailModel detail) async {
+    if (detail.isConfigurableHourly) {
+      // Hospitality Worker-style: configure start time/duration/gender/
+      // worker count FIRST, check availability, THEN pick a date.
+      final config = await showHourlyConfigBottomSheet(
+        context: context,
+        service: detail,
+      );
+      if (config == null || !context.mounted) return;
+
+      await showDateSelectionBottomSheet(
+        context: context,
+        service: detail,
+        visitType: visitType,
+        config: config,
+        onProceed: (BookingSelectionData data, BookingValidationModel validation) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => CheckoutScreen(
+                service: detail,
+                selection: data,
+                validation: validation,
+              ),
+            ),
+          );
+        },
+      );
+      return;
+    }
+
+    // Domestic Helper-style: pick from fixed pre-set shifts on a calendar.
+    showBookingBottomSheet(
+      context: context,
+      service: detail,
+      visitType: visitType,
+      onProceed: (BookingSelectionData data, BookingValidationModel validation) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => CheckoutScreen(
+              service: detail,
+              selection: data,
+              validation: validation,
+            ),
+          ),
+        );
+      },
     );
   }
 }

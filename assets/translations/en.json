@@ -342,5 +342,13 @@
   "service_cost": "Service Cost",
   "service_discount": "Service Discount",
   "change": "Change",
-  "wallet_balance_placeholder": "-- EGP"
+  "wallet_balance_placeholder": "-- EGP",
+  "start_service_time": "Start Service Time",
+  "service_duration": "Service Duration",
+  "service_providers_gender": "Service Providers Gender",
+  "service_providers_number": "Service Providers Number",
+  "check_availability": "Check Availability",
+  "kindly_select_date": "Kindly Select Date",
+  "Male": "Male",
+  "Female": "Female"
 }

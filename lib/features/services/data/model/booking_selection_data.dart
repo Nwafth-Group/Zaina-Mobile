@@ -1,5 +1,4 @@
-import 'package:zeina/features/services/data/model/service_feature_model.dart';
-
+import '../../data/model/service_detail_model.dart';
 import '../../data/model/visit_type_model.dart';
 
 class BookingSelectionData {
@@ -15,6 +14,13 @@ class BookingSelectionData {
   /// in that case.
   final List<int> preferredWorkerIds;
 
+  /// Only set for "configurable hourly" services (e.g. Hospitality Worker).
+  /// When non-null, Checkout sends `duration`/`worker_gender` to
+  /// /customer/bookings INSTEAD of `visit_type` — that service type's
+  /// create-booking payload has no visit_type field at all.
+  final int? duration;
+  final String? workerGender;
+
   BookingSelectionData({
     required this.serviceId,
     required this.visitType,
@@ -22,5 +28,7 @@ class BookingSelectionData {
     required this.shift,
     required this.workerCount,
     required this.preferredWorkerIds,
+    this.duration,
+    this.workerGender,
   });
 }

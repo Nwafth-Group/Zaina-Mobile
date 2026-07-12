@@ -2,7 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:zeina/features/services/data/model/booking_selection_data.dart';
-import 'package:zeina/features/services/data/model/service_feature_model.dart';
+import 'package:zeina/features/services/data/model/service_detail_model.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../injection_container.dart';
 import '../../../bookings/presentation/cubit/bookings_cubit.dart';
@@ -93,14 +93,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     return '${hour.toString().padLeft(2, '0')}:$minute $period';
   }
 
-  String _endTime(String startHHmm, int durationHours) {
-    final parts = startHHmm.split(':');
-    final startHour = int.tryParse(parts[0]) ?? 0;
-    final minute = parts.length > 1 ? parts[1] : '00';
-    final endHour = (startHour + durationHours) % 24;
-    return '${endHour.toString().padLeft(2, '0')}:$minute';
-  }
-
   bool get _canPay =>
       _agreedToTerms &&
           _couponError == null &&
@@ -132,6 +124,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             ? null
             : widget.selection.preferredWorkerIds,
         couponCode: code,
+        duration: widget.selection.duration,
+        workerGender: widget.selection.workerGender,
       );
       if (!mounted) return;
       setState(() {
@@ -158,9 +152,15 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       await sl<ServicesRepository>().createBooking(
         serviceId: widget.service.id,
         addressId: widget.service.addressId,
-        visitType: widget.selection.visitType.type,
+        // Configurable-hourly services (duration/workerGender set) send
+        // those instead of visitType — service 2's payload has no
+        // visit_type field at all.
+        visitType:
+        widget.selection.workerGender == null ? widget.selection.visitType.type : null,
         dates: widget.selection.selectedDates,
         startTime: widget.selection.shift.startLabel,
+        duration: widget.selection.duration,
+        workerGender: widget.selection.workerGender,
         workerIds: _currentValidation.workerIds,
         paymentMethod: _paymentMethod.apiValue,
         couponCode: _couponController.text.trim(),
@@ -208,8 +208,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     final pricing = _currentValidation.pricing;
     final locale = context.locale.languageCode;
     final startLabel = _formatTime12h(widget.selection.shift.startLabel);
-    final endLabel = _formatTime12h(
-        _endTime(widget.selection.shift.startLabel, widget.service.defaultDuration));
+    final endLabel = _formatTime12h(widget.selection.shift.endLabel);
 
     return Scaffold(
       backgroundColor: ZienaColors.bg1,
@@ -325,7 +324,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             ),
             child: Row(
               children: [
-                _assetIconCircle('assets/images/enter_coupon.png'),
+                _assetIconCircle('assets/images/cop_empty.png'),
                 const SizedBox(width: 6),
                 Expanded(
                   child: TextField(
