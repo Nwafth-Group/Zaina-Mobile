@@ -18,7 +18,8 @@ class BookingsCubit extends Cubit<BookingsState> {
   Future<void> fetchBookings({
     BookingStatusEnum filter = BookingStatusEnum.all,
     bool refresh = false,
-  }) async {
+  }) async
+  {
     _activeFilter = filter;
     if (refresh) { _all = []; _currentPage = 1; }
     emit(BookingsLoading());

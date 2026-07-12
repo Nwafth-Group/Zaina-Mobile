@@ -4,9 +4,7 @@ import 'features/auth/data/datasources/auth_remote_datasource.dart';
 import 'features/auth/data/repositories/auth_repository.dart';
 import 'features/auth/presentation/cubit/auth_cubit.dart';
 import 'features/auth/presentation/cubit/verification_cubit.dart';
-import 'features/bookings/presentation/cubit/booking_flow_cubit.dart';
 import 'features/bookings/presentation/cubit/bookings_cubit.dart';
-import 'features/bookings/presentation/cubit/reschedule_shifts_cubit.dart';
 import 'features/home/data/datasources/home_datasource.dart';
 import 'features/home/data/repository/home_repository.dart';
 import 'features/home/presentation/cubit/address_cubit.dart';
@@ -17,6 +15,10 @@ import 'features/profile/presentation/cubit/cards_cubit.dart';
 import 'features/profile/presentation/cubit/coupons_cubit.dart';
 import 'features/profile/presentation/cubit/points_cubit.dart';
 import 'features/profile/presentation/cubit/reports_cubit.dart';
+import 'features/services/data/datasources/services_datasource.dart';
+import 'features/services/data/repository/services_repository.dart';
+import 'features/services/presentation/cubit/service_detail_cubit.dart';
+import 'features/services/presentation/cubit/services_cubit.dart';
 import 'features/wallet/presentation/cubit/cubit.dart';
 
 final sl = GetIt.instance;
@@ -27,17 +29,17 @@ void setupDependencies() {
 
   // Data Sources
   sl.registerLazySingleton<AuthRemoteDataSource>(
-    () => AuthRemoteDataSourceImpl(sl<ApiClient>()),
+        () => AuthRemoteDataSourceImpl(sl<ApiClient>()),
   );
 
   // Repositories
   sl.registerLazySingleton<AuthRepository>(
-    () => AuthRepositoryImpl(sl<AuthRemoteDataSource>()),
+        () => AuthRepositoryImpl(sl<AuthRemoteDataSource>()),
   );
 
   // Cubits
   sl.registerFactory<AuthCubit>(
-    () => AuthCubit(sl<AuthRepository>()),
+        () => AuthCubit(sl<AuthRepository>()),
   );
 
 // --- Home Module ---
@@ -61,8 +63,6 @@ void setupDependencies() {
   sl.registerFactory<BookingsCubit>(() => BookingsCubit(sl<ApiClient>()));
   sl.registerFactory<BookingDetailCubit>(
           () => BookingDetailCubit(sl<ApiClient>()));
-  sl.registerFactory<BookingFlowCubit>(() => BookingFlowCubit(sl<ApiClient>()));
-  sl.registerFactory<RescheduleShiftsCubit>(() => RescheduleShiftsCubit(sl<ApiClient>()));
   sl.registerFactory<AddressCubit>(() => AddressCubit(sl<ApiClient>()));
   sl.registerFactory<WalletCubit>(() => WalletCubit(sl<ApiClient>()));
   sl.registerFactory<CardsCubit>(() => CardsCubit(sl<ApiClient>()));
@@ -77,4 +77,20 @@ void setupDependencies() {
   sl.registerFactory<ReportsCubit>(() => ReportsCubit(sl<ApiClient>()));
   sl.registerFactory<CouponsCubit>(() => CouponsCubit(sl<ApiClient>()));
 
+// --- Services Module ---
+
+// Data Sources
+  sl.registerLazySingleton<ServicesRemoteDataSource>(
+        () => ServicesRemoteDataSourceImpl(sl<ApiClient>()),
+  );
+
+// Repositories
+  sl.registerLazySingleton<ServicesRepository>(
+        () => ServicesRepositoryImpl(sl<ServicesRemoteDataSource>()),
+  );
+
+// Cubits
+  sl.registerFactory<ServicesCubit>(() => ServicesCubit(sl<ServicesRepository>()));
+  sl.registerFactory<VisitTypesCubit>(() => VisitTypesCubit(sl<ServicesRepository>()));
+  sl.registerFactory<ServiceDetailCubit>(() => ServiceDetailCubit(sl<ServicesRepository>()));
 }

@@ -8,7 +8,6 @@ import '../../../../injection_container.dart';
 import '../../../../widgets/ziena_button.dart';
 import '../cubit/bookings_cubit.dart';
 import '../widgets/bokking_card.dart';
-import 'booking_details_screen.dart';
 
 class BookingsScreen extends StatefulWidget {
   final bool isLoggedIn;
@@ -161,20 +160,20 @@ class _BookingsScreenState extends State<BookingsScreen> {
               return BookingCard(
                 booking: b,
                 onTap: () {
-                  final cubit = context.read<BookingsCubit>();
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => BlocProvider(
-                        create: (_) => sl<BookingDetailCubit>()
-                          ..fetchDetail(b.id),
-                        child: BookingDetailScreen(bookingId: b.id),
-                      ),
-                    ),
-                  ).then((_) {
-                    if (!mounted) return;
-                    cubit.fetchBookings(filter: _filter, refresh: true);
-                  });
+                  // final cubit = context.read<BookingsCubit>();
+                  // Navigator.push(
+                  //   context,
+                  //   MaterialPageRoute(
+                  //     builder: (_) => BlocProvider(
+                  //       create: (_) => sl<BookingDetailCubit>()
+                  //         ..fetchDetail(b.id),
+                  //       child: BookingDetailScreen(bookingId: b.id),
+                  //     ),
+                  //   ),
+                  // ).then((_) {
+                  //   if (!mounted) return;
+                  //   cubit.fetchBookings(filter: _filter, refresh: true);
+                  // });
                 },
               );
             },

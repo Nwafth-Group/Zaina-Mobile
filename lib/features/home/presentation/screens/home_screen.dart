@@ -5,12 +5,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:zeina/core/utils/constants.dart';
 import 'package:zeina/core/utils/shared_pref_helper.dart';
+import 'package:zeina/features/services/presentation/screens/services_list_screen.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../injection_container.dart';
 import '../../../auth/presentation/cubit/verification_cubit.dart' show ProfileCubit, ProfileLoaded, ProfileState;
 import '../../../bookings/presentation/cubit/bookings_cubit.dart';
 import '../../data/model/banner_model.dart';
-import '../../../bookings/presentation/screens/booking_details_screen.dart';
 import '../cubit/address_cubit.dart';
 import '../cubit/home_cubti.dart';
 import '../../../../widgets/signin_required_widget.dart';
@@ -108,7 +108,17 @@ class _HomeScreenState extends State<HomeScreen> {
                                 child: _ServiceCard(
                                   label: AppStrings.hourlyServices,
                                   icon: Icons.access_time_rounded,
-                                  onTap: () {},
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => const ServicesListScreen(
+                                          type: 'hourly',
+                                          titleKey: 'Hourly Services',
+                                        ),
+                                      ),
+                                    );
+                                  },
                                 ),
                               ),
                               const SizedBox(width: 8),
@@ -403,7 +413,7 @@ class _BannerCard extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(14),
-        child: Image.network(banner.image??'', width: double.infinity, height: 200,
+        child: Image.network(banner.image??'', width: double.infinity, height: 200,fit: BoxFit.fill,
         errorBuilder: (context, error, stackTrace) =>
             Container(height: 200, width: double.infinity, color: ZienaColors.primaryLight, child: Icon(Icons.image, size: 40, color: Colors.white,),)),
       ),
@@ -463,16 +473,16 @@ Widget _buildAppointmentCard(UpcomingAppointment? appointment) {
       child: InkWell(
         borderRadius: BorderRadius.circular(14),
         onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => BlocProvider(
-                create: (_) => sl<BookingDetailCubit>()
-                  ..fetchDetail(appointment.id),
-                child: BookingDetailScreen(bookingId: appointment.id),
-              ),
-            ),
-          );
+          // Navigator.push(
+          //   context,
+          //   MaterialPageRoute(
+          //     builder: (_) => BlocProvider(
+          //       create: (_) => sl<BookingDetailCubit>()
+          //         ..fetchDetail(appointment.id),
+          //       child: BookingDetailScreen(bookingId: appointment.id),
+          //     ),
+          //   ),
+          // );
         },
         child: Container(
           height: 108,
