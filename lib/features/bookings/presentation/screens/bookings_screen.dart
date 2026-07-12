@@ -8,6 +8,7 @@ import '../../../../injection_container.dart';
 import '../../../../widgets/ziena_button.dart';
 import '../cubit/bookings_cubit.dart';
 import '../widgets/bokking_card.dart';
+import 'booking_detail_screen.dart';
 
 class BookingsScreen extends StatefulWidget {
   final bool isLoggedIn;
@@ -52,15 +53,6 @@ class _BookingsScreenState extends State<BookingsScreen> {
         child: widget.isLoggedIn?Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const SizedBox(height: 20),
-            Text(
-              'my_bookings'.tr(),
-              style: const TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.w700,
-                color: ZienaColors.textPrimary,
-              ),
-            ),
             const SizedBox(height: 16),
             _buildFilterTabs(),
             const SizedBox(height: 16),
@@ -99,7 +91,7 @@ class _BookingsScreenState extends State<BookingsScreen> {
               child: Text(
                 s.label.tr(),
                 style: TextStyle(
-                  
+
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
                   color: isSelected ? Colors.white : ZienaColors.textSecondary,
@@ -160,20 +152,16 @@ class _BookingsScreenState extends State<BookingsScreen> {
               return BookingCard(
                 booking: b,
                 onTap: () {
-                  // final cubit = context.read<BookingsCubit>();
-                  // Navigator.push(
-                  //   context,
-                  //   MaterialPageRoute(
-                  //     builder: (_) => BlocProvider(
-                  //       create: (_) => sl<BookingDetailCubit>()
-                  //         ..fetchDetail(b.id),
-                  //       child: BookingDetailScreen(bookingId: b.id),
-                  //     ),
-                  //   ),
-                  // ).then((_) {
-                  //   if (!mounted) return;
-                  //   cubit.fetchBookings(filter: _filter, refresh: true);
-                  // });
+                  final cubit = context.read<BookingsCubit>();
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => BookingDetailScreen(bookingId: b.id),
+                    ),
+                  ).then((_) {
+                    if (!mounted) return;
+                    cubit.fetchBookings(filter: _filter, refresh: true);
+                  });
                 },
               );
             },

@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:zeina/core/utils/constants.dart';
 import 'package:zeina/core/utils/shared_pref_helper.dart';
+import 'package:zeina/features/bookings/presentation/screens/booking_detail_screen.dart';
 import 'package:zeina/features/services/presentation/screens/services_list_screen.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../injection_container.dart';
@@ -451,7 +452,7 @@ Widget _buildAppointmentCard(UpcomingAppointment? appointment) {
             const SizedBox(width: 12),
             Expanded(
               child: Text(
-                'No upcoming appointments',
+                'No upcoming appointments'.tr(),
                 style: const TextStyle(
                   fontSize: 14,
                   color: ZienaColors.textSecondary,
@@ -473,16 +474,12 @@ Widget _buildAppointmentCard(UpcomingAppointment? appointment) {
       child: InkWell(
         borderRadius: BorderRadius.circular(14),
         onTap: () {
-          // Navigator.push(
-          //   context,
-          //   MaterialPageRoute(
-          //     builder: (_) => BlocProvider(
-          //       create: (_) => sl<BookingDetailCubit>()
-          //         ..fetchDetail(appointment.id),
-          //       child: BookingDetailScreen(bookingId: appointment.id),
-          //     ),
-          //   ),
-          // );
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => BookingDetailScreen(bookingId: appointment.id),
+            ),
+          );
         },
         child: Container(
           height: 108,

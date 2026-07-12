@@ -2,6 +2,9 @@ import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/network/failure.dart';
+import '../../../services/data/model/service_detail_model.dart' show ServiceFeatureModel;
+import '../../../services/data/repository/services_repository.dart';
+import '../../data/model/booking_detail_model.dart';
 import '../../data/model/booking_model.dart';
 
 class BookingsCubit extends Cubit<BookingsState> {
@@ -18,8 +21,7 @@ class BookingsCubit extends Cubit<BookingsState> {
   Future<void> fetchBookings({
     BookingStatusEnum filter = BookingStatusEnum.all,
     bool refresh = false,
-  }) async
-  {
+  }) async {
     _activeFilter = filter;
     if (refresh) { _all = []; _currentPage = 1; }
     emit(BookingsLoading());
@@ -88,14 +90,28 @@ class BookingsCubit extends Cubit<BookingsState> {
 // ── Booking Detail Cubit ──────────────────────────────────────────────────────
 class BookingDetailCubit extends Cubit<BookingDetailState> {
   final ApiClient _api;
-  BookingDetailCubit(this._api) : super(BookingDetailInitial());
+  final ServicesRepository _servicesRepo;
+  BookingDetailCubit(this._api, this._servicesRepo) : super(BookingDetailInitial());
 
   Future<void> fetchDetail(int bookingId) async {
     emit(BookingDetailLoading());
     try {
       final res = await _api.get('customer/bookings/$bookingId');
-      final model = BookingModel.fromJson(res['data']);
-      emit(BookingDetailLoaded(model));
+      final booking = BookingDetailModel.fromJson(res['data']);
+
+      // "What's Included" isn't part of the booking response — it lives on
+      // the service itself, so fetch that in parallel. Best-effort: if it
+      // fails, still show the booking with an empty features list rather
+      // than failing the whole screen over a secondary call.
+      List<ServiceFeatureModel> features = [];
+      try {
+        final serviceDetail = await _servicesRepo.fetchServiceDetail(booking.serviceId);
+        features = serviceDetail.features;
+      } catch (_) {
+        features = [];
+      }
+
+      emit(BookingDetailLoaded(booking: booking, features: features));
     } on DioException catch (e) {
       emit(BookingDetailError(handleDioError(e).message));
     } catch (_) {
@@ -109,7 +125,8 @@ class BookingDetailCubit extends Cubit<BookingDetailState> {
     required String newDate,
     required String newStartTime,
     required String newEndTime,
-  }) async {
+  }) async
+  {
     emit(BookingActionLoading());
     try {
       await _api.post(
@@ -133,7 +150,8 @@ class BookingDetailCubit extends Cubit<BookingDetailState> {
     required int bookingId,
     required String reason,
     String? description,
-  }) async {
+  }) async
+  {
     emit(BookingActionLoading());
     try {
       await _api.post(
@@ -152,17 +170,31 @@ class BookingDetailCubit extends Cubit<BookingDetailState> {
     }
   }
 
-  // ── Cancel ─────────────────────────────────────────────────────────────────
-  Future<void> cancelBooking(int bookingId) async {
-    emit(BookingActionLoading());
-    try {
-      await _api.put('customer/bookings/$bookingId/cancel');
-      emit(BookingCancelSuccess());
-    } on DioException catch (e) {
-      emit(BookingDetailError(handleDioError(e).message));
-    } catch (_) {
-      emit(BookingDetailError('Something went wrong'));
-    }
+  // ── Cancel (OTP-gated) ───────────────────────────────────────────────────
+  /// Just performs the call — intentionally does NOT emit loading/error
+  /// states, since the screen drives its own step-by-step dialog/sheet flow
+  /// and shows its own transient loading + error UI around each call.
+  Future<void> sendCancelOtp(int bookingId) {
+    return _api.post('customer/bookings/$bookingId/cancel/send-otp');
+  }
+
+  /// Only emits on success (so the screen can react and pop back); errors
+  /// propagate to the caller to display inline without disturbing the
+  /// cubit's main state.
+  Future<void> confirmCancel({
+    required int bookingId,
+    required String cancellationReason,
+    required String otp,
+  }) async
+  {
+    await _api.put(
+      'customer/bookings/$bookingId/cancel',
+      data: {
+        'cancellation_reason': cancellationReason,
+        'otp': otp,
+      },
+    );
+    emit(BookingCancelSuccess());
   }
 
   // ── Review ─────────────────────────────────────────────────────────────────
@@ -171,7 +203,8 @@ class BookingDetailCubit extends Cubit<BookingDetailState> {
     required int serviceRating,
     required String serviceComment,
     required List<Map<String, dynamic>> workers,
-  }) async {
+  }) async
+  {
     emit(BookingActionLoading());
     try {
       await _api.post(
@@ -222,8 +255,9 @@ abstract class BookingDetailState {}
 class BookingDetailInitial extends BookingDetailState {}
 class BookingDetailLoading extends BookingDetailState {}
 class BookingDetailLoaded extends BookingDetailState {
-  final BookingModel booking;
-  BookingDetailLoaded(this.booking);
+  final BookingDetailModel booking;
+  final List<ServiceFeatureModel> features;
+  BookingDetailLoaded({required this.booking, required this.features});
 }
 class BookingActionLoading extends BookingDetailState {}
 class BookingRescheduleSuccess extends BookingDetailState {}

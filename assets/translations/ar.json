@@ -356,5 +356,13 @@
   "check_availability": "التحقق من التوفر",
   "kindly_select_date": "يرجى اختيار التاريخ",
   "Male": "ذكر",
-  "Female": "أنثى"
+  "Female": "أنثى",
+  "visit_number_label": "الزيارة {}",
+  "on_date_label": "بتاريخ",
+  "In Progress": "قيد التنفيذ",
+  "cancel_booking": "إلغاء الحجز",
+  "reschedule_booking": "إعادة جدولة الحجز",
+  "write_reason": "اكتب السبب",
+  "enter_otp_mobile_hint": "أدخل رمز التحقق المرسل إلى رقم هاتفك",
+  "resend_otp": "إعادة إرسال الرمز"
 }

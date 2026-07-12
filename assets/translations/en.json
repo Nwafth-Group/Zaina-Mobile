@@ -350,5 +350,13 @@
   "check_availability": "Check Availability",
   "kindly_select_date": "Kindly Select Date",
   "Male": "Male",
-  "Female": "Female"
+  "Female": "Female",
+  "visit_number_label": "Visit {}",
+  "on_date_label": "on",
+  "In Progress": "In Progress",
+  "cancel_booking": "Cancel Booking",
+  "reschedule_booking": "Reschedule Booking",
+  "write_reason": "Write Reason",
+  "enter_otp_mobile_hint": "Enter OTP Code Sent to Your Mobile Number",
+  "resend_otp": "Resend OTP"
 }

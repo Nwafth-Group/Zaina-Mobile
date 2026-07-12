@@ -324,7 +324,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             ),
             child: Row(
               children: [
-                _assetIconCircle('assets/images/cop_empty.png'),
+                _assetIconCircle('assets/images/enter_coupon.png'),
                 const SizedBox(width: 6),
                 Expanded(
                   child: TextField(

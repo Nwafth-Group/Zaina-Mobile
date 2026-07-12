@@ -86,96 +86,109 @@ class _ReportSheetState extends State<ReportSheet> {
         ),
         padding: EdgeInsets.fromLTRB(
             24, 16, 24, MediaQuery.of(context).viewInsets.bottom + 24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Center(child: Container(
-              width: 40, height: 4,
-              decoration: BoxDecoration(
-                  color: ZienaColors.greyBorder,
-                  borderRadius: BorderRadius.circular(2)),
-            )),
-            const SizedBox(height: 20),
-            Text('report_issue'.tr(),
-                style: const TextStyle(
-                   fontSize: 17,
-                  fontWeight: FontWeight.w700,
-                  color: ZienaColors.textPrimary,
-                )),
-            const SizedBox(height: 16),
-
-            // Reason radio list
-            ..._reasons.map((r) => RadioListTile<String>(
-              value: r.$1,
-              groupValue: _selectedReason,
-              title: Text(r.$2.tr(),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Center(child: Container(
+                width: 40, height: 4,
+                decoration: BoxDecoration(
+                    color: ZienaColors.greyBorder,
+                    borderRadius: BorderRadius.circular(2)),
+              )),
+              const SizedBox(height: 20),
+              Text('report_issue'.tr(),
                   style: const TextStyle(
-                     fontSize: 14,
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
                     color: ZienaColors.textPrimary,
                   )),
-              activeColor: ZienaColors.primary,
-              contentPadding: EdgeInsets.zero,
-              dense: true,
-              onChanged: (v) => setState(() {
-                _selectedReason = v!;
-                if (v != 'other') _descError = false;
-              }),
-            )),
+              const SizedBox(height: 16),
 
-            // Description
-            Container(
-              decoration: BoxDecoration(
-                color: ZienaColors.bg1,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(
-                  color: _descError ? ZienaColors.error : ZienaColors.greyBorder,
-                  width: _descError ? 1.4 : 1,
+              // Reason radio list — wrapped in its own Material so the
+              // RadioListTiles' background/ink-splash effects render properly.
+              // Without this, the outer Container's BoxDecoration (white fill
+              // + rounded corners) sits between the tiles and the nearest
+              // ambient Material, which silently swallows the ink effects and
+              // triggers Flutter's "ListTile background color or ink splashes
+              // may be invisible" assertion.
+              Material(
+                type: MaterialType.transparency,
+                child: Column(
+                  children: _reasons.map((r) => RadioListTile<String>(
+                    value: r.$1,
+                    groupValue: _selectedReason,
+                    title: Text(r.$2.tr(),
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: ZienaColors.textPrimary,
+                        )),
+                    activeColor: ZienaColors.primary,
+                    contentPadding: EdgeInsets.zero,
+                    dense: true,
+                    onChanged: (v) => setState(() {
+                      _selectedReason = v!;
+                      if (v != 'other') _descError = false;
+                    }),
+                  )).toList(),
                 ),
               ),
-              child: CustomTextField(
-                controller: _descCtrl,
-                maxLines: 3,
-                hintText: _selectedReason == 'other'
-                    ? 'describe_issue_required'.tr()
-                    : 'describe_issue_optional'.tr(),
-                border: 0,
-                borderRadius: 14,
-                fillColor: ZienaColors.bg1,
-                contentPadding: const EdgeInsets.all(16),
-              ),
-            ),
-            if (_descError) ...[
-              const SizedBox(height: 6),
-              Padding(
-                padding: const EdgeInsets.only(left: 4),
-                child: Text(
-                  'this_field_required'.tr(),
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: ZienaColors.error,
+
+              // Description
+              Container(
+                decoration: BoxDecoration(
+                  color: ZienaColors.bg1,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: _descError ? ZienaColors.error : ZienaColors.greyBorder,
+                    width: _descError ? 1.4 : 1,
                   ),
                 ),
+                child: CustomTextField(
+                  controller: _descCtrl,
+                  maxLines: 3,
+                  hintText: _selectedReason == 'other'
+                      ? 'describe_issue_required'.tr()
+                      : 'describe_issue_optional'.tr(),
+                  border: 0,
+                  borderRadius: 14,
+                  fillColor: ZienaColors.bg1,
+                  contentPadding: const EdgeInsets.all(16),
+                ),
+              ),
+              if (_descError) ...[
+                const SizedBox(height: 6),
+                Padding(
+                  padding: const EdgeInsets.only(left: 4),
+                  child: Text(
+                    'this_field_required'.tr(),
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: ZienaColors.error,
+                    ),
+                  ),
+                ),
+              ],
+
+              const SizedBox(height: 20),
+
+              BlocBuilder<BookingDetailCubit, BookingDetailState>(
+                builder: (_, state) {
+                  final loading = state is BookingActionLoading;
+                  return SizedBox(
+                    width: double.infinity,
+                    child: ZienaButton(
+                      text: 'submit_report'.tr(),
+                      onTap: loading ? null : _submit,
+                      isLoading: loading,
+                      disabledBackgroundColor:
+                      ZienaColors.primary.withOpacity(0.4),
+                    ),
+                  );
+                },
               ),
             ],
-
-            const SizedBox(height: 20),
-
-            BlocBuilder<BookingDetailCubit, BookingDetailState>(
-              builder: (_, state) {
-                final loading = state is BookingActionLoading;
-                return SizedBox(
-                  width: double.infinity,
-                  child: ZienaButton(
-                    text: 'submit_report'.tr(),
-                    onTap: loading ? null : _submit,
-                    isLoading: loading,
-                    disabledBackgroundColor:
-                        ZienaColors.primary.withOpacity(0.4),
-                  ),
-                );
-              },
-            ),
-          ],
+          ),
         ),
       ),
     );

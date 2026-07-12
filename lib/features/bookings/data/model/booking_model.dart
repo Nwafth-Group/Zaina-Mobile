@@ -1,179 +1,179 @@
 import 'dart:ui';
 
-import '../../../../core/utils/constants.dart';
+class VisitScheduleItem {
+  final String visitDate; // "yyyy-MM-dd"
+  final String visitDay; // localized day name from server, e.g. "الخميس"
+  final String startTime; // "HH:mm"
+  final String endTime; // "HH:mm"
+  final int duration; // hours
+  final String visitStatus;
 
-class BookingAddress {
-  final int id;
-  final String label;
-  final String areaName;
-  final String cityName;
-  final String street;
-  final String building;
-  final String floor;
-  final String unit;
-  final String? notes;
-
-  const BookingAddress({
-    required this.id,
-    required this.label,
-    required this.areaName,
-    required this.cityName,
-    required this.street,
-    required this.building,
-    required this.floor,
-    required this.unit,
-    this.notes,
+  const VisitScheduleItem({
+    required this.visitDate,
+    required this.visitDay,
+    required this.startTime,
+    required this.endTime,
+    required this.duration,
+    required this.visitStatus,
   });
 
-  factory BookingAddress.fromJson(Map<String, dynamic> json) {
-    final area = json['area'] as Map<String, dynamic>? ?? {};
-    final city = area['city'] as Map<String, dynamic>? ?? {};
-    return BookingAddress(
-      id: json['id'] ?? 0,
-      label: json['label'] ?? 'Home',
-      areaName: lng=='ar'?area['name_ar']:area['name_en'] ?? '',
-      cityName: lng=='ar'?city['name_ar']:city['name_en'] ?? '',
-      street: json['street'] ?? '',
-      building: json['building'] ?? '',
-      floor: json['floor'] ?? '',
-      unit: json['unit'] ?? '',
-      notes: json['notes'],
-    );
-  }
-
-  String get fullAddress => '$areaName, $cityName\n$street, Building $building, Floor $floor';
-}
-
-class BookingWorkerModel {
-  final int id;
-  final String name;
-  final String? nationality;
-  final double? rating;
-  final String? avatar;
-
-  const BookingWorkerModel({
-    required this.id,
-    required this.name,
-    this.nationality,
-    this.rating,
-    this.avatar,
-  });
-
-  factory BookingWorkerModel.fromJson(Map<String, dynamic> json) {
-    return BookingWorkerModel(
-      id: json['id'] ?? 0,
-      name: json['name'] ?? '',
-      nationality: json['nationality'],
-      rating: json['rating'] != null
-          ? double.tryParse(json['rating'].toString())
-          : null,
-      avatar: json['avatar'],
+  factory VisitScheduleItem.fromJson(Map<String, dynamic> json) {
+    return VisitScheduleItem(
+      visitDate: json['visit_date'] ?? '',
+      visitDay: json['visit_day'] ?? '',
+      startTime: json['start_time'] ?? '',
+      endTime: json['end_time'] ?? '',
+      duration: json['duration'] ?? 0,
+      visitStatus: json['visit_status'] ?? '',
     );
   }
 }
 
-class BookingPriceSummary {
-  final double subtotal;
-  final double tax;
-  final double discount;
-  final double total;
+class BookingCardDetails {
+  final String contractNumberRequest;
+  final String startDayAndDate;
+  final int duration;
+  final String status;
+  final String visitType;
+  final double amount;
+  final String currency;
 
-  const BookingPriceSummary({
-    required this.subtotal,
-    required this.tax,
-    required this.discount,
-    required this.total,
+  const BookingCardDetails({
+    required this.contractNumberRequest,
+    required this.startDayAndDate,
+    required this.duration,
+    required this.status,
+    required this.visitType,
+    required this.amount,
+    required this.currency,
   });
 
-  factory BookingPriceSummary.fromJson(Map<String, dynamic> json) {
-    return BookingPriceSummary(
-      subtotal: (json['subtotal'] as num?)?.toDouble() ?? 0,
-      tax: (json['tax'] as num?)?.toDouble() ?? 0,
-      discount: (json['discount'] as num?)?.toDouble() ?? 0,
-      total: (json['total'] as num?)?.toDouble() ?? 0,
+  factory BookingCardDetails.fromJson(Map<String, dynamic> json) {
+    final priceAndCurrency =
+        json['price_and_currency'] as Map<String, dynamic>? ?? {};
+    return BookingCardDetails(
+      contractNumberRequest: json['contract_number_request'] ?? '',
+      startDayAndDate: json['start_day_and_date'] ?? '',
+      duration: json['duration'] ?? 0,
+      status: json['status'] ?? '',
+      visitType: json['visit_type'] ?? '',
+      amount: (priceAndCurrency['amount'] as num?)?.toDouble() ?? 0,
+      currency: priceAndCurrency['currency'] ?? '',
     );
   }
 }
 
 class BookingModel {
-  final int id;
-  final int serviceId;
-  final String bookingRef;
-  final String status;
+  final int id; // booking_id
+  final String bookingReference;
   final String serviceName;
-  final String? image;
-  final double price;
-  final String currency;
-  final String duration;
-  final String dateDay;
-  final String dateMonth;
-  final String fullDate;
-  final String timeSlot;
-  final BookingAddress? address;
-  final List<BookingWorkerModel>? worker;
-  final BookingPriceSummary? priceSummary;
-  final List<String> importantNotes;
+  final String serviceDate; // "yyyy-MM-dd"
+  final String startTime; // "HH:mm"
+  final String endTime; // "HH:mm"
+  final String expectedArrivalTime;
+  final String firstScheduleDate; // "yyyy-MM-dd"
+  final String firstScheduleDateFormatted; // localized, e.g. "الخميس, 30 Jul 2026"
+  final String bookingStatus; // "Upcoming" | "In Service" | "Completed" | "Cancelled"
+  final String visitType; // "single_visit" | "three_visits_per_week"
+  final List<VisitScheduleItem> visitSchedule;
+  final double totalAmount;
+  final String currencyCode;
+  final BookingCardDetails? cardDetails;
 
   const BookingModel({
     required this.id,
-    required this.serviceId,
-    required this.bookingRef,
-    required this.status,
+    required this.bookingReference,
     required this.serviceName,
-    this.image,
-    required this.price,
-    required this.currency,
-    required this.duration,
-    required this.dateDay,
-    required this.dateMonth,
-    required this.fullDate,
-    required this.timeSlot,
-    this.address,
-    this.worker,
-    this.priceSummary,
-    this.importantNotes = const [],
+    required this.serviceDate,
+    required this.startTime,
+    required this.endTime,
+    required this.expectedArrivalTime,
+    required this.firstScheduleDate,
+    required this.firstScheduleDateFormatted,
+    required this.bookingStatus,
+    required this.visitType,
+    required this.visitSchedule,
+    required this.totalAmount,
+    required this.currencyCode,
+    required this.cardDetails,
   });
 
   factory BookingModel.fromJson(Map<String, dynamic> json) {
-    print("hhhhhh $json");
     return BookingModel(
-      id: json['id'] ?? 0,
-      serviceId: json['service_id'] ?? 0,
-      bookingRef: json['booking_ref'] ?? '',
-      status: json['status'] ?? 'Upcoming',
+      id: json['booking_id'] ?? 0,
+      bookingReference: json['booking_reference'] ?? '',
       serviceName: json['service_name'] ?? '',
-      image: json['image'].toString().startsWith('http://')?json['image']:json['image'].toString().replaceFirst('http:', 'http://'),
-      price: (json['price'] as num?)?.toDouble() ?? 0,
-      currency: json['currency'] ?? 'EGP',
-      duration: json['duration'] ?? '',
-      dateDay: json['date_day']?.toString() ?? '',
-      dateMonth: json['date_month'] ?? '',
-      fullDate: json['full_date'] ?? '',
-      timeSlot: json['time_slot'] ?? '',
-      address: json['address'] != null
-          ? BookingAddress.fromJson(json['address'])
-          : null,
-      worker: json['workers'] != null
-          ? List.of(json['workers']??[]).map((e)=> BookingWorkerModel.fromJson(e)).toList()
-          : null,
-      priceSummary: json['price_summary'] != null
-          ? BookingPriceSummary.fromJson(json['price_summary'])
-          : null,
-      importantNotes: (json['important_notes'] as List<dynamic>? ?? [])
-          .map((e) => e.toString())
+      serviceDate: json['service_date'] ?? '',
+      startTime: json['start_time'] ?? '',
+      endTime: json['end_time'] ?? '',
+      expectedArrivalTime: json['expected_arrival_time'] ?? '',
+      firstScheduleDate: json['first_schedule_date'] ?? '',
+      firstScheduleDateFormatted: json['first_schedule_date_formatted'] ?? '',
+      bookingStatus: json['booking_status'] ?? 'Upcoming',
+      visitType: json['visit_type'] ?? 'single_visit',
+      visitSchedule: (json['visit_schedule'] as List<dynamic>? ?? [])
+          .map((e) => VisitScheduleItem.fromJson(e as Map<String, dynamic>))
           .toList(),
+      totalAmount: (json['total_amount'] as num?)?.toDouble() ?? 0,
+      currencyCode: json['currency_code'] ?? '',
+      cardDetails: json['card_details'] != null
+          ? BookingCardDetails.fromJson(json['card_details'] as Map<String, dynamic>)
+          : null,
     );
   }
 
   BookingStatusEnum get statusEnum {
-    switch (status.toLowerCase()) {
-      case 'upcoming': return BookingStatusEnum.upcoming;
-      case 'in service':
-      case 'in_service': return BookingStatusEnum.inService;
-      case 'completed': return BookingStatusEnum.completed;
-      case 'cancelled': return BookingStatusEnum.cancelled;
-      default: return BookingStatusEnum.upcoming;
+    final normalized = bookingStatus.toLowerCase().replaceAll(' ', '').replaceAll('_', '');
+    switch (normalized) {
+      case 'upcoming':
+        return BookingStatusEnum.upcoming;
+      case 'inservice':
+        return BookingStatusEnum.inService;
+      case 'completed':
+        return BookingStatusEnum.completed;
+      case 'cancelled':
+      case 'canceled':
+        return BookingStatusEnum.cancelled;
+      default:
+        return BookingStatusEnum.upcoming;
     }
+  }
+
+  bool get isMultiVisit => visitType == 'three_visits_per_week';
+
+  /// Reuses the existing 'single_visit' / '3_days_per_week' localization
+  /// keys (already added for the service-booking flow) rather than adding
+  /// new duplicate ones — the API's "three_visits_per_week" just maps to
+  /// the same '3_days_per_week' key used elsewhere in the app.
+  String get visitTypeLabelKey => isMultiVisit ? '3_days_per_week' : 'single_visit';
+
+  /// Day-of-month for the date panel, e.g. "30".
+  String get dateDay {
+    final date = DateTime.tryParse(firstScheduleDate);
+    return date != null ? '${date.day}' : '';
+  }
+
+  static const _monthShort = [
+    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+  ];
+
+  /// 3-letter month for the date panel, e.g. "Jul".
+  String get dateMonth {
+    final date = DateTime.tryParse(firstScheduleDate);
+    return date != null ? _monthShort[date.month - 1] : '';
+  }
+
+  /// "6:30 PM"-style 12-hour time for the date panel.
+  String get timeLabel {
+    final parts = startTime.split(':');
+    if (parts.length < 2) return startTime;
+    int hour = int.tryParse(parts[0]) ?? 0;
+    final minute = parts[1].padLeft(2, '0');
+    final period = hour >= 12 ? 'PM' : 'AM';
+    hour = hour % 12;
+    if (hour == 0) hour = 12;
+    return '$hour:$minute $period';
   }
 }
 
@@ -190,11 +190,13 @@ extension BookingStatusExt on BookingStatusEnum {
     }
   }
 
+  /// Exact query-param values confirmed for GET /customer/bookings?status=...
+  /// Note the mixed casing is intentional — this is what the API expects.
   String get apiValue {
     switch (this) {
       case BookingStatusEnum.all: return '';
-      case BookingStatusEnum.upcoming: return 'upcoming';
-      case BookingStatusEnum.inService: return 'in_service';
+      case BookingStatusEnum.upcoming: return 'Upcoming';
+      case BookingStatusEnum.inService: return 'inService';
       case BookingStatusEnum.completed: return 'completed';
       case BookingStatusEnum.cancelled: return 'cancelled';
     }
