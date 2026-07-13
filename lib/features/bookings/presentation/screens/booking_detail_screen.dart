@@ -5,11 +5,15 @@ import 'package:zeina/features/home/presentation/cubit/home_cubti.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../injection_container.dart';
 import '../../../../widgets/ziena_small_button.dart';
-import '../../../services/data/model/service_detail_model.dart' show ServiceFeatureModel;
+import '../../../services/data/model/service_detail_model.dart';
+import '../../../services/data/repository/services_repository.dart';
 import '../../data/model/booking_detail_model.dart';
 import '../../data/model/booking_model.dart' show VisitScheduleItem;
+import '../../data/model/reschedule_result.dart';
 import '../cubit/bookings_cubit.dart';
 import '../widgets/report_sheet.dart';
+import '../widgets/reschedule_configurable_sheet.dart';
+import '../widgets/reschedule_fixed_shift_sheet.dart';
 import '../widgets/review_sheet.dart';
 
 class BookingDetailScreen extends StatelessWidget {
@@ -687,8 +691,8 @@ class _WorkerTile extends StatelessWidget {
           CircleAvatar(
             radius: 22,
             backgroundColor: ZienaColors.bg3,
-            backgroundImage: worker.image != null ? NetworkImage(worker.image!) : null,
-            child: worker.image == null
+            backgroundImage: worker.image != '' ? NetworkImage(worker.image) : null,
+            child: worker.image == ''
                 ? const Icon(Icons.person, color: ZienaColors.primary)
                 : null,
           ),
@@ -754,7 +758,7 @@ class _BottomActions extends StatelessWidget {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (_) => AlertDialog(
+      builder: (dialogCtx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text('report_submitted'.tr()),
         content: Text('report_submitted_msg'.tr()),
@@ -762,7 +766,13 @@ class _BottomActions extends StatelessWidget {
           TextButton(
             onPressed: () {
               cubit.fetchDetail(booking.id);
-              Navigator.pop(context);
+              // Use the dialog's OWN context, not the outer captured one —
+              // fetchDetail() flips the page behind this dialog to a
+              // loading state, unmounting _BottomActions (and the outer
+              // context with it) while the dialog is still open. The
+              // dialog's context is a sibling route on the Navigator and
+              // stays valid regardless.
+              Navigator.pop(dialogCtx);
             },
             child: Text('done'.tr()),
           ),
@@ -786,7 +796,7 @@ class _BottomActions extends StatelessWidget {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (_) => AlertDialog(
+      builder: (dialogCtx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text('review_submitted_title'.tr()),
         content: Text('review_submitted_msg'.tr()),
@@ -794,7 +804,7 @@ class _BottomActions extends StatelessWidget {
           TextButton(
             onPressed: () {
               cubit.fetchDetail(booking.id);
-              Navigator.pop(context);
+              Navigator.pop(dialogCtx);
             },
             child: Text('done'.tr()),
           ),
@@ -865,6 +875,131 @@ class _BottomActions extends StatelessWidget {
     // straight back into another OTP entry.
   }
 
+  Future<void> _startRescheduleFlow(BuildContext context) async {
+    final cubit = context.read<BookingDetailCubit>();
+    final bookingsCubit = context.read<BookingsCubit>();
+    final homeCubit = context.read<HomeCubit>();
+
+    final service = await _fetchServiceWithLoading(context, booking.serviceId);
+    if (service == null || !context.mounted) return;
+
+    final requiredDays = booking.isMultiVisit ? 3 : 1;
+    final result = service.hasDurationRange
+        ? await showRescheduleConfigurableSheet(context: context, service: service)
+        : await showRescheduleFixedShiftSheet(
+      context: context,
+      service: service,
+      requiredDays: requiredDays,
+    );
+    if (result == null || !context.mounted) return;
+
+    final otpSent = await _runWithLoadingDialog(
+      context,
+          () => cubit.sendRescheduleOtp(
+        bookingId: booking.id,
+        dates: result.dates,
+        startTime: result.startTime,
+      ),
+    );
+    if (!otpSent || !context.mounted) return;
+
+    final otp = await showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _OtpBottomSheet(
+        onResend: () => _runWithLoadingDialog(
+          context,
+              () => cubit.sendRescheduleOtp(
+            bookingId: booking.id,
+            dates: result.dates,
+            startTime: result.startTime,
+          ),
+        ),
+      ),
+    );
+    if (otp == null || !context.mounted) return;
+
+    // Let the sheet's dismiss animation finish before the next dialog.
+    await Future.delayed(const Duration(milliseconds: 250));
+    if (!context.mounted) return;
+
+    final success = await _runWithLoadingDialog(
+      context,
+          () => cubit.confirmReschedule(
+        bookingId: booking.id,
+        dates: result.dates,
+        startTime: result.startTime,
+        otp: otp,
+      ),
+    );
+    if (!context.mounted) return;
+    if (success) {
+      // The booking still exists after a reschedule (unlike cancel) — just
+      // refresh everything so the new date/time shows up everywhere.
+      bookingsCubit.fetchBookings(refresh: true);
+      homeCubit.fetchHomeData();
+      cubit.fetchDetail(booking.id);
+      await showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (dialogCtx) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Text('reschedule_success_title'.tr()),
+          content: Text('reschedule_success_msg'.tr()),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogCtx),
+              child: Text('done'.tr()),
+            ),
+          ],
+        ),
+      );
+    }
+    // On failure (e.g. wrong OTP) — the error dialog was already shown by
+    // _runWithLoadingDialog; the user taps "Reschedule Booking" again to retry.
+  }
+
+  /// Fetches the fresh service detail behind a small blocking spinner —
+  /// needed to know whether this service uses fixed shifts or a
+  /// configurable start-time/duration, and to get valid dates/shifts.
+  Future<ServiceDetailModel?> _fetchServiceWithLoading(
+      BuildContext context,
+      int serviceId,
+      ) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(
+        child: CircularProgressIndicator(color: ZienaColors.primary),
+      ),
+    );
+    try {
+      final detail = await sl<ServicesRepository>().fetchServiceDetail(serviceId);
+      if (context.mounted) Navigator.pop(context); // close spinner
+      return detail;
+    } catch (e) {
+      if (context.mounted) Navigator.pop(context); // close spinner
+      if (context.mounted) {
+        final message = e is String ? e : 'err_generic'.tr();
+        showDialog(
+          context: context,
+          builder: (dialogCtx) => AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            content: Text(message),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogCtx),
+                child: Text('done'.tr()),
+              ),
+            ],
+          ),
+        );
+      }
+      return null;
+    }
+  }
+
   /// Shows a small blocking spinner while [action] runs; on failure, shows
   /// the shared error dialog with whatever message was thrown (ApiClient's
   /// post/put throw a plain String on failure — see core/network/api_client.dart).
@@ -889,12 +1024,12 @@ class _BottomActions extends StatelessWidget {
         final message = e is String ? e : 'err_generic'.tr();
         showDialog(
           context: context,
-          builder: (_) => AlertDialog(
+          builder: (dialogCtx) => AlertDialog(
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
             content: Text(message),
             actions: [
               TextButton(
-                onPressed: () => Navigator.pop(context),
+                onPressed: () => Navigator.pop(dialogCtx),
                 child: Text('done'.tr()),
               ),
             ],
@@ -964,10 +1099,7 @@ class _BottomActions extends StatelessWidget {
             Expanded(
               child: ZienaSmallButton(
                 text: 'reschedule_booking'.tr(),
-                onTap: () {
-                  // TODO: open the reschedule flow (date/time picker), then
-                  // call BookingDetailCubit.reschedule(...).
-                },
+                onTap: () => _startRescheduleFlow(context),
               ),
             ),
         ],

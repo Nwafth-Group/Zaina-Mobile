@@ -111,15 +111,27 @@ class _HourlyConfigBottomSheetState extends State<HourlyConfigBottomSheet> {
     }
   }
 
+  // void _changeStartTime(int deltaMinutes) {
+  //   final minMinutes = _toMinutes(_shortTime(widget.service.startTime));
+  //   // Cap start time so that start + duration still fits before end_time.
+  //   final endMinutes = _toMinutes(_shortTime(widget.service.endTime));
+  //   final maxMinutes = endMinutes - _duration * 60;
+  //   var next = _toMinutes(_startTime) + deltaMinutes;
+  //   if (next < minMinutes) next = minMinutes;
+  //   if (next > maxMinutes) next = maxMinutes;
+  //   if (next < minMinutes) return; // window too short for this duration at all
+  //   setState(() => _startTime = _fromMinutes(next));
+  // }
+
   void _changeStartTime(int deltaMinutes) {
     final minMinutes = _toMinutes(_shortTime(widget.service.startTime));
-    // Cap start time so that start + duration still fits before end_time.
-    final endMinutes = _toMinutes(_shortTime(widget.service.endTime));
-    final maxMinutes = endMinutes - _duration * 60;
+    final maxMinutes = _toMinutes(_shortTime(widget.service.endTime));
+
     var next = _toMinutes(_startTime) + deltaMinutes;
+
     if (next < minMinutes) next = minMinutes;
     if (next > maxMinutes) next = maxMinutes;
-    if (next < minMinutes) return; // window too short for this duration at all
+
     setState(() => _startTime = _fromMinutes(next));
   }
 

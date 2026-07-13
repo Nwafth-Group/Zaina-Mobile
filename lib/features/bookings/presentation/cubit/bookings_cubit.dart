@@ -119,29 +119,47 @@ class BookingDetailCubit extends Cubit<BookingDetailState> {
     }
   }
 
-  // ── Reschedule ─────────────────────────────────────────────────────────────
-  Future<void> reschedule({
+  // ── Reschedule (OTP-gated) ───────────────────────────────────────────────
+  /// Just performs the call — same reasoning as sendCancelOtp: doesn't touch
+  /// the shared BookingDetailState stream, since the screen drives its own
+  /// step-by-step dialog/sheet flow.
+  Future<void> sendRescheduleOtp({
     required int bookingId,
-    required String newDate,
-    required String newStartTime,
-    required String newEndTime,
-  }) async {
-    emit(BookingActionLoading());
-    try {
-      await _api.post(
-        'customer/bookings/$bookingId/reschedule',
-        data: {
-          'new_date': newDate,
-          'new_start_time': newStartTime,
-          'new_end_time': newEndTime,
-        },
-      );
-      emit(BookingRescheduleSuccess());
-    } on DioException catch (e) {
-      emit(BookingDetailError(handleDioError(e).message));
-    } catch (_) {
-      emit(BookingDetailError('Something went wrong'));
+    required List<DateTime> dates,
+    required String startTime,
+  }) {
+    String fmt(DateTime d) =>
+        '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+    final fields = <String, dynamic>{'start_time': startTime};
+    for (int i = 0; i < dates.length; i++) {
+      fields['dates[$i]'] = fmt(dates[i]);
     }
+    return _api.post(
+      'customer/bookings/$bookingId/reschedule/send-otp',
+      data: FormData.fromMap(fields),
+    );
+  }
+
+  /// Doesn't emit anything on success either — the booking still exists
+  /// after a reschedule (unlike cancel), so the caller just calls
+  /// fetchDetail() again afterward to pull the updated date/time, rather
+  /// than needing a signal state here.
+  Future<void> confirmReschedule({
+    required int bookingId,
+    required List<DateTime> dates,
+    required String startTime,
+    required String otp,
+  }) async {
+    String fmt(DateTime d) =>
+        '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+    final fields = <String, dynamic>{'start_time': startTime, 'otp': otp};
+    for (int i = 0; i < dates.length; i++) {
+      fields['dates[$i]'] = fmt(dates[i]);
+    }
+    await _api.post(
+      'customer/bookings/$bookingId/reschedule',
+      data: FormData.fromMap(fields),
+    );
   }
 
   // ── Report ─────────────────────────────────────────────────────────────────
