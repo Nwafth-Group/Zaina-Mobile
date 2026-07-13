@@ -189,6 +189,8 @@ class BookingDetailModel {
   final List<BookingDetailWorker> workers;
   final BookingPriceSummaryDetail? priceSummary;
   final List<String> importantNotes;
+  final bool isReviewed;
+  final bool isReported;
 
   BookingDetailModel({
     required this.id,
@@ -215,6 +217,8 @@ class BookingDetailModel {
     required this.workers,
     this.priceSummary,
     required this.importantNotes,
+    this.isReviewed = false,
+    this.isReported = false,
   });
 
   factory BookingDetailModel.fromJson(Map<String, dynamic> json) {
@@ -256,6 +260,8 @@ class BookingDetailModel {
       importantNotes: (json['important_notes'] as List<dynamic>? ?? [])
           .map((e) => e.toString())
           .toList(),
+      isReviewed: json['is_reviewed'] ?? false,
+      isReported: json['is_reported'] ?? false,
     );
   }
 

@@ -125,8 +125,7 @@ class BookingDetailCubit extends Cubit<BookingDetailState> {
     required String newDate,
     required String newStartTime,
     required String newEndTime,
-  }) async
-  {
+  }) async {
     emit(BookingActionLoading());
     try {
       await _api.post(
@@ -146,28 +145,24 @@ class BookingDetailCubit extends Cubit<BookingDetailState> {
   }
 
   // ── Report ─────────────────────────────────────────────────────────────────
+  /// Intentionally does NOT emit loading/success states through the shared
+  /// BookingDetailState stream (same reasoning as sendCancelOtp/confirmCancel):
+  /// doing so was leaving the main booking-detail screen's BlocBuilder with
+  /// a non-BookingDetailLoaded state and no way back to it, rendering blank.
+  /// The report sheet drives its own local loading/error UI around this call.
   Future<void> submitReport({
     required int bookingId,
     required String reason,
     String? description,
-  }) async
-  {
-    emit(BookingActionLoading());
-    try {
-      await _api.post(
-        'customer/bookings/$bookingId/report',
-        data: {
-          'reason': reason,
-          if (description != null && description.isNotEmpty)
-            'description': description,
-        },
-      );
-      emit(BookingReportSuccess());
-    } on DioException catch (e) {
-      emit(BookingDetailError(handleDioError(e).message));
-    } catch (_) {
-      emit(BookingDetailError('Something went wrong'));
-    }
+  }) async {
+    await _api.post(
+      'customer/bookings/$bookingId/report',
+      data: {
+        'reason': reason,
+        if (description != null && description.isNotEmpty)
+          'description': description,
+      },
+    );
   }
 
   // ── Cancel (OTP-gated) ───────────────────────────────────────────────────
@@ -185,8 +180,7 @@ class BookingDetailCubit extends Cubit<BookingDetailState> {
     required int bookingId,
     required String cancellationReason,
     required String otp,
-  }) async
-  {
+  }) async {
     await _api.put(
       'customer/bookings/$bookingId/cancel',
       data: {
@@ -203,8 +197,7 @@ class BookingDetailCubit extends Cubit<BookingDetailState> {
     required int serviceRating,
     required String serviceComment,
     required List<Map<String, dynamic>> workers,
-  }) async
-  {
+  }) async {
     emit(BookingActionLoading());
     try {
       await _api.post(

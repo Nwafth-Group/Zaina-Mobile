@@ -734,15 +734,37 @@ class _BottomActions extends StatelessWidget {
   final BookingDetailModel booking;
   const _BottomActions({required this.booking});
 
-  void _openReportSheet(BuildContext context) {
+  Future<void> _openReportSheet(BuildContext context) async {
     final cubit = context.read<BookingDetailCubit>();
-    showModalBottomSheet(
+    final reported = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => BlocProvider.value(
         value: cubit,
         child: ReportSheet(bookingId: booking.id),
+      ),
+    );
+    // Sheet is fully closed now — safe to show the success dialog using
+    // this (still-mounted) context, unlike showing it from inside the sheet
+    // itself right as it's being disposed (that caused a white-screen bug).
+    if (!context.mounted || reported != true) return;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text('report_submitted'.tr()),
+        content: Text('report_submitted_msg'.tr()),
+        actions: [
+          TextButton(
+            onPressed: () {
+              cubit.fetchDetail(booking.id);
+              Navigator.pop(context);
+            },
+            child: Text('done'.tr()),
+          ),
+        ],
       ),
     );
   }
@@ -859,27 +881,33 @@ class _BottomActions extends StatelessWidget {
     Widget buttons;
 
     if (booking.isCompleted) {
+      final showReport = !booking.isReported;
+      final showRate = !booking.isReviewed;
+      if (!showReport && !showRate) return const SizedBox.shrink();
       buttons = Row(
         children: [
-          Expanded(
-            child: ZienaSmallButton(
-              text: 'report'.tr(),
-              isOutlined: true,
-              onTap: () => _openReportSheet(context),
+          if (showReport)
+            Expanded(
+              child: ZienaSmallButton(
+                text: 'report'.tr(),
+                isOutlined: true,
+                onTap: () => _openReportSheet(context),
+              ),
             ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: ZienaSmallButton(
-              text: 'rate'.tr(),
-              onTap: () {
-                // TODO: navigate to review_sheet.dart for this booking.
-              },
+          if (showReport && showRate) const SizedBox(width: 12),
+          if (showRate)
+            Expanded(
+              child: ZienaSmallButton(
+                text: 'rate'.tr(),
+                onTap: () {
+                  // TODO: navigate to review_sheet.dart for this booking.
+                },
+              ),
             ),
-          ),
         ],
       );
     } else if (booking.isInService) {
+      if (booking.isReported) return const SizedBox.shrink();
       buttons = ZienaSmallButton(
         text: 'report'.tr(),
         onTap: () => _openReportSheet(context),
