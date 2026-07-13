@@ -126,6 +126,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         couponCode: code,
         duration: widget.selection.duration,
         workerGender: widget.selection.workerGender,
+        numberOfChildren: widget.selection.numberOfChildren,
+        childAgeGroupIds: widget.selection.childAgeGroupIds,
       );
       if (!mounted) return;
       setState(() {
@@ -152,15 +154,22 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       await sl<ServicesRepository>().createBooking(
         serviceId: widget.service.id,
         addressId: widget.service.addressId,
-        // Configurable-hourly services (duration/workerGender set) send
-        // those instead of visitType — service 2's payload has no
-        // visit_type field at all.
+        // Configurable-hourly services (Hospitality Worker, Babysitter —
+        // both always set `duration`) send duration/etc. instead of
+        // visitType; that payload shape has no visit_type field at all.
+        // NOTE: keyed off `duration`, not `workerGender` — Babysitter also
+        // has workerGender == null (no gender choice) but is still
+        // configurable-hourly, so workerGender alone can't distinguish it
+        // from the fixed-shift flow.
         visitType:
-        widget.selection.workerGender == null ? widget.selection.visitType.type : null,
+        widget.selection.duration == null ? widget.selection.visitType.type : null,
         dates: widget.selection.selectedDates,
         startTime: widget.selection.shift.startLabel,
         duration: widget.selection.duration,
         workerGender: widget.selection.workerGender,
+        numberOfChildren: widget.selection.numberOfChildren,
+        childAgeGroupIds: widget.selection.childAgeGroupIds,
+        note: widget.selection.note,
         workerIds: _currentValidation.workerIds,
         paymentMethod: _paymentMethod.apiValue,
         couponCode: _couponController.text.trim(),

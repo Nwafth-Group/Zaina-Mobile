@@ -1,17 +1,24 @@
-
 class HourlyConfigResult {
   final String startTime; // "HH:mm"
   final int duration; // hours
-  final String workerGender;
+  final String? workerGender; // null when the service has no gender choice
   final int workersCount;
   final List<DateTime> availableDates;
+
+  /// Babysitter-style fields — null/empty for services without children.
+  final int? numberOfChildren;
+  final List<int>? childAgeGroupIds; // one entry per child
+  final String? note;
 
   HourlyConfigResult({
     required this.startTime,
     required this.duration,
-    required this.workerGender,
+    this.workerGender,
     required this.workersCount,
     required this.availableDates,
+    this.numberOfChildren,
+    this.childAgeGroupIds,
+    this.note,
   });
 
   /// "HH:mm" computed as startTime + duration hours (wraps past midnight).

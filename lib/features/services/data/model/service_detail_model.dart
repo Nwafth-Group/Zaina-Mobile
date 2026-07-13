@@ -1,4 +1,3 @@
-
 import 'visit_type_model.dart';
 
 class ServiceFeatureModel {
@@ -123,6 +122,52 @@ class PreferredWorkerModel {
   bool get isActive => status == 'active';
 }
 
+/// One selectable age bracket for babysitting-style services, e.g.
+/// { name: "Newborn to 2 Years", age_from: 0, age_to: 24, required_worker_count: 1 }
+class ChildAgeGroupModel {
+  final int id;
+  final int serviceId;
+  final String nameAr;
+  final String nameEn;
+  final int ageFrom;
+  final int ageTo;
+  final String calculationType;
+  final int childrenCount;
+  final int requiredWorkerCount;
+  final String status;
+
+  ChildAgeGroupModel({
+    required this.id,
+    required this.serviceId,
+    required this.nameAr,
+    required this.nameEn,
+    required this.ageFrom,
+    required this.ageTo,
+    required this.calculationType,
+    required this.childrenCount,
+    required this.requiredWorkerCount,
+    required this.status,
+  });
+
+  factory ChildAgeGroupModel.fromJson(Map<String, dynamic> json) {
+    return ChildAgeGroupModel(
+      id: json['id'] ?? 0,
+      serviceId: json['service_id'] ?? 0,
+      nameAr: json['name_ar'] ?? '',
+      nameEn: json['name_en'] ?? '',
+      ageFrom: json['age_from'] ?? 0,
+      ageTo: json['age_to'] ?? 0,
+      calculationType: json['calculation_type'] ?? '',
+      childrenCount: json['children_count'] ?? 1,
+      requiredWorkerCount: json['required_worker_count'] ?? 1,
+      status: json['status'] ?? '',
+    );
+  }
+
+  String localizedName(String languageCode) =>
+      languageCode == 'ar' ? nameAr : nameEn;
+}
+
 class ServiceDetailModel {
   final int id;
   final int? addressId;
@@ -157,10 +202,42 @@ class ServiceDetailModel {
   final String pricingType; // e.g. "per_hour"
   final String status; // e.g. "active"
 
+  /// Babysitter-style fields (service 3+) — 0/empty for services that don't
+  /// have children involved at all.
+  final int minChildren;
+  final int maxChildren;
+  final List<ChildAgeGroupModel> childAgeGroups;
+
   /// True for services where the user configures start time/duration/gender/
   /// worker count THEN checks availability (Hospitality Worker-style), as
   /// opposed to picking from fixed pre-set shifts (Domestic Helper-style).
-  bool get isConfigurableHourly => workerGenderOptions.isNotEmpty;
+  /// True for services where the user configures start time/duration/
+  /// gender-or-children/worker count THEN checks availability (Hospitality
+  /// Worker-, Babysitter-style), as opposed to picking from fixed pre-set
+  /// shifts (Domestic Helper-style).
+  ///
+  /// Keyed off `has_duration_range` — NOT `pricing_type` or
+  /// `workerGenderOptions.isNotEmpty` (both tried and both wrong): the
+  /// backend now sends `pricing_type: "per_hour"` AND non-empty
+  /// `worker_gender_options` for Domestic Helper too, so neither field
+  /// distinguishes it from Hospitality Worker/Babysitter anymore.
+  /// `has_duration_range` is the one field that's actually semantically
+  /// tied to the UI difference: false → fixed pre-set shift slots
+  /// (`min_duration`/`max_duration` are null), true → user picks a
+  /// duration within `[min_duration, max_duration]`. Confirmed against all
+  /// three real responses: service 1 → false, services 2 & 3 → true.
+  bool get isConfigurableHourly => hasDurationRange;
+
+  /// True for services that also need number-of-children + per-child age
+  /// group selection (Babysitter-style).
+  bool get hasChildren => childAgeGroups.isNotEmpty;
+
+  /// Only show a gender picker when there's an actual choice to make —
+  /// Babysitter only ever offers "Female", so there's nothing to pick and
+  /// the field is omitted entirely from requests (confirmed: the real
+  /// /available-dates and /bookings payloads for that service have no
+  /// worker_gender key at all).
+  bool get hasGenderChoice => workerGenderOptions.length > 1;
 
   ServiceDetailModel({
     required this.id,
@@ -192,6 +269,9 @@ class ServiceDetailModel {
     this.workerGenderOptions = const [],
     this.pricingType = '',
     this.status = '',
+    this.minChildren = 0,
+    this.maxChildren = 0,
+    this.childAgeGroups = const [],
   });
 
   factory ServiceDetailModel.fromJson(Map<String, dynamic> json) {
@@ -240,6 +320,11 @@ class ServiceDetailModel {
           .toList(),
       pricingType: json['pricing_type'] ?? '',
       status: json['status'] ?? '',
+      minChildren: json['min_children'] ?? 0,
+      maxChildren: json['max_children'] ?? 0,
+      childAgeGroups: (json['child_age_groups'] as List<dynamic>? ?? [])
+          .map((e) => ChildAgeGroupModel.fromJson(e as Map<String, dynamic>))
+          .toList(),
     );
   }
 

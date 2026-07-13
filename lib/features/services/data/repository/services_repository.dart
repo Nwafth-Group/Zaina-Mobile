@@ -34,6 +34,9 @@ abstract class ServicesRepository {
     // too — confirmed via a 422 response complaining about both when omitted.
     int? duration,
     String? workerGender,
+    // Babysitter-style services additionally require these.
+    int? numberOfChildren,
+    List<int>? childAgeGroupIds,
   });
 
   /// POST /customer/bookings — creates the booking. Sends a JSON body
@@ -41,10 +44,13 @@ abstract class ServicesRepository {
   ///
   /// Field set differs by service type:
   /// - Fixed-shift services (e.g. Domestic Helper): pass [visitType],
-  ///   leave [duration]/[workerGender] null.
+  ///   leave [duration]/[workerGender]/[numberOfChildren]/[childAgeGroupIds] null.
   /// - Configurable-hourly services (e.g. Hospitality Worker): pass
   ///   [duration]/[workerGender], leave [visitType] null — this service
   ///   type's payload has no `visit_type` field at all.
+  /// - Babysitter-style services: pass [duration]/[numberOfChildren]/
+  ///   [childAgeGroupIds]/[note], leave [visitType]/[workerGender] null —
+  ///   confirmed the real payload has no worker_gender key at all.
   Future<Map<String, dynamic>> createBooking({
     required int serviceId,
     int? addressId,
@@ -53,22 +59,27 @@ abstract class ServicesRepository {
     required String startTime,
     int? duration,
     String? workerGender,
+    int? numberOfChildren,
+    List<int>? childAgeGroupIds,
+    String? note,
     required List<int> workerIds,
     required String paymentMethod, // 'points' | 'wallet' | 'card'
     String? couponCode,
   });
 
   /// GET /customer/bookings/available-dates — used by "configurable hourly"
-  /// services (e.g. Hospitality Worker) where the user picks start time,
-  /// duration, worker gender, and worker count FIRST, then checks which
-  /// dates are actually available for that combination.
+  /// services (e.g. Hospitality Worker, Babysitter) where the user picks
+  /// start time, duration, [worker gender OR children/age-groups], and
+  /// worker count FIRST, then checks which dates are actually available.
   Future<List<DateTime>> fetchAvailableDates({
     required int serviceId,
     int? addressId,
     required String startTime,
     required int duration,
-    required String workerGender,
+    String? workerGender,
     required int workersCount,
+    int? numberOfChildren,
+    List<int>? childAgeGroupIds,
   });
 }
 
@@ -133,6 +144,8 @@ class ServicesRepositoryImpl implements ServicesRepository {
     String? couponCode,
     int? duration,
     String? workerGender,
+    int? numberOfChildren,
+    List<int>? childAgeGroupIds,
   }) async {
     String fmt(DateTime d) =>
         '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
@@ -147,6 +160,7 @@ class ServicesRepositoryImpl implements ServicesRepository {
       'workers_count': '$workersCount',
       if (duration != null) 'duration': '$duration',
       if (workerGender != null) 'worker_gender': workerGender,
+      if (numberOfChildren != null) 'number_of_children': '$numberOfChildren',
     };
     for (int i = 0; i < dates.length; i++) {
       fields['dates[$i]'] = fmt(dates[i]);
@@ -154,6 +168,11 @@ class ServicesRepositoryImpl implements ServicesRepository {
     if (preferredWorkerIds != null) {
       for (int i = 0; i < preferredWorkerIds.length; i++) {
         fields['preferred_worker_ids[$i]'] = '${preferredWorkerIds[i]}';
+      }
+    }
+    if (childAgeGroupIds != null) {
+      for (int i = 0; i < childAgeGroupIds.length; i++) {
+        fields['child_age_groups[$i]'] = '${childAgeGroupIds[i]}';
       }
     }
     if (couponCode != null && couponCode.isNotEmpty) {
@@ -174,6 +193,9 @@ class ServicesRepositoryImpl implements ServicesRepository {
     required String startTime,
     int? duration,
     String? workerGender,
+    int? numberOfChildren,
+    List<int>? childAgeGroupIds,
+    String? note,
     required List<int> workerIds,
     required String paymentMethod,
     String? couponCode,
@@ -190,6 +212,9 @@ class ServicesRepositoryImpl implements ServicesRepository {
       'start_time': startTime,
       if (duration != null) 'duration': duration,
       if (workerGender != null) 'worker_gender': workerGender,
+      if (numberOfChildren != null) 'number_of_children': numberOfChildren,
+      if (childAgeGroupIds != null) 'child_age_groups': childAgeGroupIds,
+      if (note != null && note.isNotEmpty) 'note': note,
       'worker_ids': workerIds,
       'payment_method': paymentMethod,
       'coupon_code': couponCode ?? '',
@@ -205,16 +230,20 @@ class ServicesRepositoryImpl implements ServicesRepository {
     int? addressId,
     required String startTime,
     required int duration,
-    required String workerGender,
+    String? workerGender,
     required int workersCount,
+    int? numberOfChildren,
+    List<int>? childAgeGroupIds,
   }) async {
     final query = <String, dynamic>{
       'service_id': serviceId,
       if (addressId != null) 'address_id': addressId,
       'start_time': startTime,
       'duration': duration,
-      'worker_gender': workerGender,
+      if (workerGender != null) 'worker_gender': workerGender,
       'workers_count': workersCount,
+      if (numberOfChildren != null) 'number_of_children': numberOfChildren,
+      if (childAgeGroupIds != null) 'child_age_groups': childAgeGroupIds,
     };
     final res = await _ds.getAvailableDates(query);
     final data = res['data'] as List<dynamic>? ?? [];

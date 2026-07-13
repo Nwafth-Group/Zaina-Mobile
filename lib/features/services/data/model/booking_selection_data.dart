@@ -1,5 +1,5 @@
-import '../../data/model/service_detail_model.dart';
-import '../../data/model/visit_type_model.dart';
+import 'service_detail_model.dart';
+import 'visit_type_model.dart';
 
 class BookingSelectionData {
   final int serviceId;
@@ -14,12 +14,21 @@ class BookingSelectionData {
   /// in that case.
   final List<int> preferredWorkerIds;
 
-  /// Only set for "configurable hourly" services (e.g. Hospitality Worker).
-  /// When non-null, Checkout sends `duration`/`worker_gender` to
-  /// /customer/bookings INSTEAD of `visit_type` — that service type's
-  /// create-booking payload has no visit_type field at all.
+  /// Only set for "configurable hourly" services (e.g. Hospitality Worker,
+  /// Babysitter). When non-null, Checkout sends `duration`/other config
+  /// fields to /customer/bookings INSTEAD of `visit_type` — those service
+  /// types' create-booking payloads have no visit_type field at all.
   final int? duration;
+
+  /// Only set for services with an actual gender choice (e.g. Hospitality
+  /// Worker). Null for services like Babysitter, which only offer one
+  /// gender option — that service's real payload has no worker_gender key.
   final String? workerGender;
+
+  /// Babysitter-style fields — null/empty for services without children.
+  final int? numberOfChildren;
+  final List<int>? childAgeGroupIds;
+  final String? note;
 
   BookingSelectionData({
     required this.serviceId,
@@ -30,5 +39,8 @@ class BookingSelectionData {
     required this.preferredWorkerIds,
     this.duration,
     this.workerGender,
+    this.numberOfChildren,
+    this.childAgeGroupIds,
+    this.note,
   });
 }

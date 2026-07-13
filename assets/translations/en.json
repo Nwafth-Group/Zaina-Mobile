@@ -358,5 +358,10 @@
   "reschedule_booking": "Reschedule Booking",
   "write_reason": "Write Reason",
   "enter_otp_mobile_hint": "Enter OTP Code Sent to Your Mobile Number",
-  "resend_otp": "Resend OTP"
+  "resend_otp": "Resend OTP",
+  "number_of_children": "Number of Children",
+  "childrens_age_group": "Children's Age Group",
+  "child_label": "Child {}",
+  "add_note": "Add Note",
+  "add_note_hint": "Any care notes for the babysitter (allergies, routine, etc.)"
 }

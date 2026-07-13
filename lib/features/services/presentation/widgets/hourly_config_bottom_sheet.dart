@@ -1,18 +1,18 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:zeina/features/services/data/model/hourly_config_result.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../injection_container.dart';
 import '../../data/model/booking_validation_exception.dart';
+import '../../data/model/hourly_config_result.dart';
 import '../../data/model/service_detail_model.dart';
 import '../../data/repository/services_repository.dart';
 import 'coverage_error_dialog.dart';
 
 /// Shows the "configure hourly booking" sheet (start time / duration /
-/// gender / worker count) for services like Hospitality Worker, where
-/// availability depends on the chosen combination rather than fixed shifts.
-/// Returns a [HourlyConfigResult] once "Check Availability" succeeds, or
-/// null if the sheet is dismissed without completing.
+/// [gender] / [children + age groups] / worker count / [note]) for services
+/// like Hospitality Worker or Babysitter, where availability depends on the
+/// chosen combination rather than fixed shifts. Returns a [HourlyConfigResult]
+/// once "Check Availability" succeeds, or null if dismissed without completing.
 Future<HourlyConfigResult?> showHourlyConfigBottomSheet({
   required BuildContext context,
   required ServiceDetailModel service,
@@ -40,6 +40,19 @@ class _HourlyConfigBottomSheetState extends State<HourlyConfigBottomSheet> {
   late String _gender;
   late int _workersCount;
   bool _isChecking = false;
+
+  // Babysitter-style only:
+  late int _numberOfChildren;
+  late List<int> _childAgeGroupIds; // one per child, index-aligned
+  final _noteController = TextEditingController();
+
+  bool get _hasChildren => widget.service.hasChildren;
+
+  @override
+  void dispose() {
+    _noteController.dispose();
+    super.dispose();
+  }
 
   int _toMinutes(String hhmm) {
     final parts = hhmm.split(':');
@@ -79,6 +92,14 @@ class _HourlyConfigBottomSheetState extends State<HourlyConfigBottomSheet> {
         ? widget.service.workerGenderOptions.first
         : '';
     _workersCount = widget.service.minWorkers;
+
+    _numberOfChildren = _hasChildren ? widget.service.minChildren.clamp(1, 1 << 30) : 0;
+    _childAgeGroupIds = _hasChildren
+        ? List.generate(
+      _numberOfChildren,
+          (_) => widget.service.childAgeGroups.first.id,
+    )
+        : [];
 
     // Defensive: if the service's own default start+duration somehow don't
     // fit its window, pull start time back so the very first render is valid.
@@ -140,6 +161,26 @@ class _HourlyConfigBottomSheetState extends State<HourlyConfigBottomSheet> {
     setState(() => _gender = options[nextIndex]);
   }
 
+  void _changeNumberOfChildren(int delta) {
+    final next = _numberOfChildren + delta;
+    if (next < widget.service.minChildren || next > widget.service.maxChildren) {
+      return;
+    }
+    setState(() {
+      _numberOfChildren = next;
+      // Grow/shrink the age-group list to match, defaulting new slots to
+      // the first available age group.
+      if (_childAgeGroupIds.length < next) {
+        _childAgeGroupIds.addAll(List.filled(
+          next - _childAgeGroupIds.length,
+          widget.service.childAgeGroups.first.id,
+        ));
+      } else if (_childAgeGroupIds.length > next) {
+        _childAgeGroupIds = _childAgeGroupIds.sublist(0, next);
+      }
+    });
+  }
+
   Future<void> _checkAvailability() async {
     setState(() => _isChecking = true);
     try {
@@ -148,8 +189,13 @@ class _HourlyConfigBottomSheetState extends State<HourlyConfigBottomSheet> {
         addressId: widget.service.addressId,
         startTime: _startTime,
         duration: _duration,
-        workerGender: _gender,
+        // Omit gender entirely when there's no real choice (e.g. Babysitter,
+        // which only ever offers "Female") — matches the confirmed real
+        // request payload, which has no worker_gender key at all in that case.
+        workerGender: widget.service.hasGenderChoice ? _gender : null,
         workersCount: _workersCount,
+        numberOfChildren: _hasChildren ? _numberOfChildren : null,
+        childAgeGroupIds: _hasChildren ? _childAgeGroupIds : null,
       );
       if (!mounted) return;
       Navigator.pop(
@@ -157,9 +203,14 @@ class _HourlyConfigBottomSheetState extends State<HourlyConfigBottomSheet> {
         HourlyConfigResult(
           startTime: _startTime,
           duration: _duration,
-          workerGender: _gender,
+          workerGender: widget.service.hasGenderChoice ? _gender : null,
           workersCount: _workersCount,
           availableDates: dates,
+          numberOfChildren: _hasChildren ? _numberOfChildren : null,
+          childAgeGroupIds: _hasChildren ? _childAgeGroupIds : null,
+          note: _noteController.text.trim().isEmpty
+              ? null
+              : _noteController.text.trim(),
         ),
       );
     } catch (e) {
@@ -173,6 +224,7 @@ class _HourlyConfigBottomSheetState extends State<HourlyConfigBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final locale = context.locale.languageCode;
     return SafeArea(
       child: Container(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
@@ -180,67 +232,166 @@ class _HourlyConfigBottomSheetState extends State<HourlyConfigBottomSheet> {
           color: ZienaColors.bg1,
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: ZienaColors.greyBorder,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: 16),
-            _stepperRow(
-              label: 'start_service_time'.tr(),
-              valueText: _formatTime12h(_startTime),
-              onIncrement: () => _changeStartTime(30),
-              onDecrement: () => _changeStartTime(-30),
-            ),
-            const SizedBox(height: 12),
-            _stepperRow(
-              label: 'service_duration'.tr(),
-              valueText: '$_duration',
-              onIncrement: () => _changeDuration(1),
-              onDecrement: () => _changeDuration(-1),
-            ),
-            if (widget.service.workerGenderOptions.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              _arrowRow(
-                label: 'service_providers_gender'.tr(),
-                valueText: _gender.tr(),
-                onLeft: () => _cycleGender(-1),
-                onRight: () => _cycleGender(1),
-              ),
-            ],
-            const SizedBox(height: 12),
-            _stepperRow(
-              label: 'service_providers_number'.tr(),
-              valueText: '$_workersCount',
-              onIncrement: () => _changeWorkersCount(1),
-              onDecrement: () => _changeWorkersCount(-1),
-            ),
-            const SizedBox(height: 20),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _isChecking ? null : _checkAvailability,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: ZienaColors.primary,
-                  disabledBackgroundColor: ZienaColors.greyBorder,
+        child: AnimatedPadding(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOut,
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+          ),
+          child: SingleChildScrollView(
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: ZienaColors.greyBorder,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
-                child: _isChecking
-                    ? const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                      strokeWidth: 2, color: ZienaColors.white),
-                )
-                    : Text('check_availability'.tr()),
-              ),
+                const SizedBox(height: 16),
+                _stepperRow(
+                  label: 'start_service_time'.tr(),
+                  valueText: _formatTime12h(_startTime),
+                  onIncrement: () => _changeStartTime(30),
+                  onDecrement: () => _changeStartTime(-30),
+                ),
+                const SizedBox(height: 12),
+                _stepperRow(
+                  label: 'service_duration'.tr(),
+                  valueText: '$_duration',
+                  onIncrement: () => _changeDuration(1),
+                  onDecrement: () => _changeDuration(-1),
+                ),
+                // Gender picker only when there's an actual choice.
+                if (widget.service.hasGenderChoice) ...[
+                  const SizedBox(height: 12),
+                  _arrowRow(
+                    label: 'service_providers_gender'.tr(),
+                    valueText: _gender.tr(),
+                    onLeft: () => _cycleGender(-1),
+                    onRight: () => _cycleGender(1),
+                  ),
+                ],
+                // Children count + per-child age group (Babysitter-style).
+                if (_hasChildren) ...[
+                  const SizedBox(height: 12),
+                  _stepperRow(
+                    label: 'number_of_children'.tr(),
+                    valueText: '$_numberOfChildren',
+                    onIncrement: () => _changeNumberOfChildren(1),
+                    onDecrement: () => _changeNumberOfChildren(-1),
+                  ),
+                  const SizedBox(height: 16),
+                  Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: Text(
+                      'childrens_age_group'.tr(),
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: ZienaColors.textPrimary,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  ...List.generate(_numberOfChildren, (i) {
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: _fieldContainer(
+                        'child_label'.tr(args: ['${i + 1}']),
+                        DropdownButtonHideUnderline(
+                          child: DropdownButton<int>(
+                            value: _childAgeGroupIds[i],
+                            icon: const Icon(Icons.keyboard_arrow_down,
+                                color: ZienaColors.primary),
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: ZienaColors.primary,
+                            ),
+                            items: widget.service.childAgeGroups
+                                .map((g) => DropdownMenuItem(
+                              value: g.id,
+                              child: Text(g.localizedName(locale)),
+                            ))
+                                .toList(),
+                            onChanged: (value) {
+                              if (value == null) return;
+                              setState(() => _childAgeGroupIds[i] = value);
+                            },
+                          ),
+                        ),
+                      ),
+                    );
+                  }),
+                  const SizedBox(height: 4),
+                ],
+                const SizedBox(height: 12),
+                _stepperRow(
+                  label: 'service_providers_number'.tr(),
+                  valueText: '$_workersCount',
+                  onIncrement: () => _changeWorkersCount(1),
+                  onDecrement: () => _changeWorkersCount(-1),
+                ),
+                // Optional care notes (Babysitter-style).
+                if (_hasChildren) ...[
+                  const SizedBox(height: 16),
+                  Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: Text(
+                      'add_note'.tr(),
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: ZienaColors.textPrimary,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: ZienaColors.white,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: ZienaColors.primary.withOpacity(0.4)),
+                    ),
+                    child: TextField(
+                      controller: _noteController,
+                      maxLines: 3,
+                      style: const TextStyle(fontSize: 13, color: ZienaColors.textPrimary),
+                      decoration: InputDecoration(
+                        border: InputBorder.none,
+                        contentPadding: const EdgeInsets.all(12),
+                        hintText: 'add_note_hint'.tr(),
+                        hintStyle: const TextStyle(fontSize: 13, color: ZienaColors.textHint),
+                      ),
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 20),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _isChecking ? null : _checkAvailability,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: ZienaColors.primary,
+                      disabledBackgroundColor: ZienaColors.greyBorder,
+                    ),
+                    child: _isChecking
+                        ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2, color: ZienaColors.white),
+                    )
+                        : Text('check_availability'.tr()),
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -265,7 +416,7 @@ class _HourlyConfigBottomSheetState extends State<HourlyConfigBottomSheet> {
               color: ZienaColors.textPrimary,
             ),
           ),
-          trailing,
+          Flexible(child: trailing),
         ],
       ),
     );

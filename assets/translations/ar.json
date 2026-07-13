@@ -364,5 +364,10 @@
   "reschedule_booking": "إعادة جدولة الحجز",
   "write_reason": "اكتب السبب",
   "enter_otp_mobile_hint": "أدخل رمز التحقق المرسل إلى رقم هاتفك",
-  "resend_otp": "إعادة إرسال الرمز"
+  "resend_otp": "إعادة إرسال الرمز",
+  "number_of_children": "عدد الأطفال",
+  "childrens_age_group": "الفئة العمرية للأطفال",
+  "child_label": "الطفل {}",
+  "add_note": "إضافة ملاحظة",
+  "add_note_hint": "أي ملاحظات للجليسة (حساسية، روتين النوم، إلخ)"
 }

@@ -1,14 +1,14 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:zeina/features/services/data/model/booking_selection_data.dart';
-import 'package:zeina/features/services/data/model/service_detail_model.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../injection_container.dart';
 import '../../data/model/booking_validation_model.dart';
 import '../../data/model/booking_validation_exception.dart';
+import '../../data/model/service_detail_model.dart';
 import '../../data/model/visit_type_model.dart';
 import '../../data/repository/services_repository.dart';
 import 'booking_calendar.dart';
+import '../../data/model/booking_selection_data.dart';
 import 'coverage_error_dialog.dart';
 
 /// Shows the booking sheet for a service, after a visit type has been chosen.

@@ -1,11 +1,11 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:zeina/features/services/data/model/booking_selection_data.dart';
-import 'package:zeina/features/services/data/model/hourly_config_result.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../injection_container.dart';
+import '../../data/model/booking_selection_data.dart';
 import '../../data/model/booking_validation_exception.dart';
 import '../../data/model/booking_validation_model.dart';
+import '../../data/model/hourly_config_result.dart';
 import '../../data/model/service_detail_model.dart';
 import '../../data/model/visit_type_model.dart';
 import '../../data/repository/services_repository.dart';
@@ -80,6 +80,8 @@ class _DateSelectionBottomSheetState extends State<DateSelectionBottomSheet> {
         preferredWorkerIds: null,
         duration: widget.config.duration,
         workerGender: widget.config.workerGender,
+        numberOfChildren: widget.config.numberOfChildren,
+        childAgeGroupIds: widget.config.childAgeGroupIds,
       );
       if (!mounted) return;
       final selection = BookingSelectionData(
@@ -94,6 +96,9 @@ class _DateSelectionBottomSheetState extends State<DateSelectionBottomSheet> {
         preferredWorkerIds: const [],
         duration: widget.config.duration,
         workerGender: widget.config.workerGender,
+        numberOfChildren: widget.config.numberOfChildren,
+        childAgeGroupIds: widget.config.childAgeGroupIds,
+        note: widget.config.note,
       );
       Navigator.pop(context);
       widget.onProceed(selection, validation);
