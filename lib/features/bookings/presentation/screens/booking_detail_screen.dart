@@ -8,7 +8,8 @@ import '../../../services/data/model/service_detail_model.dart' show ServiceFeat
 import '../../data/model/booking_detail_model.dart';
 import '../../data/model/booking_model.dart' show VisitScheduleItem;
 import '../cubit/bookings_cubit.dart';
-import 'report_sheet.dart';
+import '../widgets/report_sheet.dart';
+import '../widgets/review_sheet.dart';
 
 class BookingDetailScreen extends StatelessWidget {
   static const String routeName = '/booking-detail';
@@ -769,6 +770,38 @@ class _BottomActions extends StatelessWidget {
     );
   }
 
+  Future<void> _openReviewSheet(BuildContext context) async {
+    final cubit = context.read<BookingDetailCubit>();
+    final reviewed = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => BlocProvider.value(
+        value: cubit,
+        child: ReviewSheet(booking: booking),
+      ),
+    );
+    if (!context.mounted || reviewed != true) return;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text('review_submitted_title'.tr()),
+        content: Text('review_submitted_msg'.tr()),
+        actions: [
+          TextButton(
+            onPressed: () {
+              cubit.fetchDetail(booking.id);
+              Navigator.pop(context);
+            },
+            child: Text('done'.tr()),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _startCancelFlow(BuildContext context) async {
     final cubit = context.read<BookingDetailCubit>();
     final bookingsCubit = context.read<BookingsCubit>();
@@ -899,9 +932,7 @@ class _BottomActions extends StatelessWidget {
             Expanded(
               child: ZienaSmallButton(
                 text: 'rate'.tr(),
-                onTap: () {
-                  // TODO: navigate to review_sheet.dart for this booking.
-                },
+                onTap: () => _openReviewSheet(context),
               ),
             ),
         ],

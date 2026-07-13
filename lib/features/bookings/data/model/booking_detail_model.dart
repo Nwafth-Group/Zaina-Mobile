@@ -66,7 +66,7 @@ class BookingDetailWorker {
   final String gender;
   final double rating;
   final String status;
-  final String? image;
+  final String image;
 
   BookingDetailWorker({
     required this.id,
@@ -76,7 +76,7 @@ class BookingDetailWorker {
     required this.gender,
     required this.rating,
     required this.status,
-    this.image,
+    required this.image,
   });
 
   factory BookingDetailWorker.fromJson(Map<String, dynamic> json) {
@@ -88,7 +88,7 @@ class BookingDetailWorker {
       gender: json['gender'] ?? '',
       rating: double.tryParse('${json['rating'] ?? 0}') ?? 0,
       status: json['status'] ?? '',
-      image: json['image'] as String?,
+      image: json['image'] ?? '',
     );
   }
 }
@@ -171,7 +171,7 @@ class BookingDetailModel {
   final String serviceName;
   final String visitType; // "single_visit" | "three_visits_per_week"
   final List<VisitScheduleItem> visitSchedule;
-  final String? image;
+  final String image;
   final String dateDay;
   final String dateMonth;
   final String fullDate;
@@ -199,7 +199,7 @@ class BookingDetailModel {
     required this.serviceName,
     required this.visitType,
     required this.visitSchedule,
-    this.image,
+    required this.image,
     required this.dateDay,
     required this.dateMonth,
     required this.fullDate,
@@ -232,7 +232,7 @@ class BookingDetailModel {
       visitSchedule: (json['visit_schedule'] as List<dynamic>? ?? [])
           .map((e) => VisitScheduleItem.fromJson(e as Map<String, dynamic>))
           .toList(),
-      image: json['image'] as String?,
+      image: json['image'] ?? '',
       dateDay: json['date_day']?.toString() ?? '',
       dateMonth: json['date_month'] ?? '',
       fullDate: json['full_date'] ?? '',

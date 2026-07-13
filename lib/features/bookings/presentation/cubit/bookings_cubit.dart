@@ -192,28 +192,25 @@ class BookingDetailCubit extends Cubit<BookingDetailState> {
   }
 
   // ── Review ─────────────────────────────────────────────────────────────────
+  /// Same reasoning as submitReport/sendCancelOtp/confirmCancel: does NOT
+  /// emit through the shared BookingDetailState stream, since that left the
+  /// main booking-detail screen's BlocBuilder stuck on a non-Loaded state
+  /// with a blank screen. The review sheet drives its own local loading/
+  /// error UI around this call.
   Future<void> submitReview({
     required int bookingId,
     required int serviceRating,
     required String serviceComment,
     required List<Map<String, dynamic>> workers,
   }) async {
-    emit(BookingActionLoading());
-    try {
-      await _api.post(
-        'customer/bookings/$bookingId/review',
-        data: {
-          'service_rating': serviceRating,
-          'service_comment': serviceComment,
-          'workers': workers,
-        },
-      );
-      emit(BookingReviewSuccess());
-    } on DioException catch (e) {
-      emit(BookingDetailError(handleDioError(e).message));
-    } catch (_) {
-      emit(BookingDetailError('Something went wrong'));
-    }
+    await _api.post(
+      'customer/bookings/$bookingId/review',
+      data: {
+        'service_rating': serviceRating,
+        'service_comment': serviceComment,
+        'workers': workers,
+      },
+    );
   }
 }
 
