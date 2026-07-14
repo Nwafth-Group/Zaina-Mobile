@@ -1,14 +1,33 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/theme/theme.dart';
+import '../../../../injection_container.dart';
 import '../../../../widgets/ziena_button.dart';
 import '../../../../widgets/ziena_step_indicator.dart';
 import '../../data/models/legal_model.dart';
+import '../cubit/reports_cubit.dart';
 
 class ReportDetailScreen extends StatelessWidget {
   final ReportModel report;
   const ReportDetailScreen({super.key, required this.report});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      // Fetch the fresh detail (fuller history / latest status) by id, while
+      // the report passed in from the list is shown immediately below so
+      // there's no blank/loading flash.
+      create: (_) => sl<ReportDetailCubit>()..fetchReportDetail(report.id),
+      child: _ReportDetailView(initialReport: report),
+    );
+  }
+}
+
+class _ReportDetailView extends StatelessWidget {
+  final ReportModel initialReport;
+  const _ReportDetailView({required this.initialReport});
 
   static const _steps = ['Submitted', 'Under Review', 'Resolved'];
 
@@ -22,7 +41,8 @@ class ReportDetailScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: ZienaColors.bg1,
       appBar: AppBar(
-        backgroundColor: ZienaColors.bg1, elevation: 0,
+        backgroundColor: ZienaColors.bg1,
+        elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new,
               size: 18, color: ZienaColors.textPrimary),
@@ -30,157 +50,233 @@ class ReportDetailScreen extends StatelessWidget {
         ),
         title: Text('report_details'.tr(),
             style: const TextStyle(
-              fontSize: 18, fontWeight: FontWeight.w700,
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
               color: ZienaColors.textPrimary,
             )),
       ),
-      body: Stack(children: [
-        SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
-          child: Column(children: [
-            // Service card
-            Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: ZienaColors.white,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(
-                    color: ZienaColors.greyBorder, width: 0.5),
-              ),
-              child: Row(children: [
-                Container(
-                  width: 64, height: 64,
-                  decoration: BoxDecoration(
-                      color: ZienaColors.bg3,
-                      borderRadius: BorderRadius.circular(10)),
-                  child: const Icon(Icons.cleaning_services_rounded,
-                      color: ZienaColors.primary, size: 32),
-                ),
-                const SizedBox(width: 12),
-                Expanded(child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (report.category != null)
-                      Text(report.category!,
+      body: BlocBuilder<ReportDetailCubit, ReportDetailState>(
+        builder: (context, state) {
+          // Use the freshly-fetched report once it arrives; fall back to
+          // the one passed in from the list so the screen never looks empty.
+          final report =
+          state is ReportDetailLoaded ? state.report : initialReport;
+          final isRefreshing = state is ReportDetailLoading;
+
+          return Stack(children: [
+            RefreshIndicator(
+              color: ZienaColors.primary,
+              onRefresh: () => context
+                  .read<ReportDetailCubit>()
+                  .fetchReportDetail(report.id),
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
+                child: Column(children: [
+                  if (state is ReportDetailError)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: ZienaColors.error.withOpacity(0.08),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          state.message,
                           style: const TextStyle(
-                            fontSize: 11, color: ZienaColors.primary,
-                            fontWeight: FontWeight.w500,
-                          )),
-                    Text(report.serviceName,
-                        style: const TextStyle(
-                          fontSize: 15, fontWeight: FontWeight.w700,
-                          color: ZienaColors.textPrimary,
-                        )),
-                    Row(children: [
-                      const Icon(Icons.calendar_today_outlined,
-                          size: 11, color: ZienaColors.textSecondary),
-                      const SizedBox(width: 4),
-                      Text(report.date,
-                          style: const TextStyle(
-                              fontSize: 11, color: ZienaColors.textSecondary)),
-                    ]),
-                  ],
-                )),
-              ]),
-            ),
-            const SizedBox(height: 16),
+                              fontSize: 12, color: ZienaColors.error),
+                        ),
+                      ),
+                    ),
 
-            // Status section
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: ZienaColors.white,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(
-                    color: ZienaColors.greyBorder, width: 0.5),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('report_status'.tr(),
-                      style: const TextStyle(
-                        fontSize: 15, fontWeight: FontWeight.w700,
-                        color: ZienaColors.textPrimary,
-                      )),
-                  const SizedBox(height: 20),
-
-                  // Stepper
-                  ZienaStepIndicator(
-                    steps: _steps,
-                    currentStep: report.statusStep,
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Status message box
+                  // Service card
                   Container(
-                    width: double.infinity,
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
-                      color: report.statusColor.withOpacity(0.08),
-                      borderRadius: BorderRadius.circular(12),
+                      color: ZienaColors.white,
+                      borderRadius: BorderRadius.circular(14),
                       border: Border.all(
-                          color: report.statusColor.withOpacity(0.2)),
+                          color: ZienaColors.greyBorder, width: 0.5),
+                    ),
+                    child: Row(children: [
+                      Container(
+                        width: 64,
+                        height: 64,
+                        decoration: BoxDecoration(
+                            color: ZienaColors.bg3,
+                            borderRadius: BorderRadius.circular(10)),
+                        child: const Icon(Icons.cleaning_services_rounded,
+                            color: ZienaColors.primary, size: 32),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (report.serviceCategory.isNotEmpty)
+                                Text(report.serviceCategory,
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      color: ZienaColors.primary,
+                                      fontWeight: FontWeight.w500,
+                                    )),
+                              Text(report.serviceTitle,
+                                  style: const TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w700,
+                                    color: ZienaColors.textPrimary,
+                                  )),
+                              Row(children: [
+                                const Icon(Icons.calendar_today_outlined,
+                                    size: 11, color: ZienaColors.textSecondary),
+                                const SizedBox(width: 4),
+                                Text(report.longCreatedAtLabel,
+                                    style: const TextStyle(
+                                        fontSize: 11,
+                                        color: ZienaColors.textSecondary)),
+                              ]),
+                            ],
+                          )),
+                    ]),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Status section
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: ZienaColors.white,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                          color: ZienaColors.greyBorder, width: 0.5),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(report.statusLabel,
-                            style: TextStyle(
-                              fontSize: 14, fontWeight: FontWeight.w700,
-                              color: report.statusColor,
-                            )),
-                        if (report.statusMessage != null) ...[
-                          const SizedBox(height: 4),
-                          Text(report.statusMessage!,
-                              style: const TextStyle(
-                                  fontSize: 12,
-                                  color: ZienaColors.textSecondary)),
-                        ],
-                        const SizedBox(height: 8),
-                        Row(children: [
-                          const Icon(Icons.access_time_rounded,
-                              size: 12, color: ZienaColors.textSecondary),
-                          const SizedBox(width: 5),
-                          Text('Submitted on: ${report.date}',
-                              style: const TextStyle(
-                                  fontSize: 11,
-                                  color: ZienaColors.textSecondary)),
-                        ]),
-                        if (report.lastUpdate != null) ...[
-                          const SizedBox(height: 4),
-                          Row(children: [
-                            const Icon(Icons.access_time_rounded,
-                                size: 12, color: ZienaColors.textSecondary),
-                            const SizedBox(width: 5),
-                            Text('Last Update: ${report.lastUpdate}',
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text('report_status'.tr(),
                                 style: const TextStyle(
-                                    fontSize: 11,
-                                    color: ZienaColors.textSecondary)),
-                          ]),
-                        ],
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w700,
+                                  color: ZienaColors.textPrimary,
+                                )),
+                            if (isRefreshing)
+                              const SizedBox(
+                                width: 14,
+                                height: 14,
+                                child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: ZienaColors.primary),
+                              ),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+
+                        // Stepper
+                        ZienaStepIndicator(
+                          steps: _steps,
+                          currentStep: report.statusStep,
+                        ),
+                        const SizedBox(height: 20),
+
+                        // Status message box
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: report.statusColor.withOpacity(0.08),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                                color: report.statusColor.withOpacity(0.2)),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(report.statusLabel,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w700,
+                                    color: report.statusColor,
+                                  )),
+                              if (report.statusDescription.isNotEmpty) ...[
+                                const SizedBox(height: 4),
+                                Text(report.statusDescription,
+                                    style: const TextStyle(
+                                        fontSize: 12,
+                                        color: ZienaColors.textSecondary)),
+                              ],
+                              const SizedBox(height: 8),
+                              Row(children: [
+                                const Icon(Icons.access_time_rounded,
+                                    size: 12, color: ZienaColors.textSecondary),
+                                const SizedBox(width: 5),
+                                Text(
+                                    '${'submitted_on'.tr()}: ${report.longCreatedAtLabel}',
+                                    style: const TextStyle(
+                                        fontSize: 11,
+                                        color: ZienaColors.textSecondary)),
+                              ]),
+                              if (report.hasUpdate) ...[
+                                const SizedBox(height: 4),
+                                Row(children: [
+                                  const Icon(Icons.access_time_rounded,
+                                      size: 12,
+                                      color: ZienaColors.textSecondary),
+                                  const SizedBox(width: 5),
+                                  Text(
+                                      '${'last_update'.tr()}: ${report.longUpdatedAtLabel}',
+                                      style: const TextStyle(
+                                          fontSize: 11,
+                                          color: ZienaColors.textSecondary)),
+                                ]),
+                              ],
+                              if (report.reasonLabel.isNotEmpty) ...[
+                                const SizedBox(height: 4),
+                                Row(children: [
+                                  const Icon(Icons.description_outlined,
+                                      size: 12,
+                                      color: ZienaColors.textSecondary),
+                                  const SizedBox(width: 5),
+                                  Expanded(
+                                    child: Text(
+                                        '${'report_issue'.tr()}: ${report.reasonLabel}',
+                                        style: const TextStyle(
+                                            fontSize: 11,
+                                            color: ZienaColors.textSecondary)),
+                                  ),
+                                ]),
+                              ],
+                            ],
+                          ),
+                        ),
                       ],
                     ),
                   ),
-                ],
+                ]),
               ),
             ),
-          ]),
-        ),
 
-        // Bottom support button
-        Positioned(
-          bottom: 0, left: 0, right: 0,
-          child: Container(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
-            color: ZienaColors.bg1,
-            child: ZienaButton(
-              text: 'support'.tr(),
-              onTap: () => _openWhatsAppSupport(),
+            // Bottom support button
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
+                color: ZienaColors.bg1,
+                child: ZienaButton(
+                  text: 'support'.tr(),
+                  onTap: () => _openWhatsAppSupport(),
+                ),
+              ),
             ),
-          ),
-        ),
-      ]),
+          ]);
+        },
+      ),
     );
   }
 }
-

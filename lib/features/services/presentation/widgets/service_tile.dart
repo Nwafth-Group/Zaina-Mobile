@@ -54,7 +54,7 @@ class ServiceTile extends StatelessWidget {
                     imageUrl: imageUrl ?? '',
                     width: 44,
                     height: 44,
-                    fit: BoxFit.cover,
+                    fit: BoxFit.fill,
                     placeholder: (_, __) => Container(
                       width: 44,
                       height: 44,

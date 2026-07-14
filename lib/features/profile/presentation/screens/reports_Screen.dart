@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -130,83 +129,102 @@ class _ReportTile extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        margin: const EdgeInsets.only(bottom: 10),
-        padding: const EdgeInsets.all(12),
+        margin: const EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(
-          color: ZienaColors.white,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: ZienaColors.greyBorder, width: 0.5),
+          color: ZienaColors.primary.withOpacity(0.06),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: ZienaColors.primary.withOpacity(0.15)),
         ),
-        child: Row(children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(10),
-            child: report.serviceImage != null
-                ? CachedNetworkImage(
-                    imageUrl: report.serviceImage!,
-                    width: 60,
-                    height: 60,
-                    fit: BoxFit.cover,
-                  )
-                : Container(
-                    width: 60,
-                    height: 60,
-                    color: ZienaColors.bg3,
-                    child: const Icon(Icons.receipt_long_outlined,
-                        color: ZienaColors.primary, size: 28),
-                  ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: report.statusColor.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    report.statusLabel,
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: report.statusColor,
-                    ),
+        clipBehavior: Clip.antiAlias,
+        child: IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Date strip
+              Container(
+                width: 68,
+                alignment: Alignment.center,
+                color: ZienaColors.primary,
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: Text(
+                  report.shortDateLabel,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: ZienaColors.white,
                   ),
                 ),
-                const SizedBox(height: 5),
-                Text(report.serviceName,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: ZienaColors.textPrimary,
-                    )),
-                if (report.category != null) ...[
-                  const SizedBox(height: 2),
-                  Text(report.category!,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: ZienaColors.primary,
-                        fontWeight: FontWeight.w500,
-                      )),
-                ],
-                const SizedBox(height: 3),
-                Row(children: [
-                  const Icon(Icons.calendar_today_outlined,
-                      size: 11, color: ZienaColors.textSecondary),
-                  const SizedBox(width: 4),
-                  Text(report.date,
-                      style: const TextStyle(
-                          fontSize: 11, color: ZienaColors.textSecondary)),
-                ]),
-              ],
-            ),
+              ),
+              // Content
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(14),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (report.serviceCategory.isNotEmpty)
+                        Text(
+                          report.serviceCategory,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: ZienaColors.textPrimary,
+                          ),
+                        ),
+                      const SizedBox(height: 2),
+                      Text(
+                        report.serviceTitle,
+                        style: const TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w800,
+                          color: ZienaColors.primary,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          Icon(Icons.bookmark_border,
+                              size: 14, color: report.statusColor),
+                          const SizedBox(width: 4),
+                          Text(
+                            report.statusLabel,
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: report.statusColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (report.reasonLabel.isNotEmpty) ...[
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            const Icon(Icons.description_outlined,
+                                size: 14, color: ZienaColors.textSecondary),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                '${'report_issue'.tr()}: ${report.reasonLabel}',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  color: ZienaColors.textSecondary,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
-          const Icon(Icons.chevron_right,
-              color: ZienaColors.textHint, size: 20),
-        ]),
+        ),
       ),
     );
   }

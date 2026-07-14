@@ -28,6 +28,8 @@ import 'edit_profile_screen.dart';
 import 'my_cards_screen.dart';
 import 'my_coupons_screen.dart';
 import 'my_points_scree.dart';
+import 'package:restart_app/restart_app.dart';
+
 
 class MoreScreen extends StatefulWidget {
   final bool isLoggedIn;
@@ -372,42 +374,42 @@ class _ProfileCard extends StatelessWidget {
         ),
 
         // Points badge
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.2),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.white.withOpacity(0.3)),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const ImageAsset('assets/images/points.png'),
-              const SizedBox(height: 2),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    isLoading ? '--' : '${(profile?.walletBalance ?? 0).toInt()}',
-                    style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                    ),
-                  ),
-
-                  Text(
-                    ' '+'pts'.tr(),
-                    style: const TextStyle(
-                      fontSize: 9,
-                      color: Colors.white70,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
+        // Container(
+        //   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        //   decoration: BoxDecoration(
+        //     color: Colors.white.withOpacity(0.2),
+        //     borderRadius: BorderRadius.circular(12),
+        //     border: Border.all(color: Colors.white.withOpacity(0.3)),
+        //   ),
+        //   child: Column(
+        //     mainAxisSize: MainAxisSize.min,
+        //     children: [
+        //       const ImageAsset('assets/images/points.png'),
+        //       const SizedBox(height: 2),
+        //       Row(
+        //         mainAxisSize: MainAxisSize.min,
+        //         children: [
+        //           Text(
+        //             isLoading ? '--' : '${(profile?.walletBalance ?? 0).toInt()}',
+        //             style: const TextStyle(
+        //               fontSize: 13,
+        //               fontWeight: FontWeight.w700,
+        //               color: Colors.white,
+        //             ),
+        //           ),
+        //
+        //           Text(
+        //             ' '+'pts'.tr(),
+        //             style: const TextStyle(
+        //               fontSize: 9,
+        //               color: Colors.white70,
+        //             ),
+        //           ),
+        //         ],
+        //       ),
+        //     ],
+        //   ),
+        // ),
       ]),
     );
   }
@@ -657,8 +659,7 @@ const SizedBox(height: 20),
               lng='en';
               await context.setLocale(Locale(lng));
               await SharedPrefHelper.saveLng(lng);
-              Navigator.pop(context);
-              RestartWidget.restartApp(AppNavigator.navigatorKey.currentContext!);
+              await Restart.restartApp();
             },
           ),
           const SizedBox(height: 10),
@@ -670,8 +671,7 @@ const SizedBox(height: 20),
               lng='ar';
               await context.setLocale(Locale(lng));
               await SharedPrefHelper.saveLng(lng);
-              Navigator.pop(context);
-              RestartWidget.restartApp(AppNavigator.navigatorKey.currentContext!);
+              await Restart.restartApp();
             },
           ),
         ],

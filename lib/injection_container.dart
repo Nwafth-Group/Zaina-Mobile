@@ -75,6 +75,7 @@ void setupDependencies() {
   sl.registerFactory<PointsCubit>(() => PointsCubit(sl<ApiClient>()));
   sl.registerFactory<EarnPointsCubit>(() => EarnPointsCubit(sl<ApiClient>()));
   sl.registerFactory<ReportsCubit>(() => ReportsCubit(sl<ApiClient>()));
+  sl.registerFactory<ReportDetailCubit>(() => ReportDetailCubit(sl<ApiClient>()));
   sl.registerFactory<CouponsCubit>(() => CouponsCubit(sl<ApiClient>()));
 
 // --- Services Module ---

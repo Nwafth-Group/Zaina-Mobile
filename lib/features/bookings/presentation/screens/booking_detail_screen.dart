@@ -98,7 +98,7 @@ class _LoadedBody extends StatelessWidget {
                     width: double.infinity,
                     child: Image.network(
                       booking.image ?? '',
-                      fit: BoxFit.cover,
+                      fit: BoxFit.fill,
                       errorBuilder: (_, __, ___) => Container(
                         color: ZienaColors.bg3,
                         child: const Icon(Icons.image_outlined,

@@ -48,6 +48,17 @@ class _HourlyConfigBottomSheetState extends State<HourlyConfigBottomSheet> {
 
   bool get _hasChildren => widget.service.hasChildren;
 
+  // Once more than 2 children are selected, at least 2 service providers
+  // are required (falls back to the service's own minimum otherwise, in
+  // case that minimum is already higher).
+  int get _minWorkersRequired {
+    final base = widget.service.minWorkers;
+    if (_hasChildren && _numberOfChildren > 2) {
+      return base > 2 ? base : 2;
+    }
+    return base;
+  }
+
   @override
   void dispose() {
     _noteController.dispose();
@@ -100,6 +111,16 @@ class _HourlyConfigBottomSheetState extends State<HourlyConfigBottomSheet> {
           (_) => widget.service.childAgeGroups.first.id,
     )
         : [];
+
+    // If the default children count already exceeds 2 (e.g. service's own
+    // minChildren is 3+), make sure the default worker count reflects the
+    // 2-provider minimum from the very first render.
+    if (_workersCount < _minWorkersRequired) {
+      _workersCount = _minWorkersRequired.clamp(
+        widget.service.minWorkers,
+        widget.service.maxWorkers,
+      );
+    }
 
     // Defensive: if the service's own default start+duration somehow don't
     // fit its window, pull start time back so the very first render is valid.
@@ -159,7 +180,7 @@ class _HourlyConfigBottomSheetState extends State<HourlyConfigBottomSheet> {
 
   void _changeWorkersCount(int delta) {
     final next = _workersCount + delta;
-    if (next < widget.service.minWorkers || next > widget.service.maxWorkers) {
+    if (next < _minWorkersRequired || next > widget.service.maxWorkers) {
       return;
     }
     setState(() => _workersCount = next);
@@ -189,6 +210,16 @@ class _HourlyConfigBottomSheetState extends State<HourlyConfigBottomSheet> {
         ));
       } else if (_childAgeGroupIds.length > next) {
         _childAgeGroupIds = _childAgeGroupIds.sublist(0, next);
+      }
+      // More than 2 children now selected → bump the worker count up to the
+      // 2-provider minimum if it's currently below that (re-evaluates
+      // _minWorkersRequired since _numberOfChildren was just updated above).
+      final requiredMin = _minWorkersRequired;
+      if (_workersCount < requiredMin) {
+        _workersCount = requiredMin.clamp(
+          widget.service.minWorkers,
+          widget.service.maxWorkers,
+        );
       }
     });
   }

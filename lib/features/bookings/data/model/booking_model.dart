@@ -1,5 +1,7 @@
 import 'dart:ui';
 
+import 'package:easy_localization/easy_localization.dart';
+
 class VisitScheduleItem {
   final String visitDate; // "yyyy-MM-dd"
   final String visitDay; // localized day name from server, e.g. "الخميس"
@@ -182,7 +184,7 @@ enum BookingStatusEnum { all, upcoming, inService, completed, cancelled }
 extension BookingStatusExt on BookingStatusEnum {
   String get label {
     switch (this) {
-      case BookingStatusEnum.all: return 'All';
+      case BookingStatusEnum.all: return 'all';
       case BookingStatusEnum.upcoming: return 'Upcoming';
       case BookingStatusEnum.inService: return 'In Service';
       case BookingStatusEnum.completed: return 'Completed';

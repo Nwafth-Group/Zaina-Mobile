@@ -135,16 +135,7 @@ class _RescheduleConfigurableSheetState
                       ),
                     ),
 
-                    const SizedBox(height: 16),
-                    Text(
-                      'service_period'.tr(),
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: ZienaColors.textPrimary,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 20),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                       decoration: BoxDecoration(
@@ -187,7 +178,7 @@ class _RescheduleConfigurableSheetState
                       ),
                     ),
 
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 16),
                     Text(
                       'service_date'.tr(),
                       style: const TextStyle(
