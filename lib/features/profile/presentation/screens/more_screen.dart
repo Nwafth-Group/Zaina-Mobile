@@ -55,17 +55,19 @@ class _MoreScreenState extends State<MoreScreen> {
             ?Column(
           children: [
             // ── Title ────────────────────────────────────────────────────────
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 20),
-              child: Text(
-                'more'.tr(),
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                  color: ZienaColors.textPrimary,
-                ),
-              ),
-            ),
+            // Padding(
+            //   padding: const EdgeInsets.symmetric(vertical: 20),
+            //   child: Text(
+            //     'more'.tr(),
+            //     style: const TextStyle(
+            //       fontSize: 20,
+            //       fontWeight: FontWeight.w700,
+            //       color: ZienaColors.textPrimary,
+            //     ),
+            //   ),
+            // ),
+
+            const SizedBox(height: 16,),
 
             Expanded(
               child:  _buildLoggedIn(),

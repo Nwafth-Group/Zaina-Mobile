@@ -6,7 +6,8 @@ import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:zeina/core/utils/constants.dart';
 import 'package:zeina/core/utils/shared_pref_helper.dart';
 import 'package:zeina/features/bookings/presentation/screens/booking_detail_screen.dart';
-import 'package:zeina/features/services/presentation/screens/services_list_screen.dart';
+import 'package:zeina/features/services/presentation/screens/hourly_services_list_screen.dart';
+import 'package:zeina/features/services/presentation/screens/ziena_services_screen.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../injection_container.dart';
 import '../../../auth/presentation/cubit/verification_cubit.dart' show ProfileCubit, ProfileLoaded, ProfileState;
@@ -113,7 +114,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (_) => const ServicesListScreen(
+                                        builder: (_) => const HourlyServicesListScreen(
                                           type: 'hourly',
                                           titleKey: 'Hourly Services',
                                         ),
@@ -410,13 +411,23 @@ class _BannerCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(14),
-        child: Image.network(banner.image??'', width: double.infinity, height: 200,fit: BoxFit.fill,
-        errorBuilder: (context, error, stackTrace) =>
-            Container(height: 200, width: double.infinity, color: ZienaColors.primaryLight, child: Icon(Icons.image, size: 40, color: Colors.white,),)),
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => const ZienaServicesScreen(),
+          ),
+        );
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(14),
+          child: Image.network(banner.image??'', width: double.infinity, height: 200,fit: BoxFit.fill,
+          errorBuilder: (context, error, stackTrace) =>
+              Container(height: 200, width: double.infinity, color: ZienaColors.primaryLight, child: Icon(Icons.image, size: 40, color: Colors.white,),)),
+        ),
       ),
     );
   }

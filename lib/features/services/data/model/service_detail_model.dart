@@ -78,6 +78,21 @@ class ServiceShiftModel {
     return '${parts[0].padLeft(2, '0')}:${parts[1].padLeft(2, '0')}';
   }
 
+  /// "hh:mm a" (12-hour format), for display.
+  String get startLabel12 {
+    final parts = startTime.split(':');
+    if (parts.length < 2) return startTime;
+
+    final hour = int.tryParse(parts[0]);
+    final minute = parts[1].padLeft(2, '0');
+
+    if (hour == null) return startTime;
+
+    final hour12 = hour % 12 == 0 ? 12 : hour % 12;
+
+    return '${hour12.toString().padLeft(2, '0')}:$minute';
+  }
+
   /// "HH:mm" without seconds, for display.
   String get endLabel {
     final parts = endTime.split(':');

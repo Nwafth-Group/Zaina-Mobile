@@ -134,9 +134,10 @@ class _RescheduleConfigurableSheetState
                         color: ZienaColors.textPrimary,
                       ),
                     ),
+
                     const SizedBox(height: 16),
                     Text(
-                      'service_date'.tr(),
+                      'service_period'.tr(),
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
@@ -144,13 +145,6 @@ class _RescheduleConfigurableSheetState
                       ),
                     ),
                     const SizedBox(height: 8),
-                    BookingCalendar(
-                      availableDates: widget.service.availableDates,
-                      selectedDates: _selectedDates,
-                      maxSelectable: 1,
-                      onChanged: (dates) => setState(() => _selectedDates = dates),
-                    ),
-                    const SizedBox(height: 20),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                       decoration: BoxDecoration(
@@ -172,7 +166,7 @@ class _RescheduleConfigurableSheetState
                           Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              _circleIconButton(Icons.add, () => _changeStartTime(30)),
+                              _circleIconButton(Icons.add, () => _changeStartTime(60)),
                               SizedBox(
                                 width: 74,
                                 child: Text(
@@ -186,11 +180,28 @@ class _RescheduleConfigurableSheetState
                                 ),
                               ),
                               _circleIconButton(
-                                  Icons.remove, () => _changeStartTime(-30)),
+                                  Icons.remove, () => _changeStartTime(-60)),
                             ],
                           ),
                         ],
                       ),
+                    ),
+
+                    const SizedBox(height: 20),
+                    Text(
+                      'service_date'.tr(),
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: ZienaColors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    BookingCalendar(
+                      availableDates: widget.service.availableDates,
+                      selectedDates: _selectedDates,
+                      maxSelectable: 1,
+                      onChanged: (dates) => setState(() => _selectedDates = dates),
                     ),
                   ],
                 ),

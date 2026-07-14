@@ -328,7 +328,8 @@ class _BookingBottomSheetState extends State<BookingBottomSheet> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    shift.startLabel,
+                    shift.startLabel12,
+                    // shift.startLabel,
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,

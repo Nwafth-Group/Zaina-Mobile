@@ -15,7 +15,7 @@ import 'service_detail_screen.dart';
 import '../../../home/presentation/cubit/address_cubit.dart';
 import '../../../home/presentation/screens/add_edit_address_screen.dart';
 
-class ServicesListScreen extends StatelessWidget {
+class HourlyServicesListScreen extends StatelessWidget {
   static const String routeName = '/services-list';
 
   /// API `type` query param — e.g. 'hourly' or 'other'.
@@ -24,7 +24,7 @@ class ServicesListScreen extends StatelessWidget {
   /// Localization key for the AppBar title — e.g. 'Hourly Services' / 'Other Services'.
   final String titleKey;
 
-  const ServicesListScreen({
+  const HourlyServicesListScreen({
     super.key,
     required this.type,
     required this.titleKey,

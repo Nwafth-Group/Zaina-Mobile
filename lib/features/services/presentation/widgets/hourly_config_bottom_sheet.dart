@@ -267,8 +267,8 @@ class _HourlyConfigBottomSheetState extends State<HourlyConfigBottomSheet> {
                 _stepperRow(
                   label: 'start_service_time'.tr(),
                   valueText: _formatTime12h(_startTime),
-                  onIncrement: () => _changeStartTime(30),
-                  onDecrement: () => _changeStartTime(-30),
+                  onIncrement: () => _changeStartTime(60),
+                  onDecrement: () => _changeStartTime(-60),
                 ),
                 const SizedBox(height: 12),
                 _stepperRow(
@@ -452,7 +452,7 @@ class _HourlyConfigBottomSheetState extends State<HourlyConfigBottomSheet> {
               valueText,
               textAlign: TextAlign.center,
               style: const TextStyle(
-                fontSize: 14,
+                fontSize: 12,
                 fontWeight: FontWeight.w700,
                 color: ZienaColors.textPrimary,
               ),

@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:zeina/features/home/presentation/cubit/home_cubti.dart';
+import 'package:zeina/features/wallet/presentation/cubit/cubit.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../injection_container.dart';
 import '../../../../widgets/ziena_small_button.dart';
@@ -861,6 +862,7 @@ class _BottomActions extends StatelessWidget {
       // cancellation immediately rather than showing stale data for a beat.
       bookingsCubit.fetchBookings(refresh: true);
       context.read<HomeCubit>().fetchHomeData();
+      context.read<WalletCubit>().fetchWallet();
       await showDialog(
         context: context,
         barrierDismissible: false,

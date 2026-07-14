@@ -1,8 +1,10 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:zeina/features/profile/presentation/cubit/points_cubit.dart';
 import 'package:zeina/features/services/data/model/booking_selection_data.dart';
 import 'package:zeina/features/services/data/model/service_detail_model.dart';
+import 'package:zeina/features/wallet/presentation/cubit/cubit.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../injection_container.dart';
 import '../../../bookings/presentation/cubit/bookings_cubit.dart';
@@ -68,6 +70,18 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   void initState() {
     super.initState();
     _currentValidation = widget.validation;
+
+    // Fetch points/wallet balances for display on the payment tiles below.
+    // Guarded so we don't re-fetch if another screen already loaded them.
+    final pointsCubit = context.read<PointsCubit>();
+    if (pointsCubit.state is! PointsLoaded) {
+      pointsCubit.fetchSummary();
+    }
+
+    final walletCubit = context.read<WalletCubit>();
+    if (walletCubit.state is! WalletLoaded) {
+      walletCubit.fetchWallet();
+    }
   }
 
   @override
@@ -181,6 +195,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       // once the user navigates there, without needing a manual pull-to-refresh.
       context.read<BookingsCubit>().fetchBookings(refresh: true);
       context.read<HomeCubit>().fetchHomeData();
+      // Payment may have drawn down the wallet or points balance (or the
+      // booking may have earned points) — refresh both so they're correct
+      // if the user lands back on a screen showing them.
+      context.read<WalletCubit>().fetchWallet();
+      context.read<PointsCubit>().fetchSummary();
       _showSuccessDialog();
     } catch (e) {
       if (!mounted) return;
@@ -395,19 +414,39 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           // ── Payment method ────────────────────────────────────────────
           Text('payment_method'.tr(), style: _sectionTitleStyle),
           const SizedBox(height: 8),
-          _paymentTile(
-            asset: 'assets/images/my_points.png',
-            label: 'points'.tr(),
-            method: _PaymentMethod.points,
+          BlocBuilder<PointsCubit, PointsState>(
+            builder: (context, state) {
+              String? trailing;
+              if (state is PointsLoaded) {
+                trailing = '${state.summary.totalPoints} ${'points'.tr()}';
+              } else if (state is PointsLoading) {
+                trailing = '...';
+              }
+              return _paymentTile(
+                asset: 'assets/images/my_points.png',
+                label: 'points'.tr(),
+                method: _PaymentMethod.points,
+                trailing: trailing,
+              );
+            },
           ),
           const SizedBox(height: 10),
-          _paymentTile(
-            asset: 'assets/images/wallet.png',
-            label: 'wallet'.tr(),
-            method: _PaymentMethod.wallet,
-            // TODO: wire to WalletCubit's real balance field once its state
-            // shape is confirmed — placeholder shown for now.
-            trailing: 'wallet_balance_placeholder'.tr(),
+          BlocBuilder<WalletCubit, WalletState>(
+            builder: (context, state) {
+              String? trailing;
+              if (state is WalletLoaded) {
+                trailing =
+                '${state.data.availableBalance.toStringAsFixed(0)} ${state.data.currency}';
+              } else if (state is WalletLoading) {
+                trailing = '...';
+              }
+              return _paymentTile(
+                asset: 'assets/images/wallet.png',
+                label: 'wallet'.tr(),
+                method: _PaymentMethod.wallet,
+                trailing: trailing,
+              );
+            },
           ),
           const SizedBox(height: 10),
           _paymentTile(

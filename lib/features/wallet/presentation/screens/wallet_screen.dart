@@ -61,15 +61,15 @@ class _WalletScreenState extends State<WalletScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Title
-                  Center(
-                    child: Text('wallet'.tr(),
-                        style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w700,
-                          color: ZienaColors.textPrimary,
-                        )),
-                  ),
-                  const SizedBox(height: 20),
+                  // Center(
+                  //   child: Text('wallet'.tr(),
+                  //       style: const TextStyle(
+                  //         fontSize: 22,
+                  //         fontWeight: FontWeight.w700,
+                  //         color: ZienaColors.textPrimary,
+                  //       )),
+                  // ),
+                  // const SizedBox(height: 20),
 
                   // Balance card
                   _BalanceCard(

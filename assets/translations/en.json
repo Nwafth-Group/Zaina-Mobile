@@ -365,5 +365,6 @@
   "add_note": "Add Note",
   "add_note_hint": "Any care notes for the babysitter (allergies, routine, etc.)",
   "select_new_date_and_time": "Select New Date And Time",
-  "save_button": "Save"
+  "save_button": "Save",
+  "ziena_services": "Zaina Services"
 }

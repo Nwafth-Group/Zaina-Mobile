@@ -220,7 +220,7 @@ class _RescheduleFixedShiftSheetState extends State<_RescheduleFixedShiftSheet> 
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    shift.startLabel,
+                    shift.startLabel12,
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
