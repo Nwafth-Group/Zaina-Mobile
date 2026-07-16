@@ -45,6 +45,19 @@ class ReportHistoryItem {
         note: j['note'],
         createdAt: j['created_at'] ?? '',
       );
+
+  Color get statusColor => ReportModel.colorForStatus(newStatus);
+
+  String get statusLabel => ReportModel.labelForStatus(newStatus);
+
+  DateTime? get _createdAtDate => DateTime.tryParse(createdAt);
+
+  /// e.g. "14 Jul 2026 • 02:51 PM"
+  String get formattedDateTime {
+    final d = _createdAtDate;
+    if (d == null) return createdAt;
+    return DateFormat('d MMM yyyy • hh:mm a').format(d);
+  }
 }
 
 class ReportModel {
@@ -85,7 +98,7 @@ class ReportModel {
     serviceName: j['service_name'] ?? '',
     // History arrives newest-first (see sample payload: id 3 has the
     // latest created_at, listed first) — relied on by `statusDescription`
-    // below to find the latest note.
+    // below to find the latest note, and by the history timeline UI.
     history: (j['history'] as List<dynamic>? ?? [])
         .map((e) => ReportHistoryItem.fromJson(e))
         .toList(),
@@ -93,7 +106,12 @@ class ReportModel {
     updatedAt: j['updated_at'] ?? '',
   );
 
-  Color get statusColor {
+  // ── Status helpers ──────────────────────────────────────────────────
+  // Static so ReportHistoryItem (whose `newStatus`/`oldStatus` are their
+  // own independent status strings) can reuse the same color/label rules
+  // as the report's own top-level `status`.
+
+  static Color colorForStatus(String status) {
     switch (status.toLowerCase()) {
       case 'submitted':
         return const Color(0xFFFF9800);
@@ -106,7 +124,7 @@ class ReportModel {
     }
   }
 
-  String get statusLabel {
+  static String labelForStatus(String status) {
     switch (status.toLowerCase()) {
       case 'submitted':
         return 'Submitted';
@@ -119,7 +137,7 @@ class ReportModel {
     }
   }
 
-  int get statusStep {
+  static int stepForStatus(String status) {
     switch (status.toLowerCase()) {
       case 'submitted':
         return 0;
@@ -132,8 +150,12 @@ class ReportModel {
     }
   }
 
+  Color get statusColor => colorForStatus(status);
+  String get statusLabel => labelForStatus(status);
+  int get statusStep => stepForStatus(status);
+
   // The API only sends `reason` as a snake_case code (e.g. "wrong_charges").
-  // Humanize it for display: "wrong_charges" -> "Wrong Charges".
+  // Map it to the matching translation key and localize it.
   String get reasonLabel {
     const reasonsDesc = [
       ('worker_didnt_show_up', 'worker_no_show'),

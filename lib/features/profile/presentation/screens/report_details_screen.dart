@@ -92,56 +92,56 @@ class _ReportDetailView extends StatelessWidget {
                     ),
 
                   // Service card
-                  Container(
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: ZienaColors.white,
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(
-                          color: ZienaColors.greyBorder, width: 0.5),
-                    ),
-                    child: Row(children: [
-                      Container(
-                        width: 64,
-                        height: 64,
-                        decoration: BoxDecoration(
-                            color: ZienaColors.bg3,
-                            borderRadius: BorderRadius.circular(10)),
-                        child: const Icon(Icons.cleaning_services_rounded,
-                            color: ZienaColors.primary, size: 32),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              if (report.serviceCategory.isNotEmpty)
-                                Text(report.serviceCategory,
-                                    style: const TextStyle(
-                                      fontSize: 11,
-                                      color: ZienaColors.primary,
-                                      fontWeight: FontWeight.w500,
-                                    )),
-                              Text(report.serviceTitle,
-                                  style: const TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w700,
-                                    color: ZienaColors.textPrimary,
-                                  )),
-                              Row(children: [
-                                const Icon(Icons.calendar_today_outlined,
-                                    size: 11, color: ZienaColors.textSecondary),
-                                const SizedBox(width: 4),
-                                Text(report.longCreatedAtLabel,
-                                    style: const TextStyle(
-                                        fontSize: 11,
-                                        color: ZienaColors.textSecondary)),
-                              ]),
-                            ],
-                          )),
-                    ]),
-                  ),
-                  const SizedBox(height: 16),
+                  // Container(
+                  //   padding: const EdgeInsets.all(14),
+                  //   decoration: BoxDecoration(
+                  //     color: ZienaColors.white,
+                  //     borderRadius: BorderRadius.circular(14),
+                  //     border: Border.all(
+                  //         color: ZienaColors.greyBorder, width: 0.5),
+                  //   ),
+                  //   child: Row(children: [
+                  //     Container(
+                  //       width: 64,
+                  //       height: 64,
+                  //       decoration: BoxDecoration(
+                  //           color: ZienaColors.bg3,
+                  //           borderRadius: BorderRadius.circular(10)),
+                  //       child: const Icon(Icons.cleaning_services_rounded,
+                  //           color: ZienaColors.primary, size: 32),
+                  //     ),
+                  //     const SizedBox(width: 12),
+                  //     Expanded(
+                  //         child: Column(
+                  //           crossAxisAlignment: CrossAxisAlignment.start,
+                  //           children: [
+                  //             if (report.serviceCategory.isNotEmpty)
+                  //               Text(report.serviceCategory,
+                  //                   style: const TextStyle(
+                  //                     fontSize: 11,
+                  //                     color: ZienaColors.primary,
+                  //                     fontWeight: FontWeight.w500,
+                  //                   )),
+                  //             Text(report.serviceTitle,
+                  //                 style: const TextStyle(
+                  //                   fontSize: 15,
+                  //                   fontWeight: FontWeight.w700,
+                  //                   color: ZienaColors.textPrimary,
+                  //                 )),
+                  //             Row(children: [
+                  //               const Icon(Icons.calendar_today_outlined,
+                  //                   size: 11, color: ZienaColors.textSecondary),
+                  //               const SizedBox(width: 4),
+                  //               Text(report.longCreatedAtLabel,
+                  //                   style: const TextStyle(
+                  //                       fontSize: 11,
+                  //                       color: ZienaColors.textSecondary)),
+                  //             ]),
+                  //           ],
+                  //         )),
+                  //   ]),
+                  // ),
+                  // const SizedBox(height: 16),
 
                   // Status section
                   Container(
@@ -256,6 +256,40 @@ class _ReportDetailView extends StatelessWidget {
                       ],
                     ),
                   ),
+
+                  // History timeline
+                  if (report.history.isNotEmpty) ...[
+                    const SizedBox(height: 16),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: ZienaColors.white,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                            color: ZienaColors.greyBorder, width: 0.5),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('history'.tr(),
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w700,
+                                color: ZienaColors.textPrimary,
+                              )),
+                          const SizedBox(height: 16),
+                          // `history` arrives newest-first from the API; the
+                          // timeline reads top-to-bottom as newest-to-oldest.
+                          ...List.generate(report.history.length, (i) {
+                            final item = report.history[i];
+                            final isLast = i == report.history.length - 1;
+                            return _HistoryTile(item: item, isLast: isLast);
+                          }),
+                        ],
+                      ),
+                    ),
+                  ],
                 ]),
               ),
             ),
@@ -276,6 +310,83 @@ class _ReportDetailView extends StatelessWidget {
             ),
           ]);
         },
+      ),
+    );
+  }
+}
+
+class _HistoryTile extends StatelessWidget {
+  final ReportHistoryItem item;
+  final bool isLast;
+  const _HistoryTile({required this.item, required this.isLast});
+
+  @override
+  Widget build(BuildContext context) {
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Dot + connecting line
+          Column(
+            children: [
+              Container(
+                width: 10,
+                height: 10,
+                margin: const EdgeInsets.only(top: 3),
+                decoration: BoxDecoration(
+                  color: item.statusColor,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              if (!isLast)
+                Expanded(
+                  child: Container(
+                    width: 2,
+                    margin: const EdgeInsets.symmetric(vertical: 2),
+                    color: ZienaColors.greyBorder,
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(width: 10),
+          // Content
+          Expanded(
+            child: Padding(
+              padding: EdgeInsets.only(bottom: isLast ? 0 : 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    item.statusLabel,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: item.statusColor,
+                    ),
+                  ),
+                  if (item.note != null && item.note!.trim().isNotEmpty) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      item.note!.trim(),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: ZienaColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 2),
+                  Text(
+                    item.formattedDateTime,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: ZienaColors.textHint,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

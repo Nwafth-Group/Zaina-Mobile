@@ -1,6 +1,9 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
+import 'package:zeina/features/contract/presentation/cubit/contract_cubit.dart';
+import 'package:zeina/features/contract/presentation/screens/contract_preview_screen.dart';
 import 'package:zeina/features/profile/presentation/cubit/points_cubit.dart';
 import 'package:zeina/features/services/data/model/booking_selection_data.dart';
 import 'package:zeina/features/services/data/model/service_detail_model.dart';
@@ -57,10 +60,15 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   String? _couponError;
   bool _isValidatingCoupon = false;
   bool _isPaying = false;
+  bool _isLoadingContract = false;
 
   // Starts as the pricing passed in from the booking sheet; gets replaced
   // with a fresh result whenever a coupon is successfully applied.
   late BookingValidationModel _currentValidation;
+
+  // Standalone (not provided in the widget tree) since the contract is only
+  // ever fetched from this screen, on demand — closed in dispose().
+  final ContractCubit _contractCubit = sl<ContractCubit>();
 
   static const _weekdayShort = [
     'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'
@@ -87,6 +95,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   @override
   void dispose() {
     _couponController.dispose();
+    _contractCubit.close();
     super.dispose();
   }
 
@@ -158,6 +167,54 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         e is BookingValidationException ? e.displayMessage : 'invalid_coupon'.tr();
         _isValidatingCoupon = false;
       });
+    }
+  }
+
+  // Dates formatted the way the API expects ('yyyy-MM-dd').
+  List<String> get _apiDates => widget.selection.selectedDates
+      .map((d) => DateFormat('yyyy-MM-dd').format(d))
+      .toList();
+
+  Future<void> _openContractPreview() async {
+    setState(() => _isLoadingContract = true);
+
+    await _contractCubit.fetchContractPreview(
+      serviceId: widget.service.id,
+      addressId: widget.service.addressId!,
+      // Same condition used for `visitType` in _handlePay below: omitted
+      // entirely for configurable-hourly services (duration != null).
+      // NOTE: `.type` here is whatever the VisitType model already
+      // serializes to in ServicesRepository's own createBooking call —
+      // if that's an enum rather than a raw String, swap this for
+      // whichever getter that repository uses (e.g. `.apiValue`), since
+      // this call bypasses the repository and needs a plain String itself.
+      visitType:
+      widget.selection.duration == null ? widget.selection.visitType.type : null,
+      dates: _apiDates,
+      startTime: widget.selection.shift.startLabel,
+      duration: widget.selection.duration,
+      workerGender: widget.selection.workerGender,
+      workerIds: _currentValidation.workerIds,
+      numberOfChildren: widget.selection.numberOfChildren,
+      childAgeGroups: widget.selection.childAgeGroupIds,
+      note: widget.selection.note,
+      paymentMethod: _paymentMethod.apiValue,
+      couponCode: _couponController.text.trim(),
+    );
+
+    if (!mounted) return;
+    setState(() => _isLoadingContract = false);
+
+    final state = _contractCubit.state;
+    if (state is ContractLoaded) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ContractPreviewScreen(pdfBytes: state.pdfBytes),
+        ),
+      );
+    } else if (state is ContractError) {
+      showCoverageErrorDialog(context, message: state.message);
     }
   }
 
@@ -502,30 +559,45 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           // ── Contract ──────────────────────────────────────────────────
           Text('contract'.tr(), style: _sectionTitleStyle),
           const SizedBox(height: 8),
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: ZienaColors.white,
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: ZienaColors.greyBorder),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: const BoxDecoration(
-                    color: ZienaColors.bg2,
-                    shape: BoxShape.circle,
+          GestureDetector(
+            onTap: _isLoadingContract ? null : _openContractPreview,
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: ZienaColors.white,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: ZienaColors.greyBorder),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: const BoxDecoration(
+                      color: ZienaColors.bg2,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.description_outlined,
+                        color: ZienaColors.primary),
                   ),
-                  child: const Icon(Icons.description_outlined,
-                      color: ZienaColors.primary),
-                ),
-                const SizedBox(width: 10),
-                Text('contract'.tr(),
-                    style: const TextStyle(
-                        fontSize: 14, color: ZienaColors.textSecondary)),
-              ],
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text('contract'.tr(),
+                        style: const TextStyle(
+                            fontSize: 14, color: ZienaColors.textSecondary)),
+                  ),
+                  if (_isLoadingContract)
+                    const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2, color: ZienaColors.primary),
+                    )
+                  else
+                    const Icon(Icons.chevron_right,
+                        color: ZienaColors.textHint),
+                ],
+              ),
             ),
           ),
           const SizedBox(height: 16),

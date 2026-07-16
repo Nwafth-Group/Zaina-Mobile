@@ -1,4 +1,5 @@
 import 'package:get_it/get_it.dart';
+import 'package:zeina/features/contract/presentation/cubit/contract_cubit.dart';
 import 'core/network/api_client.dart';
 import 'features/auth/data/datasources/auth_remote_datasource.dart';
 import 'features/auth/data/repositories/auth_repository.dart';
@@ -77,6 +78,7 @@ void setupDependencies() {
   sl.registerFactory<ReportsCubit>(() => ReportsCubit(sl<ApiClient>()));
   sl.registerFactory<ReportDetailCubit>(() => ReportDetailCubit(sl<ApiClient>()));
   sl.registerFactory<CouponsCubit>(() => CouponsCubit(sl<ApiClient>()));
+  sl.registerFactory<ContractCubit>(() => ContractCubit(sl<ApiClient>()));
 
 // --- Services Module ---
 

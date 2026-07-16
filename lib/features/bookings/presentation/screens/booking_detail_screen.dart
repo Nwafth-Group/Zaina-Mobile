@@ -1,6 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:zeina/features/contract/presentation/cubit/contract_cubit.dart';
+import 'package:zeina/features/contract/presentation/screens/contract_preview_screen.dart';
 import 'package:zeina/features/home/presentation/cubit/home_cubti.dart';
 import 'package:zeina/features/wallet/presentation/cubit/cubit.dart';
 import '../../../../core/theme/theme.dart';
@@ -80,6 +82,55 @@ class _LoadedBody extends StatelessWidget {
   final List<ServiceFeatureModel> features;
 
   const _LoadedBody({required this.booking, required this.features});
+
+  /// Fetches the contract PDF for this booking behind a blocking spinner,
+  /// then pushes the shared PdfPreview-based screen — same
+  /// spinner/error-dialog pattern as `_fetchServiceWithLoading` /
+  /// `_runWithLoadingDialog` in `_BottomActions` below.
+  Future<void> _openContract(BuildContext context) async {
+    final contractCubit = sl<ContractCubit>();
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(
+        child: CircularProgressIndicator(color: ZienaColors.primary),
+      ),
+    );
+
+    await contractCubit.fetchBookingContract(booking.id);
+
+    if (!context.mounted) {
+      contractCubit.close();
+      return;
+    }
+    Navigator.pop(context); // close spinner
+
+    final state = contractCubit.state;
+    contractCubit.close();
+
+    if (state is ContractLoaded) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ContractPreviewScreen(pdfBytes: state.pdfBytes),
+        ),
+      );
+    } else if (state is ContractError) {
+      showDialog(
+        context: context,
+        builder: (dialogCtx) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          content: Text(state.message),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogCtx),
+              child: Text('done'.tr()),
+            ),
+          ],
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -307,10 +358,7 @@ class _LoadedBody extends StatelessWidget {
                       Text('documents'.tr(), style: _titleStyle),
                       const SizedBox(height: 10),
                       GestureDetector(
-                        onTap: () {
-                          // TODO: open/download the contract document once
-                          // a contract-fetch endpoint is available.
-                        },
+                        onTap: () => _openContract(context),
                         child: Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(

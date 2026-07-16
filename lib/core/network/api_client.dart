@@ -7,6 +7,7 @@ import '../utils/helpers.dart';
 import '../utils/shared_pref_helper.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'dart:developer' as developer;
+import 'dart:typed_data';
 
 
 class ApiClient {
@@ -119,6 +120,31 @@ class ApiClient {
     }
   }
 
+  /// Like [get], but for endpoints that return a raw binary body — e.g.
+  /// fetching an already-generated booking contract PDF by id
+  /// (customer/bookings/{id}/contract). Same reasoning as [postBytes]:
+  /// get()'s declared Map<String, dynamic> return type would throw a
+  /// TypeError on binary data, and ResponseType.bytes avoids Dio trying to
+  /// (and corrupting the file by) treating it as JSON or text.
+  Future<Uint8List> getBytes(String endpoint, {Map<String, dynamic>? queryParameters}) async {
+    try {
+      final token = SharedPrefHelper.getToken();
+      if (token != null) {
+        _dio.options.headers['Authorization'] = 'Bearer $token';
+      }
+      final response = await _dio.get<List<int>>(
+        endpoint,
+        queryParameters: queryParameters,
+        options: Options(responseType: ResponseType.bytes),
+      );
+      return Uint8List.fromList(response.data ?? []);
+    } on DioException catch (e) {
+      final message = _handleError(e);
+      Helpers.showError(message.toString());
+      throw _handleError(e);
+    }
+  }
+
   Future<Map<String, dynamic>> post(String endpoint, {dynamic data}) async {
     try {
       final token =SharedPrefHelper.getToken();
@@ -128,6 +154,33 @@ class ApiClient {
       }
       final response = await _dio.post(endpoint, data: data);
       return response.data;
+    } on DioException catch (e) {
+      final message = _handleError(e);
+      Helpers.showError(message.toString());
+      throw _handleError(e);
+    }
+  }
+
+  /// Like [post], but for endpoints that return a raw binary body — e.g.
+  /// the contract-preview endpoint, which returns an actual PDF file
+  /// (starts with the "%PDF-1.4" magic bytes), not the usual
+  /// {status, message, data} JSON envelope. post()'s declared
+  /// Map<String, dynamic> return type would throw a TypeError the moment
+  /// Dio hands back binary data instead of a Map, and reading it as text
+  /// (ResponseType.plain) corrupts the binary content since Dio would try
+  /// to UTF-8-decode raw PDF bytes. ResponseType.bytes avoids both.
+  Future<Uint8List> postBytes(String endpoint, {dynamic data}) async {
+    try {
+      final token = SharedPrefHelper.getToken();
+      if (token != null) {
+        _dio.options.headers['Authorization'] = 'Bearer $token';
+      }
+      final response = await _dio.post<List<int>>(
+        endpoint,
+        data: data,
+        options: Options(responseType: ResponseType.bytes),
+      );
+      return Uint8List.fromList(response.data ?? []);
     } on DioException catch (e) {
       final message = _handleError(e);
       Helpers.showError(message.toString());
