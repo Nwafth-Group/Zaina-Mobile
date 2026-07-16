@@ -7,6 +7,7 @@ import 'package:zeina/core/utils/constants.dart';
 import 'package:zeina/core/utils/shared_pref_helper.dart';
 import 'package:zeina/features/bookings/presentation/screens/booking_detail_screen.dart';
 import 'package:zeina/features/services/presentation/screens/hourly_services_list_screen.dart';
+import 'package:zeina/features/services/presentation/screens/other_services_list_screen.dart';
 import 'package:zeina/features/services/presentation/screens/ziena_services_screen.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../injection_container.dart';
@@ -128,7 +129,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                 child: _ServiceCard(
                                   label: AppStrings.otherServices,
                                   icon: Icons.bubble_chart_outlined,
-                                  onTap: () {},
+                                  onTap: () => Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => const OtherServicesListScreenUi(),
+                                    ),
+                                  ),
                                 ),
                               ),
                             ],
