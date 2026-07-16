@@ -414,5 +414,21 @@
   "deep_cleaning_included_4": "Floor Cleaning And Sanitization",
   "deep_cleaning_period_hint": "**The service includes 6 workers for 6 hours from the start time.",
   "period_morning": "Morning",
-  "period_evening": "Evening"
+  "period_evening": "Evening",
+  "Pts": "Pts",
+  "follow": "Follow",
+  "invite": "Invite",
+  "rate_now": "Rate Now",
+  "go": "Go",
+  "invite_friends": "Invite Friends",
+  "your_code_invite_friends": "Your Code, Invite Your Friends !",
+  "copy_code_invite_friend": "Copy the code to invite your friend",
+  "today": "Today",
+  "last_7_days": "Last 7 Days",
+  "last_30_days": "Last 30 Days",
+  "generate_referral_code": "Generate Referral Code",
+  "generate_new_code": "Generate new code",
+  "code_expires_on": "Expires on",
+  "have_code_paste_here": "If you have a code, paste it here!"
+
 }

@@ -420,5 +420,20 @@
   "deep_cleaning_included_4": "تنظيف الأرضيات وتعقيمها",
   "deep_cleaning_period_hint": "**تشمل الخدمة 6 عمال لمدة 6 ساعات من وقت البدء.",
   "period_morning": "صباحاً",
-  "period_evening": "مساءً"
+  "period_evening": "مساءً",
+  "follow": "متابعة",
+  "invite": "دعوة",
+  "rate_now": "قيّم الآن",
+  "go": "اذهب",
+  "invite_friends": "دعوة الأصدقاء",
+  "your_code_invite_friends": "كودك، ادعُ أصدقاءك !",
+  "copy_code_invite_friend": "انسخ الكود لدعوة صديقك",
+  "today": "اليوم",
+  "last_7_days": "آخر 7 أيام",
+  "last_30_days": "آخر 30 يوم",
+  "generate_referral_code": "إنشاء كود إحالة",
+  "generate_new_code": "إنشاء كود جديد",
+  "code_expires_on": "ينتهي في",
+  "have_code_paste_here": "إذا كان لديك كود، الصقه هنا!"
+
 }

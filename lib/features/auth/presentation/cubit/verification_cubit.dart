@@ -12,10 +12,15 @@ class VerificationCubit extends Cubit<VerificationState> {
 
   /// POST customer/auth/verify
   /// Files: [frontId, backId, selfie]
+  /// Optional [referralCode] — "If you have a code, paste it here!" —
+  /// sent alongside the files as `referral_code`. Omitted from the
+  /// request entirely when null/empty rather than sent as a blank
+  /// string, since FormData.fromMap would otherwise happily send ''.
   Future<void> submitVerification({
     required File frontId,
     required File backId,
     required File selfie,
+    String? referralCode,
   }) async {
     emit(VerificationLoading());
     try {
@@ -34,6 +39,9 @@ class VerificationCubit extends Cubit<VerificationState> {
           selfie.path,
           filename: 'selfie.jpg',
         ),
+
+        if (referralCode != null && referralCode.trim().isNotEmpty)
+          'referral_code': referralCode.trim(),
       });
 
       await _api.dio.post(
