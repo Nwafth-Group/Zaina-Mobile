@@ -72,10 +72,10 @@ class UpcomingAppointment {
 
 class HomeData {
   final List<BannerModel> banners;
-  final UpcomingAppointment? upcomingAppointment;
+  final List<UpcomingAppointment> upcomingAppointment;
 
   HomeData({
     required this.banners,
-    this.upcomingAppointment,
+    required this.upcomingAppointment,
   });
 }

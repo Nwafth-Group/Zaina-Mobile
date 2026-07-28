@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:zeina/widgets/custom_icon.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../injection_container.dart';
 import '../../data/models/legal_model.dart';
@@ -36,7 +37,7 @@ class _ReportScreenView extends StatelessWidget {
               size: 18, color: ZienaColors.textPrimary),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Text('report'.tr(),
+        title: Text('reports'.tr(),
             style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w700,
@@ -72,24 +73,7 @@ class _ReportScreenView extends StatelessWidget {
 
           if (state is ReportsLoaded) {
             if (state.reports.isEmpty) {
-              return Center(
-                child: Column(mainAxisSize: MainAxisSize.min, children: [
-                  const Icon(Icons.receipt_long_outlined,
-                      size: 64, color: ZienaColors.greyBorder),
-                  const SizedBox(height: 12),
-                  Text('no_reports'.tr(),
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: ZienaColors.textPrimary,
-                      )),
-                  const SizedBox(height: 6),
-                  Text('no_reports_desc'.tr(),
-                      style: const TextStyle(
-                          fontSize: 13, color: ZienaColors.textSecondary),
-                      textAlign: TextAlign.center),
-                ]),
-              );
+              return _buildEmpty();
             }
 
             return RefreshIndicator(
@@ -116,6 +100,28 @@ class _ReportScreenView extends StatelessWidget {
         },
       ),
     );
+  }
+  Widget _buildEmpty() {
+    return Center(child: Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 32),
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        ImageAsset(
+          'assets/images/rep_empty.png',
+          width: 180, height: 180,
+        ),
+        const SizedBox(height: 8),
+        Text('no_reports'.tr(),
+            style: const TextStyle(
+              fontSize: 20, fontWeight: FontWeight.w700,
+              color: ZienaColors.textPrimary,
+            ), textAlign: TextAlign.center),
+        const SizedBox(height: 10),
+        Text('no_reports_desc'.tr(),
+            style: const TextStyle(
+                fontSize: 13, color: ZienaColors.textSecondary, height: 1.5),
+            textAlign: TextAlign.center),
+      ]),
+    ));
   }
 }
 

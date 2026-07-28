@@ -1,5 +1,5 @@
 class AppConstants {
-  static const String baseUrl = 'http://18.192.22.67/api/v1/';
+  static const String baseUrl = 'http://35.159.161.2/api/v1/';
 
   // Auth Endpoints
   static const String sendOtp = 'customer/auth/send-otp';

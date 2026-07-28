@@ -1,6 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:zeina/core/utils/shared_pref_helper.dart';
+import 'package:zeina/widgets/signin_required_widget.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../injection_container.dart';
 import '../../data/model/coverage_model.dart';
@@ -51,6 +53,20 @@ class _ServicesListViewState extends State<_ServicesListView> {
   // Tracks which service is currently going through the coverage check —
   // used to highlight the tapped tile and show its inline spinner.
   int? _checkingServiceId;
+
+  void _showSignInDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (_) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxHeight: 480),
+          child: const SignInRequiredWidget(tabKey: 'bookings', dialog: true,),
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -126,6 +142,12 @@ class _ServicesListViewState extends State<_ServicesListView> {
   }
 
   Future<void> _onServiceTap(BuildContext context, ServiceModel service) async {
+
+    if (!SharedPrefHelper.isLoggedIn()) {
+      _showSignInDialog();
+      return;
+    }
+
     if (_checkingServiceId != null) return; // avoid double taps
 
     setState(() => _checkingServiceId = service.id);

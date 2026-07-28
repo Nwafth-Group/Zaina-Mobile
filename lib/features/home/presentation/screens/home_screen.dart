@@ -141,11 +141,11 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ),
                         const SizedBox(height: 24),
-                        if(data.upcomingAppointment !=null)...[
+                        if(data.upcomingAppointment.isNotEmpty)...[
                         _buildSectionHeader('upcoming_appointment', null),
                         const SizedBox(height: 12),
                         // Display actual upcoming appointment from API
-                        _buildAppointmentCard(data.upcomingAppointment),
+                        _buildAppointmentCard(data.upcomingAppointment.first),
                         ],
                         const SizedBox(height: 60),
                       ],

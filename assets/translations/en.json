@@ -429,6 +429,6 @@
   "generate_referral_code": "Generate Referral Code",
   "generate_new_code": "Generate new code",
   "code_expires_on": "Expires on",
-  "have_code_paste_here": "If you have a code, paste it here!"
-
+  "have_code_paste_here": "If you have a code, paste it here!",
+  "reports": "Reports"
 }

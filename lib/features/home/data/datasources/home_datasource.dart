@@ -18,15 +18,9 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
       final response = await _api.get('customer/home');
       final data = response['data'];
       
-      // Parse upcoming appointment if present
-      UpcomingAppointment? upcomingAppointment;
-      if (data['upcoming_appointment'] != null && data['upcoming_appointment'].isNotEmpty) {
-        upcomingAppointment = UpcomingAppointment.fromJson(data['upcoming_appointment']);
-      }
-      
       return HomeData(
         banners: List.of(data['banners'] ?? []).map((e) => BannerModel.fromJson(e)).toList(),
-        upcomingAppointment: upcomingAppointment,
+        upcomingAppointment: List.of(data['upcoming_appointment'] ?? []).map((e) => UpcomingAppointment.fromJson(e)).toList(),
       );
     } on DioException catch (e) {
       throw handleDioError(e);

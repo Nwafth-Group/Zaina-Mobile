@@ -434,6 +434,7 @@
   "generate_referral_code": "إنشاء كود إحالة",
   "generate_new_code": "إنشاء كود جديد",
   "code_expires_on": "ينتهي في",
-  "have_code_paste_here": "إذا كان لديك كود، الصقه هنا!"
+  "have_code_paste_here": "إذا كان لديك كود، الصقه هنا!",
+  "reports": "التقارير"
 
 }

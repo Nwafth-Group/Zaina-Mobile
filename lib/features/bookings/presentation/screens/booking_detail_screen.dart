@@ -226,7 +226,7 @@ class _LoadedBody extends StatelessWidget {
                           asset: 'assets/images/calender.png',
                           text: booking.dateRangeLabel,
                         ),
-                        const SizedBox(width: 10),
+                        const SizedBox(width: 2),
                         _Pill(
                           icon: Icons.access_time_rounded,
                           text: booking.timeSlot,
@@ -489,7 +489,7 @@ class _Pill extends StatelessWidget {
   Widget build(BuildContext context) {
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 10),
         decoration: BoxDecoration(
           color: ZienaColors.white,
           borderRadius: BorderRadius.circular(12),
@@ -514,7 +514,7 @@ class _Pill extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
-                  fontSize: 12,
+                  fontSize: 11,
                   fontWeight: FontWeight.w600,
                   color: ZienaColors.primary,
                 ),

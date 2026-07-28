@@ -180,7 +180,7 @@ class _MoreScreenState extends State<MoreScreen> {
                   ),
                   _MenuItem(
                     icon: 'assets/images/report.png',
-                    label: 'report'.tr(),
+                    label: 'reports'.tr(),
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(builder: (_) => const ReportScreen()),
