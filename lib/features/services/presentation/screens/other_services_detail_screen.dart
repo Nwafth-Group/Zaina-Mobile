@@ -36,7 +36,7 @@ const List<ReviewUi> defaultReviews = [
   ),
 ];
 
-class ServiceDetailScreenUi extends StatelessWidget {
+class OtherServicesDetailScreen extends StatelessWidget {
   static const String routeName = '/service-detail-ui';
 
   /// Localization key for the service's own title (e.g. 'service_deep_cleaning').
@@ -63,7 +63,7 @@ class ServiceDetailScreenUi extends StatelessWidget {
   /// tapped — each service wires this to its own booking flow.
   final void Function(BuildContext context) onBookNow;
 
-  const ServiceDetailScreenUi({
+  const OtherServicesDetailScreen({
     super.key,
     required this.titleKey,
     required this.descriptionKey,

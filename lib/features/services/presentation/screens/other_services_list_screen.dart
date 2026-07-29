@@ -74,7 +74,7 @@ class OtherServicesListScreenUi extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => ServiceDetailScreenUi(
+                    builder: (_) => OtherServicesDetailScreen(
                       titleKey: 'service_pedicure_manicure',
                       descriptionKey: 'service_pedicure_manicure_description',
                       heroImageUrl:
@@ -93,7 +93,7 @@ class OtherServicesListScreenUi extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => ServiceDetailScreenUi(
+                    builder: (_) => OtherServicesDetailScreen(
                       titleKey: 'service_deep_cleaning',
                       descriptionKey: 'service_deep_cleaning_description',
                       heroImageUrl:

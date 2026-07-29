@@ -2,34 +2,68 @@ import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:latlong2/latlong.dart';
+import 'package:zeina/core/utils/constants.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../widgets/ziena_button.dart';
 
 class MapPickerScreen extends StatefulWidget {
-  const MapPickerScreen({super.key});
+  /// If provided (e.g. when editing an existing address), the map opens
+  /// centered on this location instead of the user's current GPS position.
+  final double? initialLatitude;
+  final double? initialLongitude;
+  final String? initialAddress;
+
+  const MapPickerScreen({
+    super.key,
+    this.initialLatitude,
+    this.initialLongitude,
+    this.initialAddress,
+  });
 
   @override
   State<MapPickerScreen> createState() => _MapPickerScreenState();
 }
 
 class _MapPickerScreenState extends State<MapPickerScreen> {
-  final _mapController = MapController();
-  final _searchCtrl    = TextEditingController();
+  GoogleMapController? _mapController;
+  final _searchCtrl = TextEditingController();
+  final _dio = Dio();
 
-  LatLng _center = const LatLng(24.7136, 46.6753);
-  bool   _locating  = false;
-  bool   _searching = false;
+  // Fallback only — used if there's no saved address AND locating the
+  // device fails (e.g. permission denied).
+  static const LatLng _fallbackCenter = LatLng(24.7136, 46.6753);
+
+  late LatLng _center;
+  bool get _hasInitialLocation =>
+      widget.initialLatitude != null && widget.initialLongitude != null;
+
+  bool _locating = false;
+  bool _searching = false;
+  bool _isMoving = false;
   String _displayAddress = '';
 
   List<_SearchResult> _searchResults = [];
   Timer? _debounce;
 
   @override
+  void initState() {
+    super.initState();
+    if (_hasInitialLocation) {
+      _center = LatLng(widget.initialLatitude!, widget.initialLongitude!);
+      _displayAddress = widget.initialAddress ?? '';
+      if (_displayAddress.isNotEmpty) {
+        _searchCtrl.text = _displayAddress;
+      }
+    } else {
+      _center = _fallbackCenter;
+    }
+  }
+
+  @override
   void dispose() {
-    _mapController.dispose();
+    _mapController?.dispose();
     _searchCtrl.dispose();
     _debounce?.cancel();
     super.dispose();
@@ -58,7 +92,7 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
         ),
       );
       final ll = LatLng(pos.latitude, pos.longitude);
-      _mapController.move(ll, 15);
+      await _mapController?.animateCamera(CameraUpdate.newLatLngZoom(ll, 15));
       setState(() => _center = ll);
       await _reverseGeocode(ll);
     } catch (_) {
@@ -68,20 +102,33 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
   }
 
   Future<void> _reverseGeocode(LatLng ll) async {
+    final url = 'https://maps.googleapis.com/maps/api/geocode/json';
+    final params = {
+      'latlng': '${ll.latitude},${ll.longitude}',
+      'key': AppConstants.googleMapsApiKey,
+    };
+    debugPrint('=== Reverse geocode request ===');
+    debugPrint('GET $url?latlng=${params['latlng']}&key=***');
     try {
-      final dio = Dio();
-      final res = await dio.get(
-        'https://nominatim.openstreetmap.org/reverse',
-        queryParameters: {
-          'lat': ll.latitude,
-          'lon': ll.longitude,
-          'format': 'json',
-        },
-        options: Options(headers: {'User-Agent': 'ZeinaApp/1.0'}),
-      );
-      final display = res.data['display_name'] as String? ?? '';
-      if (mounted) setState(() => _displayAddress = display);
-    } catch (_) {}
+      final res = await _dio.get(url, queryParameters: params);
+      debugPrint('Reverse geocode HTTP status: ${res.statusCode}');
+      debugPrint('Reverse geocode API status field: ${res.data['status']}');
+      if (res.data['error_message'] != null) {
+        debugPrint('Reverse geocode error_message: ${res.data['error_message']}');
+      }
+      final results = res.data['results'] as List<dynamic>? ?? [];
+      debugPrint('Reverse geocode result count: ${results.length}');
+      if (results.isNotEmpty) {
+        final display = results.first['formatted_address'] as String? ?? '';
+        debugPrint('Reverse geocode resolved address: $display');
+        if (mounted) setState(() => _displayAddress = display);
+      } else {
+        debugPrint('Reverse geocode returned no results — _displayAddress stays empty.');
+      }
+    } catch (e) {
+      debugPrint('Reverse geocode FAILED with exception: $e');
+    }
+    debugPrint('================================');
   }
 
   void _onSearchChanged(String query) {
@@ -94,23 +141,31 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
       if (!mounted) return;
       setState(() => _searching = true);
       try {
-        final dio = Dio();
-        final res = await dio.get(
-          'https://nominatim.openstreetmap.org/search',
+        final res = await _dio.get(
+          'https://maps.googleapis.com/maps/api/geocode/json',
           queryParameters: {
-            'q': query.trim(),
-            'format': 'json',
-            'limit': 5,
+            'address': query.trim(),
+            'key': AppConstants.googleMapsApiKey,
           },
-          options: Options(headers: {'User-Agent': 'ZeinaApp/1.0'}),
         );
-        final list = (res.data as List<dynamic>).map((e) => _SearchResult(
-          display: e['display_name'] as String,
-          lat: double.parse(e['lat'] as String),
-          lon: double.parse(e['lon'] as String),
-        )).toList();
+        debugPrint('=== Search geocode: "$query" ===');
+        debugPrint('API status field: ${res.data['status']}');
+        if (res.data['error_message'] != null) {
+          debugPrint('error_message: ${res.data['error_message']}');
+        }
+        final results = res.data['results'] as List<dynamic>? ?? [];
+        debugPrint('Result count: ${results.length}');
+        final list = results.map((e) {
+          final loc = e['geometry']['location'];
+          return _SearchResult(
+            display: e['formatted_address'] as String,
+            lat: (loc['lat'] as num).toDouble(),
+            lon: (loc['lng'] as num).toDouble(),
+          );
+        }).toList();
         if (mounted) setState(() => _searchResults = list);
-      } catch (_) {
+      } catch (e) {
+        debugPrint('Search geocode FAILED with exception: $e');
         if (mounted) setState(() => _searchResults = []);
       } finally {
         if (mounted) setState(() => _searching = false);
@@ -118,45 +173,54 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
     });
   }
 
-  void _selectSearchResult(_SearchResult r) {
+  Future<void> _selectSearchResult(_SearchResult r) async {
     final ll = LatLng(r.lat, r.lon);
-    _mapController.move(ll, 15);
+    await _mapController?.animateCamera(CameraUpdate.newLatLngZoom(ll, 15));
     setState(() {
-      _center          = ll;
-      _displayAddress  = r.display;
+      _center = ll;
+      _displayAddress = r.display;
       _searchCtrl.text = r.display;
-      _searchResults   = [];
+      _searchResults = [];
     });
     FocusScope.of(context).unfocus();
   }
 
-  void _onMapPositionChanged(MapCamera camera, bool hasGesture) {
-    if (hasGesture) {
-      setState(() => _center = camera.center);
-      _debounce?.cancel();
-      _debounce = Timer(const Duration(milliseconds: 800), () {
-        _reverseGeocode(_center);
-      });
-    }
+  void _onCameraMove(CameraPosition position) {
+    _isMoving = true;
+    _center = position.target;
+  }
+
+  void _onCameraIdle() {
+    if (!_isMoving) return;
+    _isMoving = false;
+    _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 500), () {
+      _reverseGeocode(_center);
+    });
   }
 
   void _onContinue() {
+    debugPrint('=== Map picker returning ===');
+    debugPrint('lat: ${_center.latitude}, lng: ${_center.longitude}');
+    debugPrint('_displayAddress at time of Continue: "$_displayAddress"');
+    debugPrint('=============================');
     Navigator.pop(context, {
-      'latitude':  _center.latitude,
+      'latitude': _center.latitude,
       'longitude': _center.longitude,
-      'area_id':   null,
-      'display':   _displayAddress.isNotEmpty
+      // Sent to the API as `formatted_address` (from Google reverse geocoding).
+      'formatted_address': _displayAddress,
+      'display': _displayAddress.isNotEmpty
           ? _displayAddress
           : '${_center.latitude.toStringAsFixed(5)}, '
-            '${_center.longitude.toStringAsFixed(5)}',
+          '${_center.longitude.toStringAsFixed(5)}',
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    // bottom panel height: address row (optional) + button + safe area
     final bottomPadding = MediaQuery.of(context).padding.bottom;
-    final panelHeight   = (_displayAddress.isNotEmpty ? 52.0 : 0.0) + 66 + bottomPadding + 28;
+    final panelHeight =
+        (_displayAddress.isNotEmpty ? 52.0 : 0.0) + 66 + bottomPadding + 28;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -181,80 +245,84 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
       ),
       body: Stack(
         children: [
-          // ── OSM Map ────────────────────────────────────────────────────
+          // ── Google Map ─────────────────────────────────────────────────
           Positioned.fill(
-            child: FlutterMap(
-              mapController: _mapController,
-              options: MapOptions(
-                initialCenter: _center,
-                initialZoom: 15,
-                onPositionChanged: _onMapPositionChanged,
+            child: GoogleMap(
+              initialCameraPosition: CameraPosition(
+                target: _center,
+                zoom: 15,
               ),
-              children: [
-                TileLayer(
-                  urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                  userAgentPackageName: 'com.zeina.app',
-                ),
-              ],
+              onMapCreated: (controller) {
+                _mapController = controller;
+                if (!_hasInitialLocation) {
+                  // No saved address to show — default to the user's
+                  // current location instead of a hardcoded fallback.
+                  _goToMyLocation();
+                }
+              },
+              onCameraMove: _onCameraMove,
+              onCameraIdle: _onCameraIdle,
+              myLocationButtonEnabled: false,
+              zoomControlsEnabled: false,
+              compassEnabled: false,
             ),
           ),
 
-          // ── Center avatar pin ──────────────────────────────────────────
+          // ── Center avatar pin (fixed overlay, map moves under it) ───────
           Center(
-            child: Transform.translate(
-              // shift up so the tip of the pin is at the exact center
-              offset: Offset(0, -(36 / 2 + 6)),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // circular frame
-                  Container(
-                    width: 56,
-                    height: 56,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.black87, width: 2.5),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.18),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
+            child: IgnorePointer(
+              child: Transform.translate(
+                offset: Offset(0, -(36 / 2 + 6)),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 56,
+                      height: 56,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.black87, width: 2.5),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.18),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.person,
+                        size: 30,
+                        color: Colors.black87,
+                      ),
                     ),
-                    child: const Icon(
-                      Icons.person,
-                      size: 30,
+                    Container(
+                      width: 2.5,
+                      height: 12,
                       color: Colors.black87,
                     ),
-                  ),
-                  // stem
-                  Container(
-                    width: 2.5,
-                    height: 12,
-                    color: Colors.black87,
-                  ),
-                  // green dot at tip
-                  Container(
-                    width: 8,
-                    height: 8,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF4CAF50),
-                      shape: BoxShape.circle,
+                    Container(
+                      width: 8,
+                      height: 8,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF4CAF50),
+                        shape: BoxShape.circle,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
 
-          // ── Search bar + dropdown results ──────────────────────────────
+          // ── Search bar + dropdown results ────────────────────────────────
           Positioned(
-            top: 12, left: 16, right: 16,
+            top: 12,
+            left: 16,
+            right: 16,
             child: Column(
               children: [
-                // search bar
                 Container(
                   height: 52,
                   decoration: BoxDecoration(
@@ -270,8 +338,7 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
                   ),
                   child: Row(children: [
                     const SizedBox(width: 16),
-                    Icon(Icons.search,
-                        color: ZienaColors.primary, size: 22),
+                    Icon(Icons.search, color: ZienaColors.primary, size: 22),
                     const SizedBox(width: 10),
                     Expanded(
                       child: TextField(
@@ -298,7 +365,8 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
                       Padding(
                         padding: const EdgeInsets.only(right: 14),
                         child: SizedBox(
-                          width: 16, height: 16,
+                          width: 16,
+                          height: 16,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
                             color: ZienaColors.primary,
@@ -307,8 +375,6 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
                       ),
                   ]),
                 ),
-
-                // search results dropdown
                 if (_searchResults.isNotEmpty)
                   Container(
                     margin: const EdgeInsets.only(top: 6),
@@ -329,7 +395,7 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
                         physics: const NeverScrollableScrollPhysics(),
                         itemCount: _searchResults.length,
                         separatorBuilder: (context, i) =>
-                            const Divider(height: 1, indent: 16, endIndent: 16),
+                        const Divider(height: 1, indent: 16, endIndent: 16),
                         itemBuilder: (context, i) {
                           final r = _searchResults[i];
                           return ListTile(
@@ -356,7 +422,7 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
             ),
           ),
 
-          // ── Crosshair / my-location FAB ────────────────────────────────
+          // ── Crosshair / my-location FAB ─────────────────────────────────
           Positioned(
             bottom: panelHeight + 12,
             right: 16,
@@ -378,24 +444,26 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
                 ),
                 child: _locating
                     ? const Padding(
-                        padding: EdgeInsets.all(13),
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: ZienaColors.primary,
-                        ),
-                      )
+                  padding: EdgeInsets.all(13),
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: ZienaColors.primary,
+                  ),
+                )
                     : const Icon(
-                        Icons.gps_fixed_rounded,
-                        color: ZienaColors.textPrimary,
-                        size: 22,
-                      ),
+                  Icons.gps_fixed_rounded,
+                  color: ZienaColors.textPrimary,
+                  size: 22,
+                ),
               ),
             ),
           ),
 
-          // ── Bottom panel: address + Continue button ────────────────────
+          // ── Bottom panel: address + Continue button ──────────────────────
           Positioned(
-            bottom: 0, left: 0, right: 0,
+            bottom: 0,
+            left: 0,
+            right: 0,
             child: Container(
               padding: EdgeInsets.fromLTRB(
                   20, 16, 20, bottomPadding > 0 ? bottomPadding : 20),

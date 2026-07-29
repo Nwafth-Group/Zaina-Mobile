@@ -365,7 +365,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         children: [
                           Text(
                             def != null
-                                ? def.shortAddress(locale)
+                                ? def.shortAddress
                                 : 'no_addresses_yet'.tr(),
                             style: const TextStyle(
                               fontSize: 14,

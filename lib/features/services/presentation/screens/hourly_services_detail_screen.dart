@@ -5,23 +5,23 @@ import 'package:zeina/features/services/data/model/booking_selection_data.dart';
 import 'package:zeina/features/services/data/model/review_customer_model.dart';
 import 'package:zeina/features/services/presentation/cubit/service_detail_cubit.dart';
 import 'package:zeina/features/services/presentation/cubit/services_cubit.dart';
-import 'package:zeina/features/services/presentation/widgets/booking_bottom_sheet.dart';
+import 'package:zeina/features/services/presentation/widgets/hourly_services/booking_bottom_sheet.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../injection_container.dart';
 import '../../data/model/booking_validation_model.dart';
 import '../../data/model/service_detail_model.dart';
 import '../../data/model/visit_type_model.dart';
-import '../widgets/date_selection_bottom_sheet.dart';
-import '../widgets/hourly_config_bottom_sheet.dart';
+import '../widgets/hourly_services/date_selection_bottom_sheet.dart';
+import '../widgets/hourly_services/hourly_config_bottom_sheet.dart';
 import 'checkout_screen.dart';
 
-class ServiceDetailScreen extends StatelessWidget {
+class HourlyServicesDetailScreen extends StatelessWidget {
   static const String routeName = '/service-detail';
 
   final int serviceId;
   final VisitTypeModel visitType;
 
-  const ServiceDetailScreen({
+  const HourlyServicesDetailScreen({
     super.key,
     required this.serviceId,
     required this.visitType,

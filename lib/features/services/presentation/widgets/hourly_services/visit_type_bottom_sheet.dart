@@ -1,11 +1,12 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../core/theme/theme.dart';
-import '../../../../injection_container.dart';
-import '../../data/model/service_model.dart';
-import '../../data/model/visit_type_model.dart';
-import '../cubit/services_cubit.dart';
+import 'package:zeina/core/theme/theme.dart';
+import 'package:zeina/features/services/data/model/service_model.dart';
+import 'package:zeina/features/services/data/model/visit_type_model.dart';
+import 'package:zeina/features/services/presentation/cubit/services_cubit.dart';
+import 'package:zeina/injection_container.dart';
+
 
 /// Call this to show the "choose visit type" sheet for a given service.
 /// [onVisitTypeSelected] fires with the chosen [VisitTypeModel] — hook your

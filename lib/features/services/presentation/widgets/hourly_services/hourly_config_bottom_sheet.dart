@@ -1,12 +1,12 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import '../../../../core/theme/theme.dart';
-import '../../../../injection_container.dart';
-import '../../data/model/booking_validation_exception.dart';
-import '../../data/model/hourly_config_result.dart';
-import '../../data/model/service_detail_model.dart';
-import '../../data/repository/services_repository.dart';
-import 'coverage_error_dialog.dart';
+import '../../../../../core/theme/theme.dart';
+import '../../../../../injection_container.dart';
+import '../../../data/model/booking_validation_exception.dart';
+import '../../../data/model/hourly_config_result.dart';
+import '../../../data/model/service_detail_model.dart';
+import '../../../data/repository/services_repository.dart';
+import '../coverage_error_dialog.dart';
 
 /// Shows the "configure hourly booking" sheet (start time / duration /
 /// [gender] / [children + age groups] / worker count / [note]) for services

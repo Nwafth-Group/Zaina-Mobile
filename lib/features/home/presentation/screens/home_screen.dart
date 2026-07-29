@@ -308,7 +308,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           Flexible(
                             child: Text(
                               def != null
-                                  ? '${def.shortAddress(lang)}, ${def.oneLiner}'
+                                  ? '${def.shortAddress}, ${def.oneLiner}'
                                   : '',
                               style: const TextStyle(
                                 fontSize: 12,
