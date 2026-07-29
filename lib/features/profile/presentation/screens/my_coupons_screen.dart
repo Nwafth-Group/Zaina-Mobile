@@ -61,7 +61,7 @@ class _MyCouponsScreenState extends State<MyCouponsScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 32),
       child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
         ImageAsset(
-          'aasets/images/cop_empty.png',
+          'assets/images/cop_empty.png',
           width: 180, height: 180,
         ),
         const SizedBox(height: 8),

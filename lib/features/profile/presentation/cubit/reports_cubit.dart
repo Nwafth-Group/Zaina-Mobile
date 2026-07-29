@@ -35,3 +35,37 @@ class ReportsCubit extends Cubit<ReportsState> {
     }
   }
 }
+
+// ── Report detail ──────────────────────────────────────────────────────
+// Powers the report details screen via GET customer/reports/{id}. Kept
+// separate from ReportsCubit (same pattern as PointsCubit/EarnPointsCubit)
+// since the list and the detail view have independent loading states.
+abstract class ReportDetailState {}
+class ReportDetailInitial extends ReportDetailState {}
+class ReportDetailLoading extends ReportDetailState {}
+class ReportDetailLoaded extends ReportDetailState {
+  final ReportModel report;
+  ReportDetailLoaded(this.report);
+}
+class ReportDetailError extends ReportDetailState {
+  final String message;
+  ReportDetailError(this.message);
+}
+
+class ReportDetailCubit extends Cubit<ReportDetailState> {
+  final ApiClient _api;
+  ReportDetailCubit(this._api) : super(ReportDetailInitial());
+
+  Future<void> fetchReportDetail(int id) async {
+    emit(ReportDetailLoading());
+    try {
+      final res = await _api.get('customer/reports/$id');
+      final report = ReportModel.fromJson(res['data']);
+      emit(ReportDetailLoaded(report));
+    } on DioException catch (e) {
+      emit(ReportDetailError(handleDioError(e).message));
+    } catch (_) {
+      emit(ReportDetailError('Failed to load report details'));
+    }
+  }
+}

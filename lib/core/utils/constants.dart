@@ -1,5 +1,6 @@
 class AppConstants {
-  static const String baseUrl = 'http://18.192.22.67/api/v1/';
+  static const String googleMapsApiKey = 'AIzaSyC_lkBmCFqOkwf-QpJ-OSIiPQOurPxuEZw';
+  static const String baseUrl = 'http://35.159.161.2/api/v1/';
 
   // Auth Endpoints
   static const String sendOtp = 'customer/auth/send-otp';
@@ -58,6 +59,15 @@ class AppStrings {
 
   // Terms
   static const String termsAndConditions = 'Terms & Conditions';
+
+  static const String duration = 'Duration';
+  static const String expectedArrivalTime = 'Expected Arrival Time';
+  static const String chooseTheSuitableService = 'Choose the Suitable Service';
+  static const String hourlyServices = 'Hourly Services';
+  static const String otherServices = 'Other Services';
+
+
+
 }
 
 String lng = 'en';

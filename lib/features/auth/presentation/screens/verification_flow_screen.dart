@@ -10,6 +10,7 @@ import 'package:zeina/features/auth/presentation/screens/verification_submitted.
 import '../../../../core/theme/theme.dart';
 import '../../../../widgets/ziena_step_indicator.dart';
 import '../cubit/verification_cubit.dart';
+import '../widgets/referral_code_field.dart';
 import '../widgets/step_id_upload.dart';
 import '../widgets/step_review.dart';
 import '../widgets/step_selfie.dart';
@@ -43,6 +44,10 @@ class _VerificationFlowScreenState extends State<VerificationFlowScreen> {
   File? _selfie;
   String? _errorMessage;
 
+  // "If you have a code, paste it here!" — optional, sent along with
+  // submitVerification as referral_code.
+  final TextEditingController _referralController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
@@ -53,6 +58,13 @@ class _VerificationFlowScreenState extends State<VerificationFlowScreen> {
         _checkCurrentStatus();
       });
     }
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    _referralController.dispose();
+    super.dispose();
   }
 
   Future<void> _checkCurrentStatus() async {
@@ -105,6 +117,7 @@ class _VerificationFlowScreenState extends State<VerificationFlowScreen> {
       frontId: _frontId!,
       backId:  _backId!,
       selfie:  _selfie!,
+      referralCode: _referralController.text.trim(),
     );
   }
 
@@ -170,26 +183,26 @@ class _VerificationFlowScreenState extends State<VerificationFlowScreen> {
     return Column(children: [
       // ── Top bar with step indicator ──────────────────────────────
       if(widget.fromSplash || _step>0)
-      Padding(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-        child: Row(children: [
-          GestureDetector(
-            onTap: _goBack,
-            child: const Icon(Icons.arrow_back_rounded,
-                size: 18, color: ZienaColors.textPrimary),
-          ),
-          const SizedBox(width: 12),
-        ]),
-      ),
-      const SizedBox(height: 16),
-Padding(
-  padding: const EdgeInsets.symmetric(horizontal: 20.0),
-  child: ZienaStepIndicator(
-              currentStep: _step,
-              steps: _stepLabels,
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+          child: Row(children: [
+            GestureDetector(
+              onTap: _goBack,
+              child: const Icon(Icons.arrow_back_rounded,
+                  size: 18, color: ZienaColors.textPrimary),
             ),
-),
-                const SizedBox(height: 8),
+            const SizedBox(width: 12),
+          ]),
+        ),
+      const SizedBox(height: 16),
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20.0),
+        child: ZienaStepIndicator(
+          currentStep: _step,
+          steps: _stepLabels,
+        ),
+      ),
+      const SizedBox(height: 8),
 
       // ── Page content ─────────────────────────────────────────────
       Expanded(
@@ -214,15 +227,26 @@ Padding(
               onNext: _selfie != null ? _goNext : null,
             ),
             // Step 2 — Review
-            StepReview(
-              frontId: _frontId,
-              backId:  _backId,
-              selfie:  _selfie,
-              onSubmit: (_frontId != null &&
-                  _backId  != null &&
-                  _selfie  != null)
-                  ? _submit
-                  : null,
+            Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+                  child: ReferralCodeField(controller: _referralController),
+                ),
+                const SizedBox(height: 16),
+                Expanded(
+                  child: StepReview(
+                    frontId: _frontId,
+                    backId:  _backId,
+                    selfie:  _selfie,
+                    onSubmit: (_frontId != null &&
+                        _backId  != null &&
+                        _selfie  != null)
+                        ? _submit
+                        : null,
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -258,4 +282,3 @@ Padding(
     );
   }
 }
-

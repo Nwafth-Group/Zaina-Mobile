@@ -305,7 +305,7 @@ class _AddressCard extends StatelessWidget {
                     ],
                   ]),
                   const SizedBox(height: 6),
-                  Text(address.shortAddress(lang),
+                  Text(address.shortAddress,
                       style: const TextStyle(
                          fontSize: 14,
                         fontWeight: FontWeight.w600,

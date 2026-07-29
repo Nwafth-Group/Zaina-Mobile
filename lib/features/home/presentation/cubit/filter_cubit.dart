@@ -30,7 +30,6 @@ class FilterCubitData {
   final List<LocationItem> governorates;
   final List<LocationItem> cities;
   final List<LocationItem> areas;
-  final List<CategoryModel> categories;
   final bool countriesLoading;
   final bool governoratesLoading;
   final bool citiesLoading;
@@ -42,7 +41,6 @@ class FilterCubitData {
     this.governorates         = const [],
     this.cities               = const [],
     this.areas                = const [],
-    this.categories           = const [],
     this.countriesLoading     = false,
     this.governoratesLoading  = false,
     this.citiesLoading        = false,
@@ -55,7 +53,6 @@ class FilterCubitData {
     List<LocationItem>? governorates,
     List<LocationItem>? cities,
     List<LocationItem>? areas,
-    List<CategoryModel>? categories,
     bool? countriesLoading,
     bool? governoratesLoading,
     bool? citiesLoading,
@@ -67,7 +64,6 @@ class FilterCubitData {
       governorates:         governorates         ?? this.governorates,
       cities:               cities               ?? this.cities,
       areas:                areas                ?? this.areas,
-      categories:           categories           ?? this.categories,
       countriesLoading:     countriesLoading     ?? this.countriesLoading,
       governoratesLoading:  governoratesLoading  ?? this.governoratesLoading,
       citiesLoading:        citiesLoading        ?? this.citiesLoading,
@@ -83,28 +79,6 @@ class FilterCubit extends Cubit<FilterState> {
 
   FilterCubitData _data = const FilterCubitData();
   FilterCubitData get data => _data;
-
-  // ── Load categories ───────────────────────────────────────────────────────
-  Future<void> loadCategories() async {
-    if (_data.categories.isNotEmpty) return; // already loaded
-    _data = _data.copyWith(categoriesLoading: true);
-    emit(FilterLocationsLoading(_data));
-    try {
-      final res = await _api.get('customer/categories', queryParameters: {'page': 1});
-      final items = (res['data']['items'] as List<dynamic>? ?? [])
-          .map((e) => CategoryModel.fromJson(e))
-          .toList();
-      _data = _data.copyWith(categoriesLoading: false, categories: items);
-      emit(FilterLocationsLoaded(_data));
-    } on DioException catch (e) {
-      _data = _data.copyWith(categoriesLoading: false);
-      emit(FilterError(handleDioError(e).message));
-      emit(FilterLocationsLoaded(_data));
-    } catch (_) {
-      _data = _data.copyWith(categoriesLoading: false);
-      emit(FilterLocationsLoaded(_data));
-    }
-  }
 
   // ── Load countries ─────────────────────────────────────────────────────────
   Future<void> loadCountries() async {

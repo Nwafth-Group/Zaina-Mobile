@@ -2,6 +2,9 @@ import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/network/failure.dart';
+import '../../../services/data/model/service_detail_model.dart' show ServiceFeatureModel;
+import '../../../services/data/repository/services_repository.dart';
+import '../../data/model/booking_detail_model.dart';
 import '../../data/model/booking_model.dart';
 
 class BookingsCubit extends Cubit<BookingsState> {
@@ -87,14 +90,28 @@ class BookingsCubit extends Cubit<BookingsState> {
 // ── Booking Detail Cubit ──────────────────────────────────────────────────────
 class BookingDetailCubit extends Cubit<BookingDetailState> {
   final ApiClient _api;
-  BookingDetailCubit(this._api) : super(BookingDetailInitial());
+  final ServicesRepository _servicesRepo;
+  BookingDetailCubit(this._api, this._servicesRepo) : super(BookingDetailInitial());
 
   Future<void> fetchDetail(int bookingId) async {
     emit(BookingDetailLoading());
     try {
       final res = await _api.get('customer/bookings/$bookingId');
-      final model = BookingModel.fromJson(res['data']);
-      emit(BookingDetailLoaded(model));
+      final booking = BookingDetailModel.fromJson(res['data']);
+
+      // "What's Included" isn't part of the booking response — it lives on
+      // the service itself, so fetch that in parallel. Best-effort: if it
+      // fails, still show the booking with an empty features list rather
+      // than failing the whole screen over a secondary call.
+      List<ServiceFeatureModel> features = [];
+      try {
+        final serviceDetail = await _servicesRepo.fetchServiceDetail(booking.serviceId);
+        features = serviceDetail.features;
+      } catch (_) {
+        features = [];
+      }
+
+      emit(BookingDetailLoaded(booking: booking, features: features));
     } on DioException catch (e) {
       emit(BookingDetailError(handleDioError(e).message));
     } catch (_) {
@@ -102,91 +119,116 @@ class BookingDetailCubit extends Cubit<BookingDetailState> {
     }
   }
 
-  // ── Reschedule ─────────────────────────────────────────────────────────────
-  Future<void> reschedule({
+  // ── Reschedule (OTP-gated) ───────────────────────────────────────────────
+  /// Just performs the call — same reasoning as sendCancelOtp: doesn't touch
+  /// the shared BookingDetailState stream, since the screen drives its own
+  /// step-by-step dialog/sheet flow.
+  Future<void> sendRescheduleOtp({
     required int bookingId,
-    required String newDate,
-    required String newStartTime,
-    required String newEndTime,
-  }) async {
-    emit(BookingActionLoading());
-    try {
-      await _api.post(
-        'customer/bookings/$bookingId/reschedule',
-        data: {
-          'new_date': newDate,
-          'new_start_time': newStartTime,
-          'new_end_time': newEndTime,
-        },
-      );
-      emit(BookingRescheduleSuccess());
-    } on DioException catch (e) {
-      emit(BookingDetailError(handleDioError(e).message));
-    } catch (_) {
-      emit(BookingDetailError('Something went wrong'));
+    required List<DateTime> dates,
+    required String startTime,
+  }) {
+    String fmt(DateTime d) =>
+        '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+    final fields = <String, dynamic>{'start_time': startTime};
+    for (int i = 0; i < dates.length; i++) {
+      fields['dates[$i]'] = fmt(dates[i]);
     }
+    return _api.post(
+      'customer/bookings/$bookingId/reschedule/send-otp',
+      data: FormData.fromMap(fields),
+    );
+  }
+
+  /// Doesn't emit anything on success either — the booking still exists
+  /// after a reschedule (unlike cancel), so the caller just calls
+  /// fetchDetail() again afterward to pull the updated date/time, rather
+  /// than needing a signal state here.
+  Future<void> confirmReschedule({
+    required int bookingId,
+    required List<DateTime> dates,
+    required String startTime,
+    required String otp,
+  }) async {
+    String fmt(DateTime d) =>
+        '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+    final fields = <String, dynamic>{'start_time': startTime, 'otp': otp};
+    for (int i = 0; i < dates.length; i++) {
+      fields['dates[$i]'] = fmt(dates[i]);
+    }
+    await _api.post(
+      'customer/bookings/$bookingId/reschedule',
+      data: FormData.fromMap(fields),
+    );
   }
 
   // ── Report ─────────────────────────────────────────────────────────────────
+  /// Intentionally does NOT emit loading/success states through the shared
+  /// BookingDetailState stream (same reasoning as sendCancelOtp/confirmCancel):
+  /// doing so was leaving the main booking-detail screen's BlocBuilder with
+  /// a non-BookingDetailLoaded state and no way back to it, rendering blank.
+  /// The report sheet drives its own local loading/error UI around this call.
   Future<void> submitReport({
     required int bookingId,
     required String reason,
     String? description,
   }) async {
-    emit(BookingActionLoading());
-    try {
-      await _api.post(
-        'customer/bookings/$bookingId/report',
-        data: {
-          'reason': reason,
-          if (description != null && description.isNotEmpty)
-            'description': description,
-        },
-      );
-      emit(BookingReportSuccess());
-    } on DioException catch (e) {
-      emit(BookingDetailError(handleDioError(e).message));
-    } catch (_) {
-      emit(BookingDetailError('Something went wrong'));
-    }
+    await _api.post(
+      'customer/bookings/$bookingId/report',
+      data: {
+        'reason': reason,
+        if (description != null && description.isNotEmpty)
+          'description': description,
+      },
+    );
   }
 
-  // ── Cancel ─────────────────────────────────────────────────────────────────
-  Future<void> cancelBooking(int bookingId) async {
-    emit(BookingActionLoading());
-    try {
-      await _api.put('customer/bookings/$bookingId/cancel');
-      emit(BookingCancelSuccess());
-    } on DioException catch (e) {
-      emit(BookingDetailError(handleDioError(e).message));
-    } catch (_) {
-      emit(BookingDetailError('Something went wrong'));
-    }
+  // ── Cancel (OTP-gated) ───────────────────────────────────────────────────
+  /// Just performs the call — intentionally does NOT emit loading/error
+  /// states, since the screen drives its own step-by-step dialog/sheet flow
+  /// and shows its own transient loading + error UI around each call.
+  Future<void> sendCancelOtp(int bookingId) {
+    return _api.post('customer/bookings/$bookingId/cancel/send-otp');
+  }
+
+  /// Only emits on success (so the screen can react and pop back); errors
+  /// propagate to the caller to display inline without disturbing the
+  /// cubit's main state.
+  Future<void> confirmCancel({
+    required int bookingId,
+    required String cancellationReason,
+    required String otp,
+  }) async {
+    await _api.put(
+      'customer/bookings/$bookingId/cancel',
+      data: {
+        'cancellation_reason': cancellationReason,
+        'otp': otp,
+      },
+    );
+    emit(BookingCancelSuccess());
   }
 
   // ── Review ─────────────────────────────────────────────────────────────────
+  /// Same reasoning as submitReport/sendCancelOtp/confirmCancel: does NOT
+  /// emit through the shared BookingDetailState stream, since that left the
+  /// main booking-detail screen's BlocBuilder stuck on a non-Loaded state
+  /// with a blank screen. The review sheet drives its own local loading/
+  /// error UI around this call.
   Future<void> submitReview({
     required int bookingId,
     required int serviceRating,
     required String serviceComment,
     required List<Map<String, dynamic>> workers,
   }) async {
-    emit(BookingActionLoading());
-    try {
-      await _api.post(
-        'customer/bookings/$bookingId/review',
-        data: {
-          'service_rating': serviceRating,
-          'service_comment': serviceComment,
-          'workers': workers,
-        },
-      );
-      emit(BookingReviewSuccess());
-    } on DioException catch (e) {
-      emit(BookingDetailError(handleDioError(e).message));
-    } catch (_) {
-      emit(BookingDetailError('Something went wrong'));
-    }
+    await _api.post(
+      'customer/bookings/$bookingId/review',
+      data: {
+        'service_rating': serviceRating,
+        'service_comment': serviceComment,
+        'workers': workers,
+      },
+    );
   }
 }
 
@@ -221,8 +263,9 @@ abstract class BookingDetailState {}
 class BookingDetailInitial extends BookingDetailState {}
 class BookingDetailLoading extends BookingDetailState {}
 class BookingDetailLoaded extends BookingDetailState {
-  final BookingModel booking;
-  BookingDetailLoaded(this.booking);
+  final BookingDetailModel booking;
+  final List<ServiceFeatureModel> features;
+  BookingDetailLoaded({required this.booking, required this.features});
 }
 class BookingActionLoading extends BookingDetailState {}
 class BookingRescheduleSuccess extends BookingDetailState {}
