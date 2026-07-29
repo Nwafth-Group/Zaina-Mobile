@@ -183,6 +183,95 @@ class ChildAgeGroupModel {
       languageCode == 'ar' ? nameAr : nameEn;
 }
 
+/// Points-based completion reward for a service, e.g.
+/// { points: 30, required_booking_count: 1, frequency_type: "repeatable" }
+class RewardRuleModel {
+  final int id;
+  final String titleAr;
+  final String titleEn;
+  final String subtitleAr;
+  final String subtitleEn;
+  final int points;
+  final int requiredBookingCount;
+  final String frequencyType; // e.g. "repeatable"
+
+  RewardRuleModel({
+    required this.id,
+    required this.titleAr,
+    required this.titleEn,
+    required this.subtitleAr,
+    required this.subtitleEn,
+    required this.points,
+    required this.requiredBookingCount,
+    required this.frequencyType,
+  });
+
+  factory RewardRuleModel.fromJson(Map<String, dynamic> json) {
+    return RewardRuleModel(
+      id: json['id'] ?? 0,
+      titleAr: json['title_ar'] ?? '',
+      titleEn: json['title_en'] ?? '',
+      subtitleAr: json['subtitle_ar'] ?? '',
+      subtitleEn: json['subtitle_en'] ?? '',
+      points: json['points'] ?? 0,
+      requiredBookingCount: json['required_booking_count'] ?? 1,
+      frequencyType: json['frequency_type'] ?? '',
+    );
+  }
+
+  String localizedTitle(String languageCode) =>
+      languageCode == 'ar' ? titleAr : titleEn;
+
+  String localizedSubtitle(String languageCode) =>
+      languageCode == 'ar' ? subtitleAr : subtitleEn;
+
+  bool get isRepeatable => frequencyType == 'repeatable';
+}
+
+/// Which booking flow a service uses. Determined by service ID — the only
+/// signal that's proven reliably static. Every JSON-derived field tried so
+/// far (has_duration_range, worker_gender_options, pricing_type,
+/// covered_persons_per_worker, available_shifts shape) fails to distinguish
+/// cleanly: e.g. service 4 has has_duration_range: false like services 1 & 5,
+/// but still needs the /available-dates check like services 2 & 3.
+///
+/// Confirmed mapping (ids are static, per product):
+///   1 = Domestic Helper (Hourly)     -> fixedShift
+///   2 = Hospitality Worker (Hourly)  -> configurableHourly
+///   3 = Babysitter (Hourly)          -> configurableChildren
+///   4 = Pedicure & Manicure Service  -> configurablePersons
+///   5 = Deep Cleaning Service        -> fixedShift
+enum ServiceBookingFlow {
+  /// Pick from pre-set shifts directly on a calendar. No /available-dates call.
+  fixedShift,
+
+  /// Configure start time/duration/gender/workers, THEN check availability.
+  configurableHourly,
+
+  /// Configure start time/duration/children+age-groups/workers, THEN check availability.
+  configurableChildren,
+
+  /// Configure start time/duration/workers/number_of_persons, THEN check availability.
+  configurablePersons,
+}
+
+extension on int {
+  ServiceBookingFlow get _bookingFlowForServiceId {
+    switch (this) {
+      case 2:
+        return ServiceBookingFlow.configurableHourly;
+      case 3:
+        return ServiceBookingFlow.configurableChildren;
+      case 4:
+        return ServiceBookingFlow.configurablePersons;
+      case 1:
+      case 5:
+      default:
+        return ServiceBookingFlow.fixedShift;
+    }
+  }
+}
+
 class ServiceDetailModel {
   final int id;
   final int? addressId;
@@ -223,35 +312,38 @@ class ServiceDetailModel {
   final int maxChildren;
   final List<ChildAgeGroupModel> childAgeGroups;
 
-  /// True for services where the user configures start time/duration/gender/
-  /// worker count THEN checks availability (Hospitality Worker-style), as
-  /// opposed to picking from fixed pre-set shifts (Domestic Helper-style).
-  /// True for services where the user configures start time/duration/
-  /// gender-or-children/worker count THEN checks availability (Hospitality
-  /// Worker-, Babysitter-style), as opposed to picking from fixed pre-set
-  /// shifts (Domestic Helper-style).
-  ///
-  /// Keyed off `has_duration_range` — NOT `pricing_type` or
-  /// `workerGenderOptions.isNotEmpty` (both tried and both wrong): the
-  /// backend now sends `pricing_type: "per_hour"` AND non-empty
-  /// `worker_gender_options` for Domestic Helper too, so neither field
-  /// distinguishes it from Hospitality Worker/Babysitter anymore.
-  /// `has_duration_range` is the one field that's actually semantically
-  /// tied to the UI difference: false → fixed pre-set shift slots
-  /// (`min_duration`/`max_duration` are null), true → user picks a
-  /// duration within `[min_duration, max_duration]`. Confirmed against all
-  /// three real responses: service 1 → false, services 2 & 3 → true.
-  bool get isConfigurableHourly => hasDurationRange;
+  /// How many persons a single worker can cover in one booking (e.g. Pedicure
+  /// & Manicure). Present on every service so far with value 1; kept as a
+  /// plain field rather than a flow-distinguishing signal — see
+  /// [ServiceBookingFlow] doc comment for why it doesn't reliably
+  /// distinguish services on its own.
+  final int coveredPersonsPerWorker;
 
-  /// True for services that also need number-of-children + per-child age
-  /// group selection (Babysitter-style).
-  bool get hasChildren => childAgeGroups.isNotEmpty;
+  /// Completion reward shown on the service detail screen — null if the
+  /// service has no reward configured.
+  final RewardRuleModel? rewardRule;
+
+  /// Which booking flow this service uses — see [ServiceBookingFlow].
+  ServiceBookingFlow get bookingFlow => id._bookingFlowForServiceId;
+
+  /// True for services where the user configures options first (start
+  /// time/duration/gender-or-children-or-persons/worker count) THEN checks
+  /// availability via /bookings/available-dates, as opposed to picking from
+  /// fixed pre-set shifts directly (Domestic Helper-, Deep Cleaning-style).
+  bool get isConfigurableHourly => bookingFlow != ServiceBookingFlow.fixedShift;
+
+  /// True only for the Babysitter-style children/age-group flow.
+  bool get hasChildren => bookingFlow == ServiceBookingFlow.configurableChildren;
+
+  /// True only for the Pedicure & Manicure-style number-of-persons flow.
+  bool get hasPersonsCount =>
+      bookingFlow == ServiceBookingFlow.configurablePersons;
 
   /// Only show a gender picker when there's an actual choice to make —
-  /// Babysitter only ever offers "Female", so there's nothing to pick and
-  /// the field is omitted entirely from requests (confirmed: the real
-  /// /available-dates and /bookings payloads for that service have no
-  /// worker_gender key at all).
+  /// Babysitter/Pedicure only ever offer one gender option, so there's
+  /// nothing to pick and the field is omitted entirely from requests
+  /// (confirmed: the real /available-dates and /bookings payloads for those
+  /// services have no worker_gender key at all).
   bool get hasGenderChoice => workerGenderOptions.length > 1;
 
   ServiceDetailModel({
@@ -287,6 +379,8 @@ class ServiceDetailModel {
     this.minChildren = 0,
     this.maxChildren = 0,
     this.childAgeGroups = const [],
+    this.coveredPersonsPerWorker = 1,
+    this.rewardRule,
   });
 
   factory ServiceDetailModel.fromJson(Map<String, dynamic> json) {
@@ -340,6 +434,10 @@ class ServiceDetailModel {
       childAgeGroups: (json['child_age_groups'] as List<dynamic>? ?? [])
           .map((e) => ChildAgeGroupModel.fromJson(e as Map<String, dynamic>))
           .toList(),
+      coveredPersonsPerWorker: json['covered_persons_per_worker'] ?? 1,
+      rewardRule: json['reward_rule'] != null
+          ? RewardRuleModel.fromJson(json['reward_rule'] as Map<String, dynamic>)
+          : null,
     );
   }
 

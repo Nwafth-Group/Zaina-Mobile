@@ -202,6 +202,10 @@ class _LoadedBody extends StatelessWidget {
                           color: ZienaColors.textSecondary,
                         ),
                       ),
+                      if (detail.rewardRule != null) ...[
+                        const SizedBox(height: 16),
+                        _RewardRuleCard(reward: detail.rewardRule!, locale: locale),
+                      ],
                       const SizedBox(height: 24),
                       Text(
                         'whats_included'.tr(),
@@ -307,7 +311,8 @@ class _LoadedBody extends StatelessWidget {
 
   Future<void> _onBookNow(BuildContext context, ServiceDetailModel detail) async {
     if (detail.isConfigurableHourly) {
-      // Hospitality Worker-style: configure start time/duration/gender/
+      // Hospitality Worker-, Babysitter-, Pedicure & Manicure-style:
+      // configure start time/duration/[gender OR children OR persons]/
       // worker count FIRST, check availability, THEN pick a date.
       final config = await showHourlyConfigBottomSheet(
         context: context,
@@ -336,7 +341,8 @@ class _LoadedBody extends StatelessWidget {
       return;
     }
 
-    // Domestic Helper-style: pick from fixed pre-set shifts on a calendar.
+    // Domestic Helper-, Deep Cleaning-style: pick from fixed pre-set shifts
+    // on a calendar.
     showBookingBottomSheet(
       context: context,
       service: detail,
@@ -353,6 +359,82 @@ class _LoadedBody extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+/// Shows a service's completion reward — e.g. "Earn 30 points upon
+/// completing Deep Cleaning Service" — as a compact highlighted card.
+class _RewardRuleCard extends StatelessWidget {
+  final RewardRuleModel reward;
+  final String locale;
+
+  const _RewardRuleCard({required this.reward, required this.locale});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: ZienaColors.primary.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: ZienaColors.primary.withOpacity(0.2)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration: const BoxDecoration(
+              color: ZienaColors.primary,
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.stars_rounded, size: 20, color: Colors.white),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  reward.localizedTitle(locale),
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: ZienaColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  reward.localizedSubtitle(locale),
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: ZienaColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: ZienaColors.primary,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Text(
+              '+${reward.points}',
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
