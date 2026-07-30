@@ -46,7 +46,16 @@ class _HourlyConfigBottomSheetState extends State<HourlyConfigBottomSheet> {
   late List<int> _childAgeGroupIds; // one per child, index-aligned
   final _noteController = TextEditingController();
 
+  // Pedicure & Manicure-style only:
+  late int _numberOfPersons;
+
   bool get _hasChildren => widget.service.hasChildren;
+  bool get _hasPersonsCount => widget.service.hasPersonsCount;
+
+  /// A single worker can cover `coveredPersonsPerWorker` persons, so the
+  /// max number of persons scales with how many workers are selected.
+  int get _maxPersons =>
+      widget.service.coveredPersonsPerWorker * _workersCount;
 
   // Once more than 2 children are selected, at least 2 service providers
   // are required (falls back to the service's own minimum otherwise, in
@@ -111,6 +120,8 @@ class _HourlyConfigBottomSheetState extends State<HourlyConfigBottomSheet> {
           (_) => widget.service.childAgeGroups.first.id,
     )
         : [];
+
+    _numberOfPersons = _hasPersonsCount ? 1 : 0;
 
     // If the default children count already exceeds 2 (e.g. service's own
     // minChildren is 3+), make sure the default worker count reflects the
@@ -183,7 +194,20 @@ class _HourlyConfigBottomSheetState extends State<HourlyConfigBottomSheet> {
     if (next < _minWorkersRequired || next > widget.service.maxWorkers) {
       return;
     }
-    setState(() => _workersCount = next);
+    setState(() {
+      _workersCount = next;
+      // Number of persons can't exceed what the (possibly now smaller)
+      // worker count can cover.
+      if (_hasPersonsCount && _numberOfPersons > _maxPersons) {
+        _numberOfPersons = _maxPersons;
+      }
+    });
+  }
+
+  void _changeNumberOfPersons(int delta) {
+    final next = _numberOfPersons + delta;
+    if (next < 1 || next > _maxPersons) return;
+    setState(() => _numberOfPersons = next);
   }
 
   void _cycleGender(int direction) {
@@ -239,6 +263,7 @@ class _HourlyConfigBottomSheetState extends State<HourlyConfigBottomSheet> {
         workersCount: _workersCount,
         numberOfChildren: _hasChildren ? _numberOfChildren : null,
         childAgeGroupIds: _hasChildren ? _childAgeGroupIds : null,
+        numberOfPersons: _hasPersonsCount ? _numberOfPersons : null,
       );
       if (!mounted) return;
       Navigator.pop(
@@ -254,6 +279,7 @@ class _HourlyConfigBottomSheetState extends State<HourlyConfigBottomSheet> {
           note: _noteController.text.trim().isEmpty
               ? null
               : _noteController.text.trim(),
+          numberOfPersons: _hasPersonsCount ? _numberOfPersons : null,
         ),
       );
     } catch (e) {
@@ -301,84 +327,157 @@ class _HourlyConfigBottomSheetState extends State<HourlyConfigBottomSheet> {
                   onIncrement: () => _changeStartTime(60),
                   onDecrement: () => _changeStartTime(-60),
                 ),
-                const SizedBox(height: 12),
-                _stepperRow(
-                  label: 'service_duration'.tr(),
-                  valueText: '$_duration',
-                  onIncrement: () => _changeDuration(1),
-                  onDecrement: () => _changeDuration(-1),
-                ),
-                // Gender picker only when there's an actual choice.
-                if (widget.service.hasGenderChoice) ...[
-                  const SizedBox(height: 12),
-                  _arrowRow(
-                    label: 'service_providers_gender'.tr(),
-                    valueText: _gender.tr(),
-                    onLeft: () => _cycleGender(-1),
-                    onRight: () => _cycleGender(1),
-                  ),
-                ],
-                // Children count + per-child age group (Babysitter-style).
-                if (_hasChildren) ...[
+                // Number of persons (Pedicure & Manicure-style).
+                if (_hasPersonsCount) ...[
                   const SizedBox(height: 12),
                   _stepperRow(
-                    label: 'number_of_children'.tr(),
-                    valueText: '$_numberOfChildren',
-                    onIncrement: () => _changeNumberOfChildren(1),
-                    onDecrement: () => _changeNumberOfChildren(-1),
+                    label: 'number_of_persons'.tr(),
+                    valueText: '$_numberOfPersons',
+                    onIncrement: () => _changeNumberOfPersons(1),
+                    onDecrement: () => _changeNumberOfPersons(-1),
                   ),
-                  const SizedBox(height: 16),
-                  Align(
-                    alignment: AlignmentDirectional.centerStart,
-                    child: Text(
-                      'childrens_age_group'.tr(),
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: ZienaColors.textPrimary,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  ...List.generate(_numberOfChildren, (i) {
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: _fieldContainer(
-                        'child_label'.tr(args: ['${i + 1}']),
-                        DropdownButtonHideUnderline(
-                          child: DropdownButton<int>(
-                            value: _childAgeGroupIds[i],
-                            icon: const Icon(Icons.keyboard_arrow_down,
-                                color: ZienaColors.primary),
-                            style: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: ZienaColors.primary,
-                            ),
-                            items: widget.service.childAgeGroups
-                                .map((g) => DropdownMenuItem(
-                              value: g.id,
-                              child: Text(g.localizedName(locale)),
-                            ))
-                                .toList(),
-                            onChanged: (value) {
-                              if (value == null) return;
-                              setState(() => _childAgeGroupIds[i] = value);
-                            },
-                          ),
-                        ),
-                      ),
-                    );
-                  }),
-                  const SizedBox(height: 4),
                 ],
                 const SizedBox(height: 12),
-                _stepperRow(
-                  label: 'service_providers_number'.tr(),
-                  valueText: '$_workersCount',
-                  onIncrement: () => _changeWorkersCount(1),
-                  onDecrement: () => _changeWorkersCount(-1),
-                ),
+                if (_hasPersonsCount) ...[
+                  // Pedicure & Manicure-style order: workers row, then a
+                  // read-only duration readout (this service has no
+                  // has_duration_range, so duration isn't user-adjustable —
+                  // matches the design's unused 'service_duration_hint' /
+                  // 'hours_suffix' keys, e.g. "Service Duration (2 hours
+                  // For each person) — 2 Hours").
+                  _stepperRow(
+                    label: 'service_providers_number'.tr(),
+                    valueText: '$_workersCount',
+                    onIncrement: () => _changeWorkersCount(1),
+                    onDecrement: () => _changeWorkersCount(-1),
+                  ),
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: ZienaColors.white,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                          color: ZienaColors.primary.withOpacity(0.4)),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Flexible(
+                          child: RichText(
+                            text: TextSpan(
+                              children: [
+                                TextSpan(
+                                  text: 'service_duration'.tr(),
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: ZienaColors.textPrimary,
+                                  ),
+                                ),
+                                TextSpan(
+                                  text: ' ${'service_duration_hint'.tr()}',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w400,
+                                    color: Colors.grey.shade500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        Text(
+                          '$_duration ${'hours_suffix'.tr()}',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: ZienaColors.textPrimary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ] else ...[
+                  _stepperRow(
+                    label: 'service_duration'.tr(),
+                    valueText: '$_duration',
+                    onIncrement: () => _changeDuration(1),
+                    onDecrement: () => _changeDuration(-1),
+                  ),
+                  // Gender picker only when there's an actual choice.
+                  if (widget.service.hasGenderChoice) ...[
+                    const SizedBox(height: 12),
+                    _arrowRow(
+                      label: 'service_providers_gender'.tr(),
+                      valueText: _gender.tr(),
+                      onLeft: () => _cycleGender(-1),
+                      onRight: () => _cycleGender(1),
+                    ),
+                  ],
+                  // Children count + per-child age group (Babysitter-style).
+                  if (_hasChildren) ...[
+                    const SizedBox(height: 12),
+                    _stepperRow(
+                      label: 'number_of_children'.tr(),
+                      valueText: '$_numberOfChildren',
+                      onIncrement: () => _changeNumberOfChildren(1),
+                      onDecrement: () => _changeNumberOfChildren(-1),
+                    ),
+                    const SizedBox(height: 16),
+                    Align(
+                      alignment: AlignmentDirectional.centerStart,
+                      child: Text(
+                        'childrens_age_group'.tr(),
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: ZienaColors.textPrimary,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    ...List.generate(_numberOfChildren, (i) {
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: _fieldContainer(
+                          'child_label'.tr(args: ['${i + 1}']),
+                          DropdownButtonHideUnderline(
+                            child: DropdownButton<int>(
+                              value: _childAgeGroupIds[i],
+                              icon: const Icon(Icons.keyboard_arrow_down,
+                                  color: ZienaColors.primary),
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: ZienaColors.primary,
+                              ),
+                              items: widget.service.childAgeGroups
+                                  .map((g) => DropdownMenuItem(
+                                value: g.id,
+                                child: Text(g.localizedName(locale)),
+                              ))
+                                  .toList(),
+                              onChanged: (value) {
+                                if (value == null) return;
+                                setState(() => _childAgeGroupIds[i] = value);
+                              },
+                            ),
+                          ),
+                        ),
+                      );
+                    }),
+                    const SizedBox(height: 4),
+                  ],
+                  const SizedBox(height: 12),
+                  _stepperRow(
+                    label: 'service_providers_number'.tr(),
+                    valueText: '$_workersCount',
+                    onIncrement: () => _changeWorkersCount(1),
+                    onDecrement: () => _changeWorkersCount(-1),
+                  ),
+                ],
                 // Optional care notes (Babysitter-style).
                 if (_hasChildren) ...[
                   const SizedBox(height: 16),

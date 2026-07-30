@@ -10,6 +10,10 @@ class HourlyConfigResult {
   final List<int>? childAgeGroupIds; // one entry per child
   final String? note;
 
+  /// Pedicure & Manicure-style field — null for services without a
+  /// number-of-persons concept.
+  final int? numberOfPersons;
+
   HourlyConfigResult({
     required this.startTime,
     required this.duration,
@@ -19,6 +23,7 @@ class HourlyConfigResult {
     this.numberOfChildren,
     this.childAgeGroupIds,
     this.note,
+    this.numberOfPersons,
   });
 
   /// "HH:mm" computed as startTime + duration hours (wraps past midnight).

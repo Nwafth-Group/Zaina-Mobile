@@ -30,6 +30,10 @@ class BookingSelectionData {
   final List<int>? childAgeGroupIds;
   final String? note;
 
+  /// Pedicure & Manicure-style field — how many persons this booking
+  /// covers. Null for services without a number-of-persons concept.
+  final int? numberOfPersons;
+
   BookingSelectionData({
     required this.serviceId,
     required this.visitType,
@@ -42,5 +46,6 @@ class BookingSelectionData {
     this.numberOfChildren,
     this.childAgeGroupIds,
     this.note,
+    this.numberOfPersons,
   });
 }

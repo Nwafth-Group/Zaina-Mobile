@@ -151,6 +151,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         workerGender: widget.selection.workerGender,
         numberOfChildren: widget.selection.numberOfChildren,
         childAgeGroupIds: widget.selection.childAgeGroupIds,
+        numberOfPersons: widget.selection.numberOfPersons,
       );
       if (!mounted) return;
       setState(() {
@@ -182,14 +183,19 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       serviceId: widget.service.id,
       addressId: widget.service.addressId!,
       // Same condition used for `visitType` in _handlePay below: omitted
-      // entirely for configurable-hourly services (duration != null).
+      // for configurable-hourly services (Hospitality Worker, Babysitter —
+      // duration != null and NOT hasPersonsCount), included otherwise —
+      // Pedicure & Manicure (hasPersonsCount) sends both visit_type AND
+      // duration together, unlike the other configurable-hourly services.
       // NOTE: `.type` here is whatever the VisitType model already
       // serializes to in ServicesRepository's own createBooking call —
       // if that's an enum rather than a raw String, swap this for
       // whichever getter that repository uses (e.g. `.apiValue`), since
       // this call bypasses the repository and needs a plain String itself.
       visitType:
-      widget.selection.duration == null ? widget.selection.visitType.type : null,
+      (widget.selection.duration == null || widget.service.hasPersonsCount)
+          ? widget.selection.visitType.type
+          : null,
       dates: _apiDates,
       startTime: widget.selection.shift.startLabel,
       duration: widget.selection.duration,
@@ -197,6 +203,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       workerIds: _currentValidation.workerIds,
       numberOfChildren: widget.selection.numberOfChildren,
       childAgeGroups: widget.selection.childAgeGroupIds,
+      numberOfPersons: widget.selection.numberOfPersons,
       note: widget.selection.note,
       paymentMethod: _paymentMethod.apiValue,
       couponCode: _couponController.text.trim(),
@@ -225,21 +232,25 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       await sl<ServicesRepository>().createBooking(
         serviceId: widget.service.id,
         addressId: widget.service.addressId,
-        // Configurable-hourly services (Hospitality Worker, Babysitter —
-        // both always set `duration`) send duration/etc. instead of
-        // visitType; that payload shape has no visit_type field at all.
-        // NOTE: keyed off `duration`, not `workerGender` — Babysitter also
-        // has workerGender == null (no gender choice) but is still
-        // configurable-hourly, so workerGender alone can't distinguish it
-        // from the fixed-shift flow.
+        // Fixed-shift services (Domestic Helper, Deep Cleaning) send
+        // visit_type and omit duration entirely.
+        // Configurable-hourly services (Hospitality Worker, Babysitter)
+        // send duration and omit visit_type entirely.
+        // Pedicure & Manicure is the one exception: its /customer/bookings
+        // payload includes BOTH visit_type AND duration — confirmed from
+        // the real payload sample — so it can't be distinguished by
+        // `duration == null` alone; check the service's own flow instead.
         visitType:
-        widget.selection.duration == null ? widget.selection.visitType.type : null,
+        (widget.selection.duration == null || widget.service.hasPersonsCount)
+            ? widget.selection.visitType.type
+            : null,
         dates: widget.selection.selectedDates,
         startTime: widget.selection.shift.startLabel,
         duration: widget.selection.duration,
         workerGender: widget.selection.workerGender,
         numberOfChildren: widget.selection.numberOfChildren,
         childAgeGroupIds: widget.selection.childAgeGroupIds,
+        numberOfPersons: widget.selection.numberOfPersons,
         note: widget.selection.note,
         workerIds: _currentValidation.workerIds,
         paymentMethod: _paymentMethod.apiValue,
@@ -330,6 +341,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 if (widget.selection.selectedDates.length > 1)
                   _summaryRow('days', _formatDays(widget.selection.selectedDates)),
                 _summaryRow('start_end_time', '$startLabel - $endLabel'),
+                if (widget.selection.numberOfPersons != null)
+                  _summaryRow(
+                    'number_of_persons',
+                    '${widget.selection.numberOfPersons}',
+                  ),
                 _summaryRow('service_cost',
                     '${pricing.subtotal.toStringAsFixed(0)} ${pricing.currency}'),
                 if (widget.selection.visitType.hasDiscount)

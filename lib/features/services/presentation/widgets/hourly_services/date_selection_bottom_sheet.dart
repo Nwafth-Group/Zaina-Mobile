@@ -82,6 +82,7 @@ class _DateSelectionBottomSheetState extends State<DateSelectionBottomSheet> {
         workerGender: widget.config.workerGender,
         numberOfChildren: widget.config.numberOfChildren,
         childAgeGroupIds: widget.config.childAgeGroupIds,
+        numberOfPersons: widget.config.numberOfPersons,
       );
       if (!mounted) return;
       final selection = BookingSelectionData(
@@ -99,6 +100,7 @@ class _DateSelectionBottomSheetState extends State<DateSelectionBottomSheet> {
         numberOfChildren: widget.config.numberOfChildren,
         childAgeGroupIds: widget.config.childAgeGroupIds,
         note: widget.config.note,
+        numberOfPersons: widget.config.numberOfPersons,
       );
       Navigator.pop(context);
       widget.onProceed(selection, validation);

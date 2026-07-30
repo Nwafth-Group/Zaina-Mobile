@@ -7,7 +7,6 @@ import 'package:zeina/core/utils/constants.dart';
 import 'package:zeina/core/utils/shared_pref_helper.dart';
 import 'package:zeina/features/bookings/presentation/screens/booking_detail_screen.dart';
 import 'package:zeina/features/services/presentation/screens/hourly_services_list_screen.dart';
-import 'package:zeina/features/services/presentation/screens/other_services_list_screen.dart';
 import 'package:zeina/features/services/presentation/screens/ziena_services_screen.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../injection_container.dart';
@@ -132,7 +131,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                   onTap: () => Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (_) => const OtherServicesListScreenUi(),
+                                      builder: (_) => const HourlyServicesListScreen(
+                                        type: 'other',
+                                        titleKey: 'other_services',
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -142,10 +144,10 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         const SizedBox(height: 24),
                         if(data.upcomingAppointment.isNotEmpty)...[
-                        _buildSectionHeader('upcoming_appointment', null),
-                        const SizedBox(height: 12),
-                        // Display actual upcoming appointment from API
-                        _buildAppointmentCard(data.upcomingAppointment.first),
+                          _buildSectionHeader('upcoming_appointment', null),
+                          const SizedBox(height: 12),
+                          // Display actual upcoming appointment from API
+                          _buildAppointmentCard(data.upcomingAppointment.first),
                         ],
                         const SizedBox(height: 60),
                       ],
@@ -180,27 +182,27 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: ClipOval(
                   child: profile?.image != null
                       ? CachedNetworkImage(
-                          imageUrl: profile!.image!,
-                          width: 50,
-                          height: 50,
-                          fit: BoxFit.cover,
-                          placeholder: (_, _) => const Icon(
-                              Icons.person, size: 30, color: ZienaColors.primary),
-                          errorWidget: (_, _, _) => const Icon(
-                              Icons.person, size: 30, color: ZienaColors.primary),
-                        )
+                    imageUrl: profile!.image!,
+                    width: 50,
+                    height: 50,
+                    fit: BoxFit.cover,
+                    placeholder: (_, _) => const Icon(
+                        Icons.person, size: 30, color: ZienaColors.primary),
+                    errorWidget: (_, _, _) => const Icon(
+                        Icons.person, size: 30, color: ZienaColors.primary),
+                  )
                       : profile != null
-                          ? Center(
-                              child: Text(
-                                profile.initials,
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w700,
-                                  color: ZienaColors.primary,
-                                ),
-                              ),
-                            )
-                          : const Icon(Icons.person, size: 30, color: ZienaColors.primary),
+                      ? Center(
+                    child: Text(
+                      profile.initials,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: ZienaColors.primary,
+                      ),
+                    ),
+                  )
+                      : const Icon(Icons.person, size: 30, color: ZienaColors.primary),
                 ),
               );
             },
@@ -431,8 +433,8 @@ class _BannerCard extends StatelessWidget {
         child: ClipRRect(
           borderRadius: BorderRadius.circular(14),
           child: Image.network(banner.image??'', width: double.infinity, height: 200,fit: BoxFit.fill,
-          errorBuilder: (context, error, stackTrace) =>
-              Container(height: 200, width: double.infinity, color: ZienaColors.primaryLight, child: Icon(Icons.image, size: 40, color: Colors.white,),)),
+              errorBuilder: (context, error, stackTrace) =>
+                  Container(height: 200, width: double.infinity, color: ZienaColors.primaryLight, child: Icon(Icons.image, size: 40, color: Colors.white,),)),
         ),
       ),
     );
@@ -638,7 +640,7 @@ class _InfoChip extends StatelessWidget {
   String? label;
   final Color color;
 
-   _InfoChip({
+  _InfoChip({
     required this.icon,
     required this.label,
     required this.color,

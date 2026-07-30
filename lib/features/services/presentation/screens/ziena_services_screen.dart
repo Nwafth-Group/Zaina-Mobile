@@ -1,8 +1,6 @@
-
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:zeina/features/services/presentation/screens/hourly_services_list_screen.dart';
-import 'package:zeina/features/services/presentation/screens/other_services_list_screen.dart';
 import '../../../../core/theme/theme.dart';
 
 class ZienaServicesScreen extends StatelessWidget {
@@ -54,7 +52,10 @@ class ZienaServicesScreen extends StatelessWidget {
               onTap: () => Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => const OtherServicesListScreenUi(),
+                  builder: (_) => const HourlyServicesListScreen(
+                    type: 'other',
+                    titleKey: 'other_services',
+                  ),
                 ),
               ),
             ),
