@@ -933,13 +933,18 @@ class _BottomActions extends StatelessWidget {
     if (service == null || !context.mounted) return;
 
     final requiredDays = booking.isMultiVisit ? 3 : 1;
-    final result = service.hasDurationRange
-        ? await showRescheduleConfigurableSheet(context: context, service: service)
-        : await showRescheduleFixedShiftSheet(
+    // Use the service's real booking flow (id-derived, see ServiceBookingFlow
+    // doc comment) rather than hasDurationRange — hasDurationRange is false
+    // for both fixed-shift services (Domestic Helper, Deep Cleaning) AND
+    // Pedicure & Manicure, even though Pedicure & Manicure needs the
+    // configurable start-time + /available-dates flow, not fixed shift chips.
+    final result = service.bookingFlow == ServiceBookingFlow.fixedShift
+        ? await showRescheduleFixedShiftSheet(
       context: context,
       service: service,
       requiredDays: requiredDays,
-    );
+    )
+        : await showRescheduleConfigurableSheet(context: context, service: service);
     if (result == null || !context.mounted) return;
 
     final otpSent = await _runWithLoadingDialog(
