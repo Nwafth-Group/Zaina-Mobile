@@ -6,7 +6,7 @@ import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:zeina/core/utils/constants.dart';
 import 'package:zeina/core/utils/shared_pref_helper.dart';
 import 'package:zeina/features/bookings/presentation/screens/booking_detail_screen.dart';
-import 'package:zeina/features/services/presentation/screens/hourly_services_list_screen.dart';
+import 'package:zeina/features/services/presentation/screens/services_list_screen.dart';
 import 'package:zeina/features/services/presentation/screens/ziena_services_screen.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../injection_container.dart';
@@ -114,7 +114,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (_) => const HourlyServicesListScreen(
+                                        builder: (_) => const ServicesListScreen(
                                           type: 'hourly',
                                           titleKey: 'Hourly Services',
                                         ),
@@ -131,7 +131,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   onTap: () => Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (_) => const HourlyServicesListScreen(
+                                      builder: (_) => const ServicesListScreen(
                                         type: 'other',
                                         titleKey: 'other_services',
                                       ),

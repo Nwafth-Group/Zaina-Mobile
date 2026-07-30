@@ -337,7 +337,7 @@ class _LoadedBody extends StatelessWidget {
                       if (booking.address != null) ...[
                         Text('address'.tr(), style: _titleStyle),
                         const SizedBox(height: 10),
-                        _AddressCard(address: booking.address!, locale: locale),
+                        _AddressCard(address: booking.address!),
                         const SizedBox(height: 20),
                       ],
 
@@ -659,8 +659,7 @@ class _VisitTimeline extends StatelessWidget {
 // ── Address card ───────────────────────────────────────────────────────────────
 class _AddressCard extends StatelessWidget {
   final BookingDetailAddress address;
-  final String locale;
-  const _AddressCard({required this.address, required this.locale});
+  const _AddressCard({required this.address});
 
   @override
   Widget build(BuildContext context) {
@@ -674,8 +673,8 @@ class _AddressCard extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            width: 40,
-            height: 40,
+            width: 60,
+            height: 60,
             decoration: const BoxDecoration(
               color: ZienaColors.bg2,
               shape: BoxShape.circle,
@@ -683,7 +682,7 @@ class _AddressCard extends StatelessWidget {
             child: Center(
               child: ColorFiltered(
                 colorFilter: const ColorFilter.mode(ZienaColors.primary, BlendMode.srcIn),
-                child: Image.asset('assets/images/addresses.png', width: 18, height: 18),
+                child: Image.asset('assets/images/addresses.png', width: 24, height: 24),
               ),
             ),
           ),
@@ -703,7 +702,7 @@ class _AddressCard extends StatelessWidget {
                     child: Text(address.label,
                         style: const TextStyle(fontSize: 11, color: ZienaColors.primary)),
                   ),
-                Text(address.cityAreaLine(locale),
+                Text(address.cityAreaLine,
                     style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,

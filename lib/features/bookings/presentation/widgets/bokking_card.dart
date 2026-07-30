@@ -70,15 +70,15 @@ class BookingCard extends StatelessWidget {
                       // Category label — the API doesn't return a service
                       // category, so this is a static label for now (every
                       // booking today is an hourly service).
-                      Text(
-                        'Hourly Services'.tr(),
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: ZienaColors.textPrimary,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
+                      // Text(
+                      //   'Hourly Services'.tr(),
+                      //   style: const TextStyle(
+                      //     fontSize: 12,
+                      //     fontWeight: FontWeight.w600,
+                      //     color: ZienaColors.textPrimary,
+                      //   ),
+                      // ),
+                      // const SizedBox(height: 2),
                       Text(
                         booking.serviceName,
                         style: const TextStyle(

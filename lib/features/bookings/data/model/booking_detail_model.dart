@@ -2,60 +2,108 @@ import 'booking_model.dart' show VisitScheduleItem;
 
 class BookingDetailAddress {
   final int id;
+  final int serviceZoneId;
+  final String serviceZoneName;
+  final double latitude;
+  final double longitude;
+  final String formattedAddress;
+
+  /// Already a single, server-localized string in this response — there's
+  /// no `name_ar`/`name_en` split here like on other models, so no
+  /// languageCode param is needed to read these.
+  final String city;
+  final String governorate;
+  final String? country;
+
   final String label;
-  final String areaNameAr;
-  final String areaNameEn;
-  final String cityNameAr;
-  final String cityNameEn;
   final String street;
   final String buildingName;
   final String buildingNo;
   final String floor;
   final String apartmentNo;
+
+  final String contactName;
+  final String phoneNumber;
+  final String? secondaryPhone;
   final String? notes;
+
+  final bool isDefault;
+  final bool isServiceable;
 
   BookingDetailAddress({
     required this.id,
+    required this.serviceZoneId,
+    required this.serviceZoneName,
+    required this.latitude,
+    required this.longitude,
+    required this.formattedAddress,
+    required this.city,
+    required this.governorate,
+    this.country,
     required this.label,
-    required this.areaNameAr,
-    required this.areaNameEn,
-    required this.cityNameAr,
-    required this.cityNameEn,
     required this.street,
     required this.buildingName,
     required this.buildingNo,
     required this.floor,
     required this.apartmentNo,
+    required this.contactName,
+    required this.phoneNumber,
+    this.secondaryPhone,
     this.notes,
+    required this.isDefault,
+    required this.isServiceable,
   });
 
   factory BookingDetailAddress.fromJson(Map<String, dynamic> json) {
-    final area = json['area'] as Map<String, dynamic>? ?? {};
-    final city = area['city'] as Map<String, dynamic>? ?? {};
+    final serviceZone = json['service_zone'] as Map<String, dynamic>? ?? {};
+
     return BookingDetailAddress(
       id: json['id'] ?? 0,
+      serviceZoneId: json['service_zone_id'] ?? 0,
+      // Prefer the top-level `service_zone_name` (present directly on the
+      // address), fall back to the nested object's `name`.
+      serviceZoneName:
+      json['service_zone_name'] ?? serviceZone['name'] ?? '',
+      latitude: (json['latitude'] as num?)?.toDouble() ?? 0,
+      longitude: (json['longitude'] as num?)?.toDouble() ?? 0,
+      formattedAddress: json['formatted_address'] ?? '',
+      city: json['city'] ?? '',
+      governorate: json['governorate'] ?? '',
+      country: json['country'],
       label: json['label'] ?? '',
-      areaNameAr: area['name_ar'] ?? '',
-      areaNameEn: area['name_en'] ?? '',
-      cityNameAr: city['name_ar'] ?? '',
-      cityNameEn: city['name_en'] ?? '',
       street: json['street'] ?? '',
       buildingName: json['building_name'] ?? '',
       buildingNo: json['building_no'] ?? '',
-      floor: json['floor'] ?? '',
+      // API sends both `floor` and `floor_no` with the same value; keep
+      // reading `floor` but fall back to `floor_no` if `floor` is missing.
+      floor: json['floor'] ?? json['floor_no'] ?? '',
       apartmentNo: json['apartment_no'] ?? '',
+      contactName: json['contact_name'] ?? '',
+      phoneNumber: json['phone_number'] ?? '',
+      secondaryPhone: json['secondary_phone'],
       notes: json['notes'],
+      isDefault: json['is_default'] ?? false,
+      isServiceable: json['is_serviceable'] ?? false,
     );
   }
 
-  String cityAreaLine(String languageCode) {
-    final area = languageCode == 'ar' ? areaNameAr : areaNameEn;
-    final city = languageCode == 'ar' ? cityNameAr : cityNameEn;
-    return [city, area].where((s) => s.isNotEmpty).join(', ');
-  }
+  /// "Governorate, City" — e.g. "القاهرة, مدينة نصر". Both are already
+  /// server-localized single strings, so no languageCode param is needed.
+  String get cityAreaLine =>
+      [governorate, city].where((s) => s.isNotEmpty).join(', ');
 
-  String get streetBuildingLine =>
-      '$street, $buildingName, Bldg $buildingNo, Floor $floor, Apt $apartmentNo';
+  /// Falls back to building the line from parts if `formatted_address`
+  /// isn't present for some reason.
+  String get streetBuildingLine {
+    if (formattedAddress.isNotEmpty) return formattedAddress;
+    return [
+      street,
+      buildingName,
+      'Bldg $buildingNo',
+      'Floor $floor',
+      'Apt $apartmentNo',
+    ].where((s) => s.trim().isNotEmpty).join(', ');
+  }
 }
 
 class BookingDetailWorker {

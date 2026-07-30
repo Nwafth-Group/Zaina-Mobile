@@ -2,7 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:zeina/core/utils/shared_pref_helper.dart';
-import 'package:zeina/features/services/presentation/widgets/hourly_services/service_tile.dart';
+import 'package:zeina/features/services/presentation/widgets/service_tile.dart';
 import 'package:zeina/widgets/signin_required_widget.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../injection_container.dart';
@@ -11,13 +11,13 @@ import '../../data/model/service_model.dart';
 import '../../data/model/visit_type_model.dart';
 import '../cubit/services_cubit.dart';
 import '../widgets/coverage_error_dialog.dart';
-import '../widgets/hourly_services/visit_type_bottom_sheet.dart';
-import 'hourly_services_detail_screen.dart';
+import '../widgets/visit_type_bottom_sheet.dart';
+import 'services_detail_screen.dart';
 // Adjust this import to wherever AddressCubit + AddEditAddressScreen live in your project:
 import '../../../home/presentation/cubit/address_cubit.dart';
 import '../../../home/presentation/screens/add_edit_address_screen.dart';
 
-class HourlyServicesListScreen extends StatelessWidget {
+class ServicesListScreen extends StatelessWidget {
   static const String routeName = '/services-list';
 
   /// API `type` query param — e.g. 'hourly' or 'other'.
@@ -26,7 +26,7 @@ class HourlyServicesListScreen extends StatelessWidget {
   /// Localization key for the AppBar title — e.g. 'Hourly Services' / 'Other Services'.
   final String titleKey;
 
-  const HourlyServicesListScreen({
+  const ServicesListScreen({
     super.key,
     required this.type,
     required this.titleKey,
@@ -225,7 +225,7 @@ class _ServicesListViewState extends State<_ServicesListView> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (_) => HourlyServicesDetailScreen(
+          builder: (_) => ServicesDetailScreen(
             serviceId: service.id,
             visitType: visitTypes.first,
           ),
@@ -242,7 +242,7 @@ class _ServicesListViewState extends State<_ServicesListView> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (_) => HourlyServicesDetailScreen(
+            builder: (_) => ServicesDetailScreen(
               serviceId: service.id,
               visitType: visitType,
             ),

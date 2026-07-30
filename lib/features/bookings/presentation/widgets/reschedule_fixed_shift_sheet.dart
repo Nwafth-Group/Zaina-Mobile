@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../widgets/ziena_small_button.dart';
 import '../../../services/data/model/service_detail_model.dart';
-import '../../../services/presentation/widgets/hourly_services/booking_calendar.dart';
+import '../../../services/presentation/widgets/booking_calendar.dart';
 import '../../data/model/reschedule_result.dart';
 
 /// Shows the "Select New Date And Time" sheet for fixed-shift services
