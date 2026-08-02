@@ -373,8 +373,8 @@
   "select_new_date_and_time": "اختر تاريخ ووقت جديد",
   "save_button": "حفظ",
   "ziena_services": "خدمات زينة",
-  "no_reports_ar": "لا توجد تقارير",
-  "no_reports_desc_ar": "لا توجد تقارير لعرضها في الوقت الحالي.",
+  "no_reports_ar": "لا توجد شكاوى",
+  "no_reports_desc_ar": "لا توجد شكاوى لعرضها في الوقت الحالي.",
   "submitted_on": "تم الإرسال في",
   "last_update": "آخر تحديث",
   "other_services": "خدمات أخرى",
@@ -434,7 +434,7 @@
   "generate_referral_code": "إنشاء كود إحالة",
   "generate_new_code": "إنشاء كود جديد",
   "code_expires_on": "ينتهي في",
-  "have_code_paste_here": "إذا كان لديك كود، الصقه هنا!",
-  "reports": "التقارير"
+  "have_code_paste_here": "هل لديك كود دعوة؟ الصقه هنا.",
+  "reports": "الشكاوى"
 
 }

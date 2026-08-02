@@ -367,8 +367,8 @@
   "select_new_date_and_time": "Select New Date And Time",
   "save_button": "Save",
   "ziena_services": "Zaina Services",
-  "no_reports": "No reports available",
-  "no_reports_desc": "There are no reports to display at the moment.",
+  "no_reports": "No complaints available",
+  "no_reports_desc": "There are no complaints to display at the moment.",
   "submitted_on": "Submitted on",
   "last_update": "Last Update",
   "other_services": "Other Services",
@@ -429,6 +429,6 @@
   "generate_referral_code": "Generate Referral Code",
   "generate_new_code": "Generate new code",
   "code_expires_on": "Expires on",
-  "have_code_paste_here": "If you have a code, paste it here!",
-  "reports": "Reports"
+  "have_code_paste_here": "Have an invitation code? Paste it here.",
+  "reports": "Complaints"
 }

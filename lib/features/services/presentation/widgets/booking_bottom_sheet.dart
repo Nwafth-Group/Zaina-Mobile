@@ -72,6 +72,12 @@ class _BookingBottomSheetState extends State<BookingBottomSheet> {
   /// service providers they've chosen (not the service's max_workers).
   int get _maxPreferredWorkers => _selectedWorkerCount ?? 1;
 
+  /// Deep Cleaning (id 5) is always a single worker, so the "number of
+  /// service providers" stepper has nothing to offer and is hidden. The
+  /// selection still defaults to [ServiceDetailModel.minWorkers] in
+  /// initState, so validation/submission are unaffected.
+  bool get _showWorkerCount => widget.service.id != 5;
+
   bool get _isValid =>
       _selectedDates.length == _requiredDays &&
           _selectedShift != null &&
@@ -224,10 +230,12 @@ class _BookingBottomSheetState extends State<BookingBottomSheet> {
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-                    const SizedBox(height: 20),
-                    _sectionTitle('number_of_workers_title'),
-                    const SizedBox(height: 8),
-                    _buildWorkerCountRow(),
+                    if (_showWorkerCount) ...[
+                      const SizedBox(height: 20),
+                      _sectionTitle('number_of_workers_title'),
+                      const SizedBox(height: 8),
+                      _buildWorkerCountRow(),
+                    ],
                     if (_activeWorkers.isNotEmpty) ...[
                       const SizedBox(height: 20),
                       _sectionTitle('preferred_workers'),

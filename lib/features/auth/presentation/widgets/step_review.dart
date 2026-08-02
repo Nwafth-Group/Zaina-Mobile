@@ -8,14 +8,12 @@ import '../cubit/verification_cubit.dart';
 class StepReview extends StatelessWidget {
   final File? frontId;
   final File? backId;
-  final File? selfie;
   final VoidCallback? onSubmit;
 
   const StepReview({
     super.key,
     required this.frontId,
     required this.backId,
-    required this.selfie,
     required this.onSubmit,
   });
 
@@ -29,7 +27,7 @@ class StepReview extends StatelessWidget {
           child: Text('review_your_info'.tr(),
               textAlign: TextAlign.center,
               style: const TextStyle(
-                 fontSize: 20,
+                fontSize: 20,
                 fontWeight: FontWeight.w700,
                 color: ZienaColors.textPrimary,
               )),
@@ -38,9 +36,9 @@ class StepReview extends StatelessWidget {
         Center(
           child: Text('confirm_before_submit'.tr(),
               textAlign: TextAlign.center,
-          
+
               style: const TextStyle(
-                 fontSize: 14,
+                fontSize: 14,
                 color: ZienaColors.textSecondary,
               )),
         ),
@@ -54,15 +52,6 @@ class StepReview extends StatelessWidget {
         const SizedBox(height: 10),
         _ReviewImageRow(
             label: 'back_side'.tr(),  file: backId),
-        const SizedBox(height: 24),
-
-        // Selfie
-        _sectionTitle('selfie'.tr()),
-        const SizedBox(height: 12),
-        if (selfie != null)
-        _ReviewImageRow(
-            label: 'selfie'.tr(), file: selfie),
-
         const SizedBox(height: 36),
 
         BlocBuilder<VerificationCubit, VerificationState>(
@@ -88,7 +77,7 @@ class StepReview extends StatelessWidget {
                         color: Colors.white, strokeWidth: 2))
                     : Text('submit'.tr(),
                     style: const TextStyle(
-                       fontSize: 16,
+                      fontSize: 16,
                       fontWeight: FontWeight.w600, color: Colors.white,
                     )),
               ),
@@ -103,7 +92,7 @@ class StepReview extends StatelessWidget {
     children: [
       Text(t,
           style: const TextStyle(
-             fontSize: 15,
+            fontSize: 15,
             fontWeight: FontWeight.w700, color: ZienaColors.textPrimary,
           )),
     ],
@@ -139,7 +128,7 @@ class _ReviewImageRow extends StatelessWidget {
         const SizedBox(width: 14),
         Expanded(child: Text(label,
             style: const TextStyle(
-               fontSize: 14,
+              fontSize: 14,
               fontWeight: FontWeight.w600,
               color: ZienaColors.textPrimary,
             ))),

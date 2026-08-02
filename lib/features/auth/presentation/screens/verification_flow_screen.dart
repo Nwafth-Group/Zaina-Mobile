@@ -13,7 +13,6 @@ import '../cubit/verification_cubit.dart';
 import '../widgets/referral_code_field.dart';
 import '../widgets/step_id_upload.dart';
 import '../widgets/step_review.dart';
-import '../widgets/step_selfie.dart';
 import 'verification_pending_screen.dart';
 import 'verification_rejected_screen.dart';
 
@@ -41,7 +40,6 @@ class _VerificationFlowScreenState extends State<VerificationFlowScreen> {
   // shared across steps
   File? _frontId;
   File? _backId;
-  File? _selfie;
   String? _errorMessage;
 
   // "If you have a code, paste it here!" — optional, sent along with
@@ -89,7 +87,7 @@ class _VerificationFlowScreenState extends State<VerificationFlowScreen> {
   }
 
   void _goNext() {
-    if (_step < 2) {
+    if (_step < 1) {
       _ctrl.nextPage(
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeInOut);
@@ -112,16 +110,15 @@ class _VerificationFlowScreenState extends State<VerificationFlowScreen> {
   }
 
   void _submit() {
-    if (_frontId == null || _backId == null || _selfie == null) return;
+    if (_frontId == null || _backId == null) return;
     context.read<VerificationCubit>().submitVerification(
       frontId: _frontId!,
       backId:  _backId!,
-      selfie:  _selfie!,
       referralCode: _referralController.text.trim(),
     );
   }
 
-  static const _stepLabels = ['ID Upload', 'Selfie', 'Review'];
+  static const _stepLabels = ['ID Upload', 'Review'];
 
   @override
   Widget build(BuildContext context) {
@@ -169,7 +166,6 @@ class _VerificationFlowScreenState extends State<VerificationFlowScreen> {
             _currentStatus = null;
             _frontId = null;
             _backId = null;
-            _selfie = null;
             _step = 0;
           });
         },
@@ -220,13 +216,7 @@ class _VerificationFlowScreenState extends State<VerificationFlowScreen> {
                   ? _goNext
                   : null,
             ),
-            // Step 1 — Selfie
-            StepSelfie(
-              selfie: _selfie,
-              onSelfiePicked: (f) => setState(() => _selfie = f),
-              onNext: _selfie != null ? _goNext : null,
-            ),
-            // Step 2 — Review
+            // Step 1 — Review
             Column(
               children: [
                 Padding(
@@ -238,10 +228,7 @@ class _VerificationFlowScreenState extends State<VerificationFlowScreen> {
                   child: StepReview(
                     frontId: _frontId,
                     backId:  _backId,
-                    selfie:  _selfie,
-                    onSubmit: (_frontId != null &&
-                        _backId  != null &&
-                        _selfie  != null)
+                    onSubmit: (_frontId != null && _backId != null)
                         ? _submit
                         : null,
                   ),

@@ -11,7 +11,7 @@ class VerificationCubit extends Cubit<VerificationState> {
   VerificationCubit(this._api) : super(VerificationInitial());
 
   /// POST customer/auth/verify
-  /// Files: [frontId, backId, selfie]
+  /// Files: [frontId, backId]
   /// Optional [referralCode] — "If you have a code, paste it here!" —
   /// sent alongside the files as `referral_code`. Omitted from the
   /// request entirely when null/empty rather than sent as a blank
@@ -19,7 +19,6 @@ class VerificationCubit extends Cubit<VerificationState> {
   Future<void> submitVerification({
     required File frontId,
     required File backId,
-    required File selfie,
     String? referralCode,
   }) async {
     emit(VerificationLoading());
@@ -33,11 +32,6 @@ class VerificationCubit extends Cubit<VerificationState> {
         'id_back': await MultipartFile.fromFile(
           backId.path,
           filename: 'id_back.jpg',
-        ),
-
-        'selfie': await MultipartFile.fromFile(
-          selfie.path,
-          filename: 'selfie.jpg',
         ),
 
         if (referralCode != null && referralCode.trim().isNotEmpty)

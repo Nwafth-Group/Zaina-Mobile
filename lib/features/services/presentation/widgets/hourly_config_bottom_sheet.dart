@@ -52,20 +52,71 @@ class _HourlyConfigBottomSheetState extends State<HourlyConfigBottomSheet> {
   bool get _hasChildren => widget.service.hasChildren;
   bool get _hasPersonsCount => widget.service.hasPersonsCount;
 
-  /// A single worker can cover `coveredPersonsPerWorker` persons, so the
-  /// max number of persons scales with how many workers are selected.
+  /// A single worker can cover `coveredPersonsPerWorker` persons. This is
+  /// bounded by the service's overall max worker capacity, NOT by whichever
+  /// worker count is currently selected — number of persons and number of
+  /// service providers are independent steppers for this service.
   int get _maxPersons =>
-      widget.service.coveredPersonsPerWorker * _workersCount;
+      widget.service.coveredPersonsPerWorker * widget.service.maxWorkers;
 
-  // Once more than 2 children are selected, at least 2 service providers
-  // are required (falls back to the service's own minimum otherwise, in
-  // case that minimum is already higher).
-  int get _minWorkersRequired {
-    final base = widget.service.minWorkers;
-    if (_hasChildren && _numberOfChildren > 2) {
-      return base > 2 ? base : 2;
+  /// Fixed max hours a single worker can be scheduled for in one day,
+  /// per the confirmed rule: "Each worker works a maximum of 8 hours per
+  /// day." This is a flat constant, NOT derived from the service's own
+  /// start_time/end_time window.
+  static const int _maxWorkerHoursPerDay = 8;
+
+  /// Pedicure & Manicure auto-scaling rule (confirmed formula):
+  /// required_workers = ceil((number_of_persons × default_duration) ÷ 8).
+  /// Each person takes `_duration` hours of service time; once the total
+  /// exceeds what one worker can do in an 8-hour day, another worker is
+  /// required to cover the rest within the same day.
+  int get _requiredWorkersForPersons {
+    final requiredHours = _numberOfPersons * _duration;
+    final needed = (requiredHours / _maxWorkerHoursPerDay).ceil();
+    return needed.clamp(1, widget.service.maxWorkers);
+  }
+
+  /// Babysitter per-age-group ratio formula (confirmed rule):
+  /// For each selected child_age_group id, count how many children were
+  /// assigned to it, then:
+  ///   workers_needed_for_group = ceil(count / group.childrenCount) * group.requiredWorkerCount
+  /// Calculated Min Workers = sum of workers_needed_for_group across all
+  /// selected groups. If total_children >= 3, the result is floored at 2
+  /// regardless of what the sum alone would give.
+  int get _calculatedMinWorkersForChildren {
+    final counts = <int, int>{};
+    for (final groupId in _childAgeGroupIds) {
+      counts[groupId] = (counts[groupId] ?? 0) + 1;
     }
-    return base;
+    var total = 0;
+    for (final entry in counts.entries) {
+      final group = widget.service.childAgeGroups.firstWhere(
+            (g) => g.id == entry.key,
+        orElse: () => widget.service.childAgeGroups.first,
+      );
+      final denom = group.childrenCount > 0 ? group.childrenCount : 1;
+      total += (entry.value / denom).ceil() * group.requiredWorkerCount;
+    }
+    if (_numberOfChildren >= 3 && total < 2) {
+      total = 2;
+    }
+    return total;
+  }
+
+  // Pedicure & Manicure (hasPersonsCount) and Babysitter (hasChildren) each
+  // have their own confirmed auto-scaling formula for the floor, both of
+  // which ignore whatever min_workers the API sends and only defer to it as
+  // a fallback floor; only the ceiling (max_workers) always comes from the
+  // API.
+  int get _minWorkersRequired {
+    if (_hasPersonsCount) return _requiredWorkersForPersons;
+    if (_hasChildren) {
+      final calculated = _calculatedMinWorkersForChildren;
+      final base = widget.service.minWorkers;
+      final floor = calculated > base ? calculated : base;
+      return floor.clamp(1, widget.service.maxWorkers);
+    }
+    return widget.service.minWorkers;
   }
 
   @override
@@ -111,7 +162,7 @@ class _HourlyConfigBottomSheetState extends State<HourlyConfigBottomSheet> {
     _gender = widget.service.workerGenderOptions.isNotEmpty
         ? widget.service.workerGenderOptions.first
         : '';
-    _workersCount = widget.service.minWorkers;
+    _workersCount = _hasPersonsCount ? 1 : widget.service.minWorkers;
 
     _numberOfChildren = _hasChildren ? widget.service.minChildren.clamp(1, 1 << 30) : 0;
     _childAgeGroupIds = _hasChildren
@@ -123,14 +174,13 @@ class _HourlyConfigBottomSheetState extends State<HourlyConfigBottomSheet> {
 
     _numberOfPersons = _hasPersonsCount ? 1 : 0;
 
-    // If the default children count already exceeds 2 (e.g. service's own
-    // minChildren is 3+), make sure the default worker count reflects the
-    // 2-provider minimum from the very first render.
+    // Make sure the default worker count reflects whatever
+    // _minWorkersRequired computes from the very first render — covers
+    // Babysitter's per-age-group ratio formula (e.g. default children/age
+    // groups already requiring 2+ workers) and Pedicure & Manicure's
+    // persons/8-hour-day formula alike.
     if (_workersCount < _minWorkersRequired) {
-      _workersCount = _minWorkersRequired.clamp(
-        widget.service.minWorkers,
-        widget.service.maxWorkers,
-      );
+      _workersCount = _minWorkersRequired.clamp(1, widget.service.maxWorkers);
     }
 
     // Defensive: if the service's own default start+duration somehow don't
@@ -194,20 +244,37 @@ class _HourlyConfigBottomSheetState extends State<HourlyConfigBottomSheet> {
     if (next < _minWorkersRequired || next > widget.service.maxWorkers) {
       return;
     }
-    setState(() {
-      _workersCount = next;
-      // Number of persons can't exceed what the (possibly now smaller)
-      // worker count can cover.
-      if (_hasPersonsCount && _numberOfPersons > _maxPersons) {
-        _numberOfPersons = _maxPersons;
-      }
-    });
+    setState(() => _workersCount = next);
+  }
+
+  /// Keeps `_workersCount` tracking `_minWorkersRequired` in both
+  /// directions after a persons/children/age-group change:
+  ///  - Always bumps UP if the new requirement exceeds the current count.
+  ///  - Bumps DOWN too, but only when the current count was sitting exactly
+  ///    at the *previous* requirement — i.e. it was auto-set, not a
+  ///    deliberate manual over-provision the user chose on top of the
+  ///    minimum, which is left untouched.
+  /// Call with the requirement captured *before* the state change, then
+  /// perform the change, then call this from inside the same setState.
+  void _syncWorkersCount(int oldRequiredMin) {
+    final newRequiredMin = _minWorkersRequired;
+    if (_workersCount < newRequiredMin) {
+      _workersCount = newRequiredMin.clamp(1, widget.service.maxWorkers);
+    } else if (_workersCount == oldRequiredMin && newRequiredMin < oldRequiredMin) {
+      _workersCount = newRequiredMin.clamp(1, widget.service.maxWorkers);
+    }
   }
 
   void _changeNumberOfPersons(int delta) {
     final next = _numberOfPersons + delta;
     if (next < 1 || next > _maxPersons) return;
-    setState(() => _numberOfPersons = next);
+    final oldRequiredMin = _minWorkersRequired;
+    setState(() {
+      _numberOfPersons = next;
+      // Fewer/more persons may now need fewer/more workers to cover them
+      // within one worker's 8-hour day — track the requirement either way.
+      _syncWorkersCount(oldRequiredMin);
+    });
   }
 
   void _cycleGender(int direction) {
@@ -218,11 +285,24 @@ class _HourlyConfigBottomSheetState extends State<HourlyConfigBottomSheet> {
     setState(() => _gender = options[nextIndex]);
   }
 
+  /// Changes a single child's age group (from the per-child dropdown), then
+  /// re-checks the calculated minimum — moving a child between age groups
+  /// (e.g. Toddler -> Infant) can change the required worker count even
+  /// when the total number of children stays the same.
+  void _setChildAgeGroup(int index, int groupId) {
+    final oldRequiredMin = _minWorkersRequired;
+    setState(() {
+      _childAgeGroupIds[index] = groupId;
+      _syncWorkersCount(oldRequiredMin);
+    });
+  }
+
   void _changeNumberOfChildren(int delta) {
     final next = _numberOfChildren + delta;
     if (next < widget.service.minChildren || next > widget.service.maxChildren) {
       return;
     }
+    final oldRequiredMin = _minWorkersRequired;
     setState(() {
       _numberOfChildren = next;
       // Grow/shrink the age-group list to match, defaulting new slots to
@@ -235,16 +315,10 @@ class _HourlyConfigBottomSheetState extends State<HourlyConfigBottomSheet> {
       } else if (_childAgeGroupIds.length > next) {
         _childAgeGroupIds = _childAgeGroupIds.sublist(0, next);
       }
-      // More than 2 children now selected → bump the worker count up to the
-      // 2-provider minimum if it's currently below that (re-evaluates
-      // _minWorkersRequired since _numberOfChildren was just updated above).
-      final requiredMin = _minWorkersRequired;
-      if (_workersCount < requiredMin) {
-        _workersCount = requiredMin.clamp(
-          widget.service.minWorkers,
-          widget.service.maxWorkers,
-        );
-      }
+      // Re-evaluate the calculated minimum (ratio formula + 3+ children
+      // override) now that the count/group list changed, and track the
+      // worker count either up or down to match.
+      _syncWorkersCount(oldRequiredMin);
     });
   }
 
@@ -461,7 +535,7 @@ class _HourlyConfigBottomSheetState extends State<HourlyConfigBottomSheet> {
                                   .toList(),
                               onChanged: (value) {
                                 if (value == null) return;
-                                setState(() => _childAgeGroupIds[i] = value);
+                                _setChildAgeGroup(i, value);
                               },
                             ),
                           ),
