@@ -142,7 +142,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         addressId: widget.service.addressId,
         dates: widget.selection.selectedDates,
         startTime: widget.selection.shift.startLabel,
-        workersCount: widget.selection.workerCount,
+        // Options-based services (6-11) have no workers_count in their
+        // /validate payload at all — the backend assigns a team.
+        workersCount: widget.selection.options != null
+            ? null
+            : widget.selection.workerCount,
         preferredWorkerIds: widget.selection.preferredWorkerIds.isEmpty
             ? null
             : widget.selection.preferredWorkerIds,
@@ -152,6 +156,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         numberOfChildren: widget.selection.numberOfChildren,
         childAgeGroupIds: widget.selection.childAgeGroupIds,
         numberOfPersons: widget.selection.numberOfPersons,
+        options: widget.selection.options,
+        note: widget.selection.note,
       );
       if (!mounted) return;
       setState(() {
@@ -204,6 +210,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       numberOfChildren: widget.selection.numberOfChildren,
       childAgeGroups: widget.selection.childAgeGroupIds,
       numberOfPersons: widget.selection.numberOfPersons,
+      options: widget.selection.options,
       note: widget.selection.note,
       paymentMethod: _paymentMethod.apiValue,
       couponCode: _couponController.text.trim(),
@@ -251,6 +258,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         numberOfChildren: widget.selection.numberOfChildren,
         childAgeGroupIds: widget.selection.childAgeGroupIds,
         numberOfPersons: widget.selection.numberOfPersons,
+        options: widget.selection.options,
         note: widget.selection.note,
         workerIds: _currentValidation.workerIds,
         paymentMethod: _paymentMethod.apiValue,
@@ -341,6 +349,17 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 if (widget.selection.selectedDates.length > 1)
                   _summaryRow('days', _formatDays(widget.selection.selectedDates)),
                 _summaryRow('start_end_time', '$startLabel - $endLabel'),
+                // Options-based services (Sofa Cleaning etc.): list what was
+                // picked, e.g. "One-seat Sofa    2 × 50 SAR". The option name
+                // is already localized, so it passes through _summaryRow's
+                // .tr() unchanged (missing keys fall back to the input).
+                if (widget.selection.options != null)
+                  ...widget.selection.options!.map(
+                    (o) => _summaryRow(
+                      o.localizedName(locale),
+                      '${o.quantity} × ${o.unitPrice.toStringAsFixed(0)} ${pricing.currency}',
+                    ),
+                  ),
                 if (widget.selection.numberOfPersons != null)
                   _summaryRow(
                     'number_of_persons',

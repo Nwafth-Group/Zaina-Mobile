@@ -1,6 +1,41 @@
 import 'service_detail_model.dart';
 import 'visit_type_model.dart';
 
+/// One chosen option + quantity for options-based services (Sofa Cleaning
+/// etc.). Carries the display fields too so Checkout can list what was
+/// picked without re-looking anything up; only { id, quantity } is sent to
+/// the API.
+class BookingOptionItem {
+  final int id;
+  final int quantity;
+  final String nameAr;
+  final String nameEn;
+  final double unitPrice;
+
+  BookingOptionItem({
+    required this.id,
+    required this.quantity,
+    required this.nameAr,
+    required this.nameEn,
+    required this.unitPrice,
+  });
+
+  factory BookingOptionItem.fromOption(ServiceOptionModel option, int quantity) {
+    return BookingOptionItem(
+      id: option.id,
+      quantity: quantity,
+      nameAr: option.nameAr,
+      nameEn: option.nameEn,
+      unitPrice: option.unitPrice,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {'id': id, 'quantity': quantity};
+
+  String localizedName(String languageCode) =>
+      languageCode == 'ar' ? nameAr : nameEn;
+}
+
 class BookingSelectionData {
   final int serviceId;
   final VisitTypeModel visitType;
@@ -34,6 +69,11 @@ class BookingSelectionData {
   /// covers. Null for services without a number-of-persons concept.
   final int? numberOfPersons;
 
+  /// Options-based services (Sofa Cleaning-style) — the chosen options with
+  /// quantities. Null for every other service type. When non-null, the
+  /// /validate and /bookings payloads carry `options` and NO workers_count.
+  final List<BookingOptionItem>? options;
+
   BookingSelectionData({
     required this.serviceId,
     required this.visitType,
@@ -47,5 +87,6 @@ class BookingSelectionData {
     this.childAgeGroupIds,
     this.note,
     this.numberOfPersons,
+    this.options,
   });
 }

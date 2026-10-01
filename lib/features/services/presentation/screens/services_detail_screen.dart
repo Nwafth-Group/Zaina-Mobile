@@ -13,6 +13,8 @@ import '../../data/model/service_detail_model.dart';
 import '../../data/model/visit_type_model.dart';
 import '../widgets/date_selection_bottom_sheet.dart';
 import '../widgets/hourly_config_bottom_sheet.dart';
+import '../widgets/options_config_bottom_sheet.dart';
+import '../widgets/options_date_selection_bottom_sheet.dart';
 import 'checkout_screen.dart';
 
 class ServicesDetailScreen extends StatelessWidget {
@@ -206,6 +208,25 @@ class _LoadedBody extends StatelessWidget {
                         const SizedBox(height: 16),
                         _RewardRuleCard(reward: detail.rewardRule!, locale: locale),
                       ],
+                      // Pricing: options-based services (6-11) list each
+                      // option's unit price; every other service (1-5)
+                      // shows its base_price.
+                      if (detail.hasOptions) ...[
+                        const SizedBox(height: 24),
+                        Text(
+                          'prices'.tr(),
+                          style: const TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w700,
+                            color: ZienaColors.textPrimary,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        _OptionPricesCard(options: detail.options, locale: locale),
+                      ] else if (detail.basePrice > 0) ...[
+                        const SizedBox(height: 24),
+                        _BasePriceCard(detail: detail),
+                      ],
                       const SizedBox(height: 24),
                       Text(
                         'whats_included'.tr(),
@@ -310,6 +331,37 @@ class _LoadedBody extends StatelessWidget {
   }
 
   Future<void> _onBookNow(BuildContext context, ServiceDetailModel detail) async {
+    if (detail.hasOptions) {
+      // Sofa Cleaning-style (services 6-11): pick priced options +
+      // quantities + note FIRST, check availability, THEN pick a date and
+      // a service period (shift).
+      final config = await showOptionsConfigBottomSheet(
+        context: context,
+        service: detail,
+      );
+      if (config == null || !context.mounted) return;
+
+      await showOptionsDateSelectionBottomSheet(
+        context: context,
+        service: detail,
+        visitType: visitType,
+        config: config,
+        onProceed: (BookingSelectionData data, BookingValidationModel validation) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => CheckoutScreen(
+                service: detail,
+                selection: data,
+                validation: validation,
+              ),
+            ),
+          );
+        },
+      );
+      return;
+    }
+
     if (detail.isConfigurableHourly) {
       // Hospitality Worker-, Babysitter-, Pedicure & Manicure-style:
       // configure start time/duration/[gender OR children OR persons]/
@@ -359,6 +411,106 @@ class _LoadedBody extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+/// Base-price card for services 1-5: "Price — 150 EGP (/ Hour when the
+/// service is priced per hour)".
+class _BasePriceCard extends StatelessWidget {
+  final ServiceDetailModel detail;
+
+  const _BasePriceCard({required this.detail});
+
+  @override
+  Widget build(BuildContext context) {
+    final isPerHour = detail.pricingType == 'per_hour';
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+      decoration: BoxDecoration(
+        color: ZienaColors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: ZienaColors.primary.withOpacity(0.4)),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            'price'.tr(),
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: ZienaColors.textPrimary,
+            ),
+          ),
+          Text(
+            '${detail.basePrice.toStringAsFixed(0)} ${'egp'.tr()}'
+            '${isPerHour ? ' ${'per_hour_suffix'.tr()}' : ''}',
+            style: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w800,
+              color: ZienaColors.primary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Per-option price list for options-based services (6-11), e.g.
+/// "One-seat Sofa — 50 EGP / Two-seat Sofa — 95 EGP / ...".
+class _OptionPricesCard extends StatelessWidget {
+  final List<ServiceOptionModel> options;
+  final String locale;
+
+  const _OptionPricesCard({required this.options, required this.locale});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+      decoration: BoxDecoration(
+        color: ZienaColors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: ZienaColors.primary.withOpacity(0.4)),
+      ),
+      child: Column(
+        children: [
+          for (int i = 0; i < options.length; i++) ...[
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      options[i].localizedName(locale),
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: ZienaColors.textPrimary,
+                      ),
+                    ),
+                  ),
+                  Text(
+                    '${options[i].unitPrice.toStringAsFixed(0)} ${'egp'.tr()}',
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w800,
+                      color: ZienaColors.primary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (i < options.length - 1)
+              const Divider(height: 1, color: ZienaColors.greyBorder),
+          ],
+        ],
+      ),
     );
   }
 }

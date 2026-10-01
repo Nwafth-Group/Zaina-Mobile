@@ -435,6 +435,11 @@
   "generate_new_code": "إنشاء كود جديد",
   "code_expires_on": "ينتهي في",
   "have_code_paste_here": "هل لديك كود دعوة؟ الصقه هنا.",
-  "reports": "الشكاوى"
-
+  "reports": "الشكاوى",
+  "choose_number": "اختر العدد",
+  "add_note_hint_generic": "أي ملاحظات لفريق الخدمة",
+  "price": "السعر",
+  "prices": "الأسعار",
+  "egp": "جنيه",
+  "per_hour_suffix": "/ ساعة"
 }

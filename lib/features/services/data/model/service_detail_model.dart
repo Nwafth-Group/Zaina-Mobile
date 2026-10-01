@@ -228,6 +228,51 @@ class RewardRuleModel {
   bool get isRepeatable => frequencyType == 'repeatable';
 }
 
+/// One selectable, priced item for options-based services (ids 6-11), e.g.
+/// { name_en: "One-seat Sofa", unit_price: 50, min_qty: 1, max_qty: 10 }
+class ServiceOptionModel {
+  final int id;
+  final int serviceId;
+  final String nameAr;
+  final String nameEn;
+  final double unitPrice;
+  final int minQty;
+  final int maxQty;
+  final String status; // e.g. "active"
+  final int sortOrder;
+
+  ServiceOptionModel({
+    required this.id,
+    required this.serviceId,
+    required this.nameAr,
+    required this.nameEn,
+    required this.unitPrice,
+    required this.minQty,
+    required this.maxQty,
+    required this.status,
+    required this.sortOrder,
+  });
+
+  factory ServiceOptionModel.fromJson(Map<String, dynamic> json) {
+    return ServiceOptionModel(
+      id: json['id'] ?? 0,
+      serviceId: json['service_id'] ?? 0,
+      nameAr: json['name_ar'] ?? '',
+      nameEn: json['name_en'] ?? '',
+      unitPrice: double.tryParse('${json['unit_price'] ?? 0}') ?? 0,
+      minQty: json['min_qty'] ?? 1,
+      maxQty: json['max_qty'] ?? 1,
+      status: json['status'] ?? '',
+      sortOrder: json['sort_order'] ?? 0,
+    );
+  }
+
+  bool get isActive => status == 'active';
+
+  String localizedName(String languageCode) =>
+      languageCode == 'ar' ? nameAr : nameEn;
+}
+
 /// Which booking flow a service uses. Determined by service ID — the only
 /// signal that's proven reliably static. Every JSON-derived field tried so
 /// far (has_duration_range, worker_gender_options, pricing_type,
@@ -241,6 +286,12 @@ class RewardRuleModel {
 ///   3 = Babysitter (Hourly)          -> configurableChildren
 ///   4 = Pedicure & Manicure Service  -> configurablePersons
 ///   5 = Deep Cleaning Service        -> fixedShift
+///   6-11 = "Other" services (Sofa Cleaning etc.) -> optionsBased
+///
+/// The optionsBased case is the one exception to the id-only rule: those
+/// services are the ones whose response carries a non-empty `options` list,
+/// and any future service added the same way should behave identically, so
+/// it's keyed off that list rather than hardcoding ids 6..11.
 enum ServiceBookingFlow {
   /// Pick from pre-set shifts directly on a calendar. No /available-dates call.
   fixedShift,
@@ -253,23 +304,11 @@ enum ServiceBookingFlow {
 
   /// Configure start time/duration/workers/number_of_persons, THEN check availability.
   configurablePersons,
-}
 
-extension on int {
-  ServiceBookingFlow get _bookingFlowForServiceId {
-    switch (this) {
-      case 2:
-        return ServiceBookingFlow.configurableHourly;
-      case 3:
-        return ServiceBookingFlow.configurableChildren;
-      case 4:
-        return ServiceBookingFlow.configurablePersons;
-      case 1:
-      case 5:
-      default:
-        return ServiceBookingFlow.fixedShift;
-    }
-  }
+  /// Pick priced options + quantities (e.g. sofa sizes), THEN check
+  /// availability, then pick a date + shift. Workers are team-assigned by
+  /// the backend — no workers_count in any of this flow's payloads.
+  optionsBased,
 }
 
 class ServiceDetailModel {
@@ -323,14 +362,46 @@ class ServiceDetailModel {
   /// service has no reward configured.
   final RewardRuleModel? rewardRule;
 
-  /// Which booking flow this service uses — see [ServiceBookingFlow].
-  ServiceBookingFlow get bookingFlow => id._bookingFlowForServiceId;
+  /// Options-based services (ids 6-11, e.g. Sofa Cleaning) — the priced,
+  /// quantity-selectable items the user books. Empty for services 1-5.
+  final List<ServiceOptionModel> options;
 
-  /// True for services where the user configures options first (start
-  /// time/duration/gender-or-children-or-persons/worker count) THEN checks
-  /// availability via /bookings/available-dates, as opposed to picking from
-  /// fixed pre-set shifts directly (Domestic Helper-, Deep Cleaning-style).
-  bool get isConfigurableHourly => bookingFlow != ServiceBookingFlow.fixedShift;
+  /// Options-based services are fulfilled by backend-assigned teams rather
+  /// than user-selected worker counts.
+  final bool isTeamBased;
+
+  /// Which booking flow this service uses — see [ServiceBookingFlow].
+  ServiceBookingFlow get bookingFlow {
+    switch (id) {
+      case 2:
+        return ServiceBookingFlow.configurableHourly;
+      case 3:
+        return ServiceBookingFlow.configurableChildren;
+      case 4:
+        return ServiceBookingFlow.configurablePersons;
+      case 1:
+      case 5:
+        return ServiceBookingFlow.fixedShift;
+      default:
+        // Services 6-11 (and any future ones built the same way) carry a
+        // non-empty priced `options` list — see ServiceBookingFlow docs.
+        return options.isNotEmpty
+            ? ServiceBookingFlow.optionsBased
+            : ServiceBookingFlow.fixedShift;
+    }
+  }
+
+  /// True only for the options-based flow (Sofa Cleaning-style, ids 6-11).
+  bool get hasOptions => bookingFlow == ServiceBookingFlow.optionsBased;
+
+  /// True for services where the user configures hourly-style settings first
+  /// (start time/duration/gender-or-children-or-persons/worker count) THEN
+  /// checks availability via /bookings/available-dates, as opposed to picking
+  /// from fixed pre-set shifts directly (Domestic Helper-, Deep Cleaning-style)
+  /// or the options-based flow (Sofa Cleaning-style), which has its own sheet.
+  bool get isConfigurableHourly =>
+      bookingFlow != ServiceBookingFlow.fixedShift &&
+      bookingFlow != ServiceBookingFlow.optionsBased;
 
   /// True only for the Babysitter-style children/age-group flow.
   bool get hasChildren => bookingFlow == ServiceBookingFlow.configurableChildren;
@@ -381,6 +452,8 @@ class ServiceDetailModel {
     this.childAgeGroups = const [],
     this.coveredPersonsPerWorker = 1,
     this.rewardRule,
+    this.options = const [],
+    this.isTeamBased = false,
   });
 
   factory ServiceDetailModel.fromJson(Map<String, dynamic> json) {
@@ -438,6 +511,8 @@ class ServiceDetailModel {
       rewardRule: json['reward_rule'] != null
           ? RewardRuleModel.fromJson(json['reward_rule'] as Map<String, dynamic>)
           : null,
+      options: _parseOptions(json['options']),
+      isTeamBased: json['is_team_based'] ?? false,
     );
   }
 
@@ -446,4 +521,20 @@ class ServiceDetailModel {
 
   String localizedDescription(String languageCode) =>
       languageCode == 'ar' ? descriptionAr : descriptionEn;
+
+  /// Active options ordered by sort_order — stably, since the backend
+  /// sometimes sends the same sort_order for every option (all 0), in which
+  /// case the API's own ordering must be preserved (List.sort isn't stable).
+  static List<ServiceOptionModel> _parseOptions(dynamic raw) {
+    final parsed = (raw as List<dynamic>? ?? [])
+        .map((e) => ServiceOptionModel.fromJson(e as Map<String, dynamic>))
+        .where((o) => o.isActive)
+        .toList();
+    final indexed = parsed.asMap().entries.toList()
+      ..sort((a, b) {
+        final bySortOrder = a.value.sortOrder.compareTo(b.value.sortOrder);
+        return bySortOrder != 0 ? bySortOrder : a.key.compareTo(b.key);
+      });
+    return indexed.map((e) => e.value).toList();
+  }
 }

@@ -339,7 +339,7 @@ class _BookingBottomSheetState extends State<BookingBottomSheet> {
                     shift.startLabel12,
                     // shift.startLabel,
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: 17,
                       fontWeight: FontWeight.w700,
                       color: selected
                           ? ZienaColors.white
@@ -353,16 +353,18 @@ class _BookingBottomSheetState extends State<BookingBottomSheet> {
                         shift.isMorning
                             ? Icons.wb_sunny_outlined
                             : Icons.nightlight_round,
-                        size: 12,
-                        color: selected
-                            ? ZienaColors.white
-                            : ZienaColors.textSecondary,
+                        size: 14,
+                        color: shift.isMorning
+                            ? Colors.amber
+                            : (selected
+                                ? ZienaColors.white
+                                : ZienaColors.textSecondary),
                       ),
                       const SizedBox(width: 4),
                       Text(
                         shift.periodLabelKey.tr(),
                         style: TextStyle(
-                          fontSize: 11,
+                          fontSize: 13,
                           color: selected
                               ? ZienaColors.white
                               : ZienaColors.textSecondary,

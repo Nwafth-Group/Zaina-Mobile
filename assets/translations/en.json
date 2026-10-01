@@ -10,7 +10,6 @@
   "continue_guest": "Continue as Guest",
   "agree_terms": "I agree Terms & Conditions",
   "or_continue_with": "or Continue with",
-
   "select_language": "Select Languages",
   "select_language_hint": "Please Select the languages you can speak.",
   "english": "English",
@@ -430,5 +429,11 @@
   "generate_new_code": "Generate new code",
   "code_expires_on": "Expires on",
   "have_code_paste_here": "Have an invitation code? Paste it here.",
-  "reports": "Complaints"
+  "reports": "Complaints",
+  "choose_number": "Choose Number",
+  "add_note_hint_generic": "Any notes for the service team",
+  "price": "Price",
+  "prices": "Prices",
+  "egp": "EGP",
+  "per_hour_suffix": "/ Hour"
 }

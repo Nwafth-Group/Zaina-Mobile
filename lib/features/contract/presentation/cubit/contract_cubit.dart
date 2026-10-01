@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:zeina/features/services/data/model/booking_selection_data.dart';
 import 'package:zeina/features/services/data/model/visit_type_model.dart';
 import '../../../../core/network/api_client.dart';
 
@@ -34,6 +35,8 @@ class ContractCubit extends Cubit<ContractState> {
     int? numberOfChildren,
     List<int>? childAgeGroups,
     int? numberOfPersons,
+    // Options-based services (6-11, e.g. Sofa Cleaning).
+    List<BookingOptionItem>? options,
     String? note,
     required String paymentMethod,
     String? couponCode,
@@ -58,6 +61,8 @@ class ContractCubit extends Cubit<ContractState> {
           if (numberOfChildren != null) 'number_of_children': numberOfChildren,
           if (childAgeGroups != null) 'child_age_groups': childAgeGroups,
           if (numberOfPersons != null) 'number_of_persons': numberOfPersons,
+          if (options != null)
+            'options': options.map((o) => o.toJson()).toList(),
           if (note != null) 'note': note,
           'payment_method': paymentMethod,
           'coupon_code': couponCode ?? '',

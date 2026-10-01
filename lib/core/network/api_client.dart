@@ -75,8 +75,11 @@ class ApiClient {
         }
         developer.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
+        // Only a real 401 means the token is invalid. A null status code
+        // means the request never reached the server (timeout, no network),
+        // and clearing the token there logs the user out on every blip.
         final code = error.response?.statusCode;
-        if (code == 401 || code == null) {
+        if (code == 401) {
           developer.log('🚪 Logging out due to 401 Unauthorized', name: 'API');
           await SharedPrefHelper.clearAll();
           AppNavigator.pushAndRemoveUntil(const PhoneAuthScreen());

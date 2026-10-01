@@ -1,6 +1,7 @@
 import 'package:zeina/features/services/data/model/review_customer_model.dart';
 
 import '../datasources/services_datasource.dart';
+import '../model/booking_selection_data.dart';
 import '../model/booking_validation_model.dart';
 import '../model/coverage_model.dart';
 import '../model/service_detail_model.dart';
@@ -27,7 +28,9 @@ abstract class ServicesRepository {
     int? addressId,
     required List<DateTime> dates,
     required String startTime,
-    required int workersCount,
+    // Null ONLY for options-based services (6-11) — their /validate payload
+    // has no workers_count key at all (workers are team-assigned).
+    int? workersCount,
     List<int>? preferredWorkerIds,
     String? couponCode,
     // Configurable-hourly services (e.g. Hospitality Worker) require these
@@ -42,6 +45,9 @@ abstract class ServicesRepository {
     // confirmed on /bookings/available-dates. Wired through so it's ready
     // once confirmed; leave null until then.
     int? numberOfPersons,
+    // Options-based services (6-11, e.g. Sofa Cleaning) require these.
+    List<BookingOptionItem>? options,
+    String? note,
   });
 
   /// POST /customer/bookings — creates the booking. Sends a JSON body
@@ -61,6 +67,8 @@ abstract class ServicesRepository {
   ///   NOTE: not yet confirmed whether /bookings needs it — currently only
   ///   confirmed on /bookings/available-dates. Wired through so it's ready
   ///   once confirmed; leave null until then.
+  /// - Options-based services (6-11, e.g. Sofa Cleaning): pass [visitType]/
+  ///   [options]/[note], leave [duration]/[workerGender]/children/persons null.
   Future<Map<String, dynamic>> createBooking({
     required int serviceId,
     int? addressId,
@@ -72,6 +80,7 @@ abstract class ServicesRepository {
     int? numberOfChildren,
     List<int>? childAgeGroupIds,
     int? numberOfPersons,
+    List<BookingOptionItem>? options,
     String? note,
     required List<int> workerIds,
     required String paymentMethod, // 'points' | 'wallet' | 'card'
@@ -85,18 +94,25 @@ abstract class ServicesRepository {
   /// then checks which dates are actually available. Not used by
   /// fixed-shift services (Domestic Helper, Deep Cleaning) — see
   /// ServiceDetailModel.bookingFlow.
+  /// Options-based services (6-11) also use this endpoint, but their payload
+  /// is just { service_id, address_id, options, note } — no start_time/
+  /// duration/workers_count — so those three are nullable and simply omitted
+  /// when null.
   Future<List<DateTime>> fetchAvailableDates({
     required int serviceId,
     int? addressId,
-    required String startTime,
-    required int duration,
+    String? startTime,
+    int? duration,
     String? workerGender,
-    required int workersCount,
+    int? workersCount,
     int? numberOfChildren,
     List<int>? childAgeGroupIds,
     // Pedicure & Manicure (service 4) — confirmed required by that service's
     // /available-dates payload.
     int? numberOfPersons,
+    // Options-based services (6-11, e.g. Sofa Cleaning).
+    List<BookingOptionItem>? options,
+    String? note,
   });
 }
 
@@ -156,7 +172,7 @@ class ServicesRepositoryImpl implements ServicesRepository {
     int? addressId,
     required List<DateTime> dates,
     required String startTime,
-    required int workersCount,
+    int? workersCount,
     List<int>? preferredWorkerIds,
     String? couponCode,
     int? duration,
@@ -164,6 +180,8 @@ class ServicesRepositoryImpl implements ServicesRepository {
     int? numberOfChildren,
     List<int>? childAgeGroupIds,
     int? numberOfPersons,
+    List<BookingOptionItem>? options,
+    String? note,
   }) async {
     String fmt(DateTime d) =>
         '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
@@ -175,11 +193,12 @@ class ServicesRepositoryImpl implements ServicesRepository {
       'visit_type': visitType.validateApiValue,
       if (addressId != null) 'address_id': '$addressId',
       'start_time': startTime,
-      'workers_count': '$workersCount',
+      if (workersCount != null) 'workers_count': '$workersCount',
       if (duration != null) 'duration': '$duration',
       if (workerGender != null) 'worker_gender': workerGender,
       if (numberOfChildren != null) 'number_of_children': '$numberOfChildren',
       if (numberOfPersons != null) 'number_of_persons': '$numberOfPersons',
+      if (note != null && note.isNotEmpty) 'note': note,
     };
     for (int i = 0; i < dates.length; i++) {
       fields['dates[$i]'] = fmt(dates[i]);
@@ -192,6 +211,12 @@ class ServicesRepositoryImpl implements ServicesRepository {
     if (childAgeGroupIds != null) {
       for (int i = 0; i < childAgeGroupIds.length; i++) {
         fields['child_age_groups[$i]'] = '${childAgeGroupIds[i]}';
+      }
+    }
+    if (options != null) {
+      for (int i = 0; i < options.length; i++) {
+        fields['options[$i][id]'] = '${options[i].id}';
+        fields['options[$i][quantity]'] = '${options[i].quantity}';
       }
     }
     if (couponCode != null && couponCode.isNotEmpty) {
@@ -215,6 +240,7 @@ class ServicesRepositoryImpl implements ServicesRepository {
     int? numberOfChildren,
     List<int>? childAgeGroupIds,
     int? numberOfPersons,
+    List<BookingOptionItem>? options,
     String? note,
     required List<int> workerIds,
     required String paymentMethod,
@@ -235,6 +261,7 @@ class ServicesRepositoryImpl implements ServicesRepository {
       if (numberOfChildren != null) 'number_of_children': numberOfChildren,
       if (childAgeGroupIds != null) 'child_age_groups': childAgeGroupIds,
       if (numberOfPersons != null) 'number_of_persons': numberOfPersons,
+      if (options != null) 'options': options.map((o) => o.toJson()).toList(),
       if (note != null && note.isNotEmpty) 'note': note,
       'worker_ids': workerIds,
       'payment_method': paymentMethod,
@@ -249,24 +276,31 @@ class ServicesRepositoryImpl implements ServicesRepository {
   Future<List<DateTime>> fetchAvailableDates({
     required int serviceId,
     int? addressId,
-    required String startTime,
-    required int duration,
+    String? startTime,
+    int? duration,
     String? workerGender,
-    required int workersCount,
+    int? workersCount,
     int? numberOfChildren,
     List<int>? childAgeGroupIds,
     int? numberOfPersons,
+    List<BookingOptionItem>? options,
+    String? note,
   }) async {
     final query = <String, dynamic>{
       'service_id': serviceId,
       if (addressId != null) 'address_id': addressId,
-      'start_time': startTime,
-      'duration': duration,
+      if (startTime != null) 'start_time': startTime,
+      if (duration != null) 'duration': duration,
       if (workerGender != null) 'worker_gender': workerGender,
-      'workers_count': workersCount,
+      if (workersCount != null) 'workers_count': workersCount,
       if (numberOfChildren != null) 'number_of_children': numberOfChildren,
       if (childAgeGroupIds != null) 'child_age_groups': childAgeGroupIds,
       if (numberOfPersons != null) 'number_of_persons': numberOfPersons,
+      // Dio serializes a List<Map> query value Laravel-style:
+      // options[0][id]=1&options[0][quantity]=2&...
+      if (options != null)
+        'options': options.map((o) => o.toJson()).toList(),
+      if (note != null && note.isNotEmpty) 'note': note,
     };
     final res = await _ds.getAvailableDates(query);
     final data = res['data'] as List<dynamic>? ?? [];
