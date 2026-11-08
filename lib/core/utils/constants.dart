@@ -1,6 +1,6 @@
 class AppConstants {
   static const String googleMapsApiKey = 'AIzaSyC_lkBmCFqOkwf-QpJ-OSIiPQOurPxuEZw';
-  static const String baseUrl = 'http://35.159.161.2/api/v1/';
+  static const String baseUrl = 'http://13.38.54.221/api/v1/';
 
   // Auth Endpoints
   static const String sendOtp = 'customer/auth/send-otp';
