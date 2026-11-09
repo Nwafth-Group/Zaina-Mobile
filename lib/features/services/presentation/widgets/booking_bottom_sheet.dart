@@ -63,6 +63,10 @@ class _BookingBottomSheetState extends State<BookingBottomSheet> {
   final Set<int> _selectedWorkerIds = {};
   bool _isSubmitting = false;
 
+  /// Set once the user taps Proceed; from then on, missing required
+  /// selections are flagged inline under their sections.
+  bool _showValidationErrors = false;
+
   late final List<PreferredWorkerModel> _activeWorkers;
 
   int get _requiredDays =>
@@ -88,9 +92,8 @@ class _BookingBottomSheetState extends State<BookingBottomSheet> {
     super.initState();
     _activeWorkers =
         widget.service.preferredWorkers.where((w) => w.isActive).toList();
-    if (widget.service.availableShifts.isNotEmpty) {
-      _selectedShift = widget.service.availableShifts.first;
-    }
+    // The service period is deliberately NOT pre-selected: the user must
+    // pick one explicitly, and Proceed is blocked with a message until they do.
     _selectedWorkerCount = widget.service.minWorkers;
   }
 
@@ -132,7 +135,11 @@ class _BookingBottomSheetState extends State<BookingBottomSheet> {
   }
 
   Future<void> _handleProceed() async {
-    if (!_isValid || _isSubmitting) return;
+    if (_isSubmitting) return;
+    if (!_isValid) {
+      setState(() => _showValidationErrors = true);
+      return;
+    }
 
     setState(() => _isSubmitting = true);
     try {
@@ -216,10 +223,18 @@ class _BookingBottomSheetState extends State<BookingBottomSheet> {
                       maxSelectable: _requiredDays,
                       onChanged: (dates) => setState(() => _selectedDates = dates),
                     ),
+                    if (_showValidationErrors &&
+                        _selectedDates.length != _requiredDays)
+                      _validationError(_requiredDays > 1
+                          ? 'please_select_required_days'
+                              .tr(args: ['$_requiredDays'])
+                          : 'kindly_select_date'.tr()),
                     const SizedBox(height: 20),
                     _sectionTitle('service_period'),
                     const SizedBox(height: 8),
                     _buildShiftRow(),
+                    if (_showValidationErrors && _selectedShift == null)
+                      _validationError('please_select_period'.tr()),
                     const SizedBox(height: 8),
                     Text(
                       'service_duration_note'
@@ -270,7 +285,9 @@ class _BookingBottomSheetState extends State<BookingBottomSheet> {
                 child: SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: (_isValid && !_isSubmitting) ? _handleProceed : null,
+                    // Kept enabled so tapping it with missing selections
+                    // surfaces the validation messages instead of doing nothing.
+                    onPressed: _isSubmitting ? null : _handleProceed,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: ZienaColors.primary,
                       disabledBackgroundColor: ZienaColors.greyBorder,
@@ -292,6 +309,28 @@ class _BookingBottomSheetState extends State<BookingBottomSheet> {
           ),
         );
       },
+    );
+  }
+
+  Widget _validationError(String message) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 6),
+      child: Row(
+        children: [
+          const Icon(Icons.error_outline, size: 16, color: ZienaColors.error),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(
+              message,
+              style: const TextStyle(
+                color: ZienaColors.error,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

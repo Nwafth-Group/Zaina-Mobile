@@ -19,6 +19,7 @@ import '../../../../widgets/signin_required_widget.dart';
 import 'add_edit_address_screen.dart';
 import 'my_addresses_screen.dart';
 import '../../../notifications/presentation/screens/notification_screen.dart';
+import '../../../main_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   static const String routeName = '/home';
@@ -30,6 +31,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final PageController _bannerCtrl = PageController();
+  final PageController _appointmentsCtrl = PageController();
 
   @override
   void initState() {
@@ -65,6 +67,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void dispose() {
     _bannerCtrl.dispose();
+    _appointmentsCtrl.dispose();
     super.dispose();
   }
 
@@ -144,10 +147,13 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         const SizedBox(height: 24),
                         if(data.upcomingAppointment.isNotEmpty)...[
-                          _buildSectionHeader('upcoming_appointment', null),
+                          _buildSectionHeader(
+                            'upcoming_appointment',
+                            data.upcomingAppointment.length > 1 ? 'see_all' : null,
+                            onSeeAll: () => MainScreen.switchToTab(1),
+                          ),
                           const SizedBox(height: 12),
-                          // Display actual upcoming appointment from API
-                          _buildAppointmentCard(data.upcomingAppointment.first),
+                          _buildAppointments(data.upcomingAppointment),
                         ],
                         const SizedBox(height: 60),
                       ],
@@ -382,6 +388,39 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // Helper for Section Headers
+  // ── Upcoming Appointments ─────────────────────────────────────────────────
+  // One booking renders as a single card; several become a swipeable
+  // carousel with a page indicator so none of them are hidden.
+  Widget _buildAppointments(List<UpcomingAppointment> appointments) {
+    if (appointments.length == 1) {
+      return _buildAppointmentCard(appointments.first);
+    }
+    return Column(
+      children: [
+        SizedBox(
+          height: 124,
+          child: PageView.builder(
+            controller: _appointmentsCtrl,
+            itemCount: appointments.length,
+            itemBuilder: (_, i) => Center(
+              child: _buildAppointmentCard(appointments[i]),
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        SmoothPageIndicator(
+          controller: _appointmentsCtrl,
+          count: appointments.length,
+          effect: const ExpandingDotsEffect(
+            activeDotColor: ZienaColors.primary,
+            dotHeight: 7,
+            dotWidth: 7,
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildSectionHeader(String titleKey, String? actionKey,
       {VoidCallback? onSeeAll}) {
     return Padding(

@@ -15,7 +15,6 @@ import '../../../home/presentation/cubit/address_cubit.dart';
 import '../../../home/presentation/cubit/home_cubti.dart';
 import '../../data/model/booking_validation_exception.dart';
 import '../../data/model/booking_validation_model.dart';
-import '../../data/model/visit_type_model.dart';
 import '../../data/repository/services_repository.dart';
 import '../widgets/coverage_error_dialog.dart';
 
@@ -80,11 +79,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     _currentValidation = widget.validation;
 
     // Fetch points/wallet balances for display on the payment tiles below.
-    // Guarded so we don't re-fetch if another screen already loaded them.
+    // Points are always re-fetched: the balance can change server-side
+    // (tasks, referrals, admin adjustments, account switch) since the
+    // last load. If already loaded, refresh silently to avoid a spinner.
     final pointsCubit = context.read<PointsCubit>();
-    if (pointsCubit.state is! PointsLoaded) {
-      pointsCubit.fetchSummary();
-    }
+    pointsCubit.fetchSummary(silent: pointsCubit.state is PointsLoaded);
 
     final walletCubit = context.read<WalletCubit>();
     if (walletCubit.state is! WalletLoaded) {
@@ -177,35 +176,39 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     }
   }
 
-  // Dates formatted the way the API expects ('yyyy-MM-dd').
+  // Dates formatted the way the API expects ('yyyy-MM-dd'). Locale pinned to
+  // 'en' so Arabic UI never produces non-Latin digits.
   List<String> get _apiDates => widget.selection.selectedDates
-      .map((d) => DateFormat('yyyy-MM-dd').format(d))
+      .map((d) => DateFormat('yyyy-MM-dd', 'en').format(d))
       .toList();
 
   Future<void> _openContractPreview() async {
     setState(() => _isLoadingContract = true);
 
+    // contract-preview payload per service (from the API spec):
+    //   1 Domestic Helper  -> visit_type, no duration
+    //   2, 3, 4            -> duration (+ gender / children / persons), no visit_type
+    //   5 Deep Cleaning    -> default duration + worker_gender, no visit_type
+    //   6-11 Options-based -> options, no visit_type
+    final service = widget.service;
+    final isDeepCleaning = service.id == 5;
+    final sendsVisitType =
+        service.bookingFlow == ServiceBookingFlow.fixedShift && !isDeepCleaning;
+
     await _contractCubit.fetchContractPreview(
-      serviceId: widget.service.id,
-      addressId: widget.service.addressId!,
-      // Same condition used for `visitType` in _handlePay below: omitted
-      // for configurable-hourly services (Hospitality Worker, Babysitter —
-      // duration != null and NOT hasPersonsCount), included otherwise —
-      // Pedicure & Manicure (hasPersonsCount) sends both visit_type AND
-      // duration together, unlike the other configurable-hourly services.
-      // NOTE: `.type` here is whatever the VisitType model already
-      // serializes to in ServicesRepository's own createBooking call —
-      // if that's an enum rather than a raw String, swap this for
-      // whichever getter that repository uses (e.g. `.apiValue`), since
-      // this call bypasses the repository and needs a plain String itself.
-      visitType:
-      (widget.selection.duration == null || widget.service.hasPersonsCount)
-          ? widget.selection.visitType.type
-          : null,
+      serviceId: service.id,
+      addressId: service.addressId!,
+      visitType: sendsVisitType ? widget.selection.visitType.type : null,
       dates: _apiDates,
       startTime: widget.selection.shift.startLabel,
-      duration: widget.selection.duration,
-      workerGender: widget.selection.workerGender,
+      duration: isDeepCleaning
+          ? service.defaultDuration
+          : widget.selection.duration,
+      workerGender: isDeepCleaning
+          ? (service.workerGenderOptions.isNotEmpty
+              ? service.workerGenderOptions.first
+              : null)
+          : widget.selection.workerGender,
       workerIds: _currentValidation.workerIds,
       numberOfChildren: widget.selection.numberOfChildren,
       childAgeGroups: widget.selection.childAgeGroupIds,

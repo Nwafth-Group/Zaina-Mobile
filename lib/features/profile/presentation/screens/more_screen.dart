@@ -154,8 +154,11 @@ class _MoreScreenState extends State<MoreScreen> {
                     icon: 'assets/images/my_points.png',
                     label: 'my_points'.tr(),
                     onTap: () => Navigator.push(context, MaterialPageRoute(
-                      builder: (_) => BlocProvider(
-                        create: (_) => sl<PointsCubit>(),
+                      // Reuse the app-level PointsCubit (not a fresh
+                      // sl<PointsCubit>()) so the balance shown here and
+                      // on checkout always come from the same state.
+                      builder: (_) => BlocProvider.value(
+                        value: context.read<PointsCubit>(),
                         child: const MyPointsScreen(),
                       ),
                     )),

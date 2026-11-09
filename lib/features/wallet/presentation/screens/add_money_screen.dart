@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/theme.dart';
+import '../../../../core/utils/input_validators.dart';
 import '../../../profile/presentation/cubit/cards_cubit.dart';
 import '../../data/models/wallet_model.dart';
 import '../cubit/cubit.dart';
@@ -27,7 +28,13 @@ class _AddMoneyScreenState extends State<AddMoneyScreen> {
 
   void _onAddMoney() {
     final amount = double.tryParse(_amountCtrl.text.trim());
-    if (amount == null || amount <= 0) return;
+    if (amount == null || amount <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('invalid_amount'.tr()),
+        backgroundColor: ZienaColors.error,
+      ));
+      return;
+    }
     if (_selectedCardId == null) return;
 
     context.read<TopUpCubit>().topUp(
@@ -324,6 +331,7 @@ class _AmountField extends StatelessWidget {
       child: TextField(
         controller: controller,
         keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        inputFormatters: [AmountInputFormatter()],
         style: const TextStyle(
             fontFamily: 'Poppins', fontSize: 15,
             color: ZienaColors.textPrimary, fontWeight: FontWeight.w500),

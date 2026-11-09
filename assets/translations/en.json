@@ -271,6 +271,9 @@
   "expiration_date": "Expiration date",
   "cvc": "CVC",
   "invalid_card_number": "Please enter a valid card number",
+  "invalid_expiry_date": "Enter a valid expiry date (MM/YY)",
+  "card_expired": "This card has expired",
+  "invalid_amount": "Please enter a valid amount",
   "wallet_topped_up": "Your Wallet Has Been Successfully Topped Up",
   "to": "To",
   "pay": "Pay",
@@ -435,5 +438,7 @@
   "price": "Price",
   "prices": "Prices",
   "egp": "EGP",
-  "per_hour_suffix": "/ Hour"
+  "per_hour_suffix": "/ Hour",
+  "please_select_period": "Please select a service period to continue",
+  "please_select_required_days": "Please select {} days to continue"
 }

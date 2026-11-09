@@ -281,6 +281,9 @@
   "expiration_date": "تاريخ الانتهاء",
   "cvc": "CVC",
   "invalid_card_number": "يرجى إدخال رقم بطاقة صحيح",
+  "invalid_expiry_date": "يرجى إدخال تاريخ انتهاء صحيح (MM/YY)",
+  "card_expired": "هذه البطاقة منتهية الصلاحية",
+  "invalid_amount": "يرجى إدخال مبلغ صحيح",
   "wallet_topped_up": "تم شحن محفظتك بنجاح",
   "welcome_to_ziena": "مرحباً بك في زينة",
   "verify_identity_desc": "لضمان تجربة آمنة وموثوقة للجميع، يرجى التحقق من هويتك.",
@@ -441,5 +444,7 @@
   "price": "السعر",
   "prices": "الأسعار",
   "egp": "جنيه",
-  "per_hour_suffix": "/ ساعة"
+  "per_hour_suffix": "/ ساعة",
+  "please_select_period": "يرجى اختيار فترة الخدمة للمتابعة",
+  "please_select_required_days": "يرجى اختيار {} أيام للمتابعة"
 }

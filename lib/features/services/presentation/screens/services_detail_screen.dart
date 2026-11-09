@@ -119,6 +119,28 @@ class _LoadedBody extends StatelessWidget {
                       ),
                     ),
                   ),
+                  // Dark gradient behind the header so the back button and
+                  // title stay readable on light images.
+                  Positioned(
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: 120,
+                    child: IgnorePointer(
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.black.withValues(alpha: 0.6),
+                              Colors.transparent,
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
                   Positioned(
                     top: MediaQuery.of(context).padding.top + 8,
                     left: 16,
@@ -127,7 +149,15 @@ class _LoadedBody extends StatelessWidget {
                       children: [
                         GestureDetector(
                           onTap: () => Navigator.pop(context),
-                          child: const Icon(Icons.arrow_back, color: Colors.white),
+                          child: Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: Colors.black.withValues(alpha: 0.35),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.arrow_back, color: Colors.white),
+                          ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
@@ -139,6 +169,13 @@ class _LoadedBody extends StatelessWidget {
                               fontSize: 18,
                               fontWeight: FontWeight.w700,
                               color: Colors.white,
+                              shadows: [
+                                Shadow(
+                                  color: Colors.black54,
+                                  blurRadius: 6,
+                                  offset: Offset(0, 1),
+                                ),
+                              ],
                             ),
                           ),
                         ),

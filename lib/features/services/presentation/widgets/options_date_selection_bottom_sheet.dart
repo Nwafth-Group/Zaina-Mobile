@@ -68,18 +68,19 @@ class _OptionsDateSelectionBottomSheetState
   ServiceShiftModel? _selectedShift;
   bool _isSubmitting = false;
 
+  /// Set once the user taps Proceed; from then on, missing required
+  /// selections are flagged inline under their sections. The service period
+  /// is deliberately NOT pre-selected — the user must pick one explicitly.
+  bool _showValidationErrors = false;
+
   bool get _isValid => _selectedDates.isNotEmpty && _selectedShift != null;
 
-  @override
-  void initState() {
-    super.initState();
-    if (widget.service.availableShifts.isNotEmpty) {
-      _selectedShift = widget.service.availableShifts.first;
-    }
-  }
-
   Future<void> _handleProceed() async {
-    if (!_isValid || _isSubmitting) return;
+    if (_isSubmitting) return;
+    if (!_isValid) {
+      setState(() => _showValidationErrors = true);
+      return;
+    }
     setState(() => _isSubmitting = true);
     try {
       final validation = await sl<ServicesRepository>().validateBooking(
@@ -161,6 +162,8 @@ class _OptionsDateSelectionBottomSheetState
                       onChanged: (dates) =>
                           setState(() => _selectedDates = dates),
                     ),
+                    if (_showValidationErrors && _selectedDates.isEmpty)
+                      _validationError('kindly_select_date'.tr()),
                     const SizedBox(height: 20),
                     Text(
                       'service_period'.tr(),
@@ -172,6 +175,8 @@ class _OptionsDateSelectionBottomSheetState
                     ),
                     const SizedBox(height: 8),
                     _buildShiftRow(),
+                    if (_showValidationErrors && _selectedShift == null)
+                      _validationError('please_select_period'.tr()),
                   ],
                 ),
               ),
@@ -190,8 +195,9 @@ class _OptionsDateSelectionBottomSheetState
                 child: SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed:
-                        (_isValid && !_isSubmitting) ? _handleProceed : null,
+                    // Kept enabled so tapping it with missing selections
+                    // surfaces the validation messages instead of doing nothing.
+                    onPressed: _isSubmitting ? null : _handleProceed,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: ZienaColors.primary,
                       disabledBackgroundColor: ZienaColors.greyBorder,
@@ -211,6 +217,28 @@ class _OptionsDateSelectionBottomSheetState
           ),
         );
       },
+    );
+  }
+
+  Widget _validationError(String message) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 6),
+      child: Row(
+        children: [
+          const Icon(Icons.error_outline, size: 16, color: ZienaColors.error),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(
+              message,
+              style: const TextStyle(
+                color: ZienaColors.error,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

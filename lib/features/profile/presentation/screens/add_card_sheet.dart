@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/theme.dart';
+import '../../../../core/utils/input_validators.dart';
 import '../../../../widgets/ziena_button.dart';
 import '../cubit/cards_cubit.dart';
 
@@ -144,8 +145,7 @@ class _AddCardSheetState extends State<AddCardSheet> {
                         FilteringTextInputFormatter.digitsOnly,
                         _ExpiryFormatter(),
                       ],
-                      validator: (v) => (v == null || v.isEmpty)
-                          ? 'this_field_required'.tr() : null,
+                      validator: validateCardExpiry,
                     ),
                   ],
                 )),
