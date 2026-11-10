@@ -85,6 +85,7 @@ abstract class ServicesRepository {
     required List<int> workerIds,
     required String paymentMethod, // 'points' | 'wallet' | 'card'
     String? couponCode,
+    int? cardId, // saved card id — only when paymentMethod == 'card'
   });
 
   /// GET /customer/bookings/available-dates — used by "configurable"
@@ -245,6 +246,7 @@ class ServicesRepositoryImpl implements ServicesRepository {
     required List<int> workerIds,
     required String paymentMethod,
     String? couponCode,
+    int? cardId,
   }) async {
     String fmt(DateTime d) =>
         '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
@@ -266,6 +268,9 @@ class ServicesRepositoryImpl implements ServicesRepository {
       'worker_ids': workerIds,
       'payment_method': paymentMethod,
       'coupon_code': couponCode ?? '',
+      // Saved card to charge — only when paying by card (same key as
+      // the wallet top-up endpoint).
+      if (cardId != null) 'card_id': cardId,
     };
 
     final res = await _ds.createBooking(body);

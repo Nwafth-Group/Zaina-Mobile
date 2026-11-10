@@ -179,14 +179,9 @@ class _AddMoneyScreenState extends State<AddMoneyScreen> {
 
                     // Add card
                     GestureDetector(
-                      onTap: () => Navigator.push(
+                      onTap: () => AddCardScreen.open(
                         context,
-                        MaterialPageRoute(
-                          builder: (_) => BlocProvider.value(
-                            value: context.read<CardsCubit>(),
-                            child: const AddCardScreen(),
-                          ),
-                        ),
+                        cubit: context.read<CardsCubit>(),
                       ),
                       child: Container(
                         padding: const EdgeInsets.symmetric(

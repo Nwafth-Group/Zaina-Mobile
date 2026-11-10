@@ -10,7 +10,7 @@ import '../../data/model/service_detail_model.dart';
 import '../../data/model/visit_type_model.dart';
 import '../../data/repository/services_repository.dart';
 import 'booking_calendar.dart';
-import 'coverage_error_dialog.dart';
+import '../../../../widgets/app_toast.dart';
 
 /// Step 2 of the "configurable hourly" booking flow: pick a single date from
 /// whatever /bookings/available-dates returned for the chosen config, then
@@ -109,7 +109,9 @@ class _DateSelectionBottomSheetState extends State<DateSelectionBottomSheet> {
       setState(() => _isSubmitting = false);
       final message =
       e is BookingValidationException ? e.displayMessage : 'err_generic'.tr();
-      showCoverageErrorDialog(context, message: message);
+      // Light, self-dismissing toast (per Figma) instead of a blocking
+      // dialog — e.g. "dates must be in the same calendar week".
+      AppToast.showError(context, message);
     }
   }
 

@@ -1,8 +1,14 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hugeicons/hugeicons.dart';
 import 'package:intl/intl.dart';
 import 'package:zeina/features/contract/presentation/cubit/contract_cubit.dart';
+import 'package:zeina/features/profile/presentation/cubit/cards_cubit.dart';
+import 'package:zeina/features/wallet/presentation/screens/add_card_screen.dart';
+import 'package:zeina/features/wallet/data/models/wallet_model.dart';
+import '../../../../widgets/app_toast.dart';
+import '../../../../widgets/custom_icon.dart';
 import 'package:zeina/features/contract/presentation/screens/contract_preview_screen.dart';
 import 'package:zeina/features/profile/presentation/cubit/points_cubit.dart';
 import 'package:zeina/features/services/data/model/booking_selection_data.dart';
@@ -69,6 +75,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   // ever fetched from this screen, on demand — closed in dispose().
   final ContractCubit _contractCubit = sl<ContractCubit>();
 
+  // Saved cards for the "Card" payment method — standalone like the
+  // contract cubit above, closed in dispose().
+  final CardsCubit _cardsCubit = sl<CardsCubit>()..fetchCards();
+  int? _selectedCardId;
+
   static const _weekdayShort = [
     'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'
   ];
@@ -95,6 +106,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   void dispose() {
     _couponController.dispose();
     _contractCubit.close();
+    _cardsCubit.close();
     super.dispose();
   }
 
@@ -237,6 +249,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   Future<void> _handlePay() async {
     if (!_canPay) return;
+    if (_paymentMethod == _PaymentMethod.card && _selectedCardId == null) {
+      AppToast.showError(context, 'please_select_card'.tr());
+      return;
+    }
     setState(() => _isPaying = true);
     try {
       await sl<ServicesRepository>().createBooking(
@@ -266,6 +282,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         workerIds: _currentValidation.workerIds,
         paymentMethod: _paymentMethod.apiValue,
         couponCode: _couponController.text.trim(),
+        cardId:
+            _paymentMethod == _PaymentMethod.card ? _selectedCardId : null,
       );
       if (!mounted) return;
       setState(() => _isPaying = false);
@@ -544,11 +562,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             },
           ),
           const SizedBox(height: 10),
-          _paymentTile(
-            asset: 'assets/images/card.png',
-            label: 'my_card'.tr(),
-            method: _PaymentMethod.card,
-          ),
+          _buildCardPaymentTile(),
           const SizedBox(height: 20),
 
           // ── Booking summary ───────────────────────────────────────────
@@ -754,54 +768,229 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     );
   }
 
+  // ── Payment tiles (per Figma) ───────────────────────────────────────────────
+  // Light pink card with a soft pink border; selection is shown by the radio.
+  // [expanded] renders below the header row while the tile is selected
+  // (used by the Card method for the saved-cards list + "Add Card").
   Widget _paymentTile({
     required String asset,
     required String label,
     required _PaymentMethod method,
     String? trailing,
+    Widget? expanded,
   }) {
     final selected = _paymentMethod == method;
     return GestureDetector(
       onTap: () => setState(() => _paymentMethod = method),
       child: Container(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: ZienaColors.white,
+          color: ZienaColors.bg2,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: ZienaColors.bg4),
+        ),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                _assetIconCircle(asset, size: 32),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(label,
+                      style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: ZienaColors.textPrimary)),
+                ),
+                if (trailing != null)
+                  Padding(
+                    padding: const EdgeInsetsDirectional.only(end: 10),
+                    child: Text(
+                      trailing,
+                      style: const TextStyle(
+                          fontSize: 12, color: ZienaColors.textSecondary),
+                    ),
+                  ),
+                _radioDot(selected),
+              ],
+            ),
+            if (selected && expanded != null) ...[
+              const SizedBox(height: 14),
+              expanded,
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _radioDot(bool selected) {
+    return Container(
+      width: 22,
+      height: 22,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(color: ZienaColors.primary, width: 1.5),
+      ),
+      alignment: Alignment.center,
+      child: selected
+          ? Container(
+              width: 12,
+              height: 12,
+              decoration: const BoxDecoration(
+                color: ZienaColors.primary,
+                shape: BoxShape.circle,
+              ),
+            )
+          : null,
+    );
+  }
+
+  // ── Card method: saved cards + "Add Card" ───────────────────────────────────
+  Widget _buildCardPaymentTile() {
+    return BlocConsumer<CardsCubit, CardsState>(
+      bloc: _cardsCubit,
+      listener: (context, state) {
+        if (state is CardsLoaded) {
+          // Keep a valid selection: default card first, else the first one.
+          final ids = state.cards.map((c) => c.id).toSet();
+          if (_selectedCardId == null || !ids.contains(_selectedCardId)) {
+            final def = state.cards.where((c) => c.isDefault);
+            setState(() => _selectedCardId = def.isNotEmpty
+                ? def.first.id
+                : (state.cards.isNotEmpty ? state.cards.first.id : null));
+          }
+        } else if (state is CardsError) {
+          AppToast.showError(context, state.message);
+        }
+      },
+      builder: (context, state) {
+        final cards = state is CardsLoaded
+            ? state.cards
+            : state is CardActionLoading
+                ? state.current
+                : _cardsCubit.cards;
+        final isLoading = state is CardsLoading || state is CardsInitial;
+
+        return _paymentTile(
+          asset: 'assets/images/card.png',
+          label: 'my_card'.tr(),
+          method: _PaymentMethod.card,
+          expanded: Column(
+            children: [
+              if (isLoading && cards.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.only(bottom: 12),
+                  child: SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                        strokeWidth: 2, color: ZienaColors.primary),
+                  ),
+                ),
+              for (final card in cards) ...[
+                _savedCardRow(card),
+                const SizedBox(height: 12),
+              ],
+              _addCardButton(),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _savedCardRow(CardModel card) {
+    final selected = _selectedCardId == card.id;
+    return GestureDetector(
+      onTap: () => setState(() => _selectedCardId = card.id),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+        decoration: BoxDecoration(
+          color: ZienaColors.bg3.withValues(alpha: 0.6),
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: selected ? ZienaColors.primary : ZienaColors.greyBorder,
+            color: selected ? ZienaColors.primary : ZienaColors.bg4,
             width: selected ? 1.5 : 1,
           ),
         ),
         child: Row(
           children: [
-            _assetIconCircle(asset, size: 36),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(label,
-                  style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: ZienaColors.textPrimary)),
+            Text(
+              card.brand.toUpperCase(),
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w900,
+                fontStyle: FontStyle.italic,
+                color: ZienaColors.grey,
+              ),
             ),
-            if (trailing != null)
-              Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: Text(
-                  trailing,
-                  style: const TextStyle(
-                      fontSize: 12, color: ZienaColors.textSecondary),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                card.displayNumber,
+                style: const TextStyle(
+                  fontSize: 15,
+                  letterSpacing: 1,
+                  color: ZienaColors.grey,
                 ),
               ),
-            Radio<_PaymentMethod>(
-              value: method,
-              groupValue: _paymentMethod,
-              activeColor: ZienaColors.primary,
-              onChanged: (v) => setState(() => _paymentMethod = v!),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _addCardButton() {
+    return InkWell(
+      borderRadius: BorderRadius.circular(14),
+      onTap: _openAddCard,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 18),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: ZienaColors.primary),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const AppIcon(HugeIcons.strokeRoundedAdd01,
+                size: 20, width: 1.5, color: ZienaColors.primary),
+            const SizedBox(width: 8),
+            Text(
+              'add_card'.tr(),
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: ZienaColors.primary,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Opens the shared Add Card screen. On success the new card is selected
+  /// automatically so the user can pay with it straight away.
+  Future<void> _openAddCard() async {
+    final previousIds = _cardsCubit.cards.map((c) => c.id).toSet();
+    final added = await AddCardScreen.open(context, cubit: _cardsCubit);
+    if (!added || !mounted) return;
+    final newCards =
+        _cardsCubit.cards.where((c) => !previousIds.contains(c.id));
+    setState(() {
+      _paymentMethod = _PaymentMethod.card;
+      if (newCards.isNotEmpty) _selectedCardId = newCards.first.id;
+    });
+    AppToast.show(
+      context,
+      'card_added_title'.tr(),
+      backgroundColor: ZienaColors.success,
+      icon: HugeIcons.strokeRoundedCheckmarkCircle02,
     );
   }
 }

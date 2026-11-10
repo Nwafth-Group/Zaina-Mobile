@@ -9,7 +9,9 @@ import '../../data/model/visit_type_model.dart';
 import '../../data/repository/services_repository.dart';
 import 'booking_calendar.dart';
 import '../../data/model/booking_selection_data.dart';
-import 'coverage_error_dialog.dart';
+import 'package:hugeicons/hugeicons.dart';
+import '../../../../widgets/app_toast.dart';
+import '../../../../widgets/custom_icon.dart';
 
 /// Shows the booking sheet for a service, after a visit type has been chosen.
 /// Validates the selection against /customer/bookings/validate before
@@ -171,7 +173,9 @@ class _BookingBottomSheetState extends State<BookingBottomSheet> {
       final message = e is BookingValidationException
           ? e.displayMessage
           : 'err_generic'.tr();
-      showCoverageErrorDialog(context, message: message);
+      // Light, self-dismissing toast (per Figma) instead of a blocking
+      // dialog — e.g. "dates must be in the same calendar week".
+      AppToast.showError(context, message);
     }
   }
 
@@ -317,7 +321,8 @@ class _BookingBottomSheetState extends State<BookingBottomSheet> {
       padding: const EdgeInsets.only(top: 6),
       child: Row(
         children: [
-          const Icon(Icons.error_outline, size: 16, color: ZienaColors.error),
+          const AppIcon(HugeIcons.strokeRoundedAlertCircle,
+              size: 16, width: 1.5, color: ZienaColors.error),
           const SizedBox(width: 6),
           Expanded(
             child: Text(

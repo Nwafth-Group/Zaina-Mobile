@@ -1,3 +1,4 @@
+import 'dart:ui' as ui;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -1343,35 +1344,39 @@ class _OtpBottomSheetState extends State<_OtpBottomSheet> {
             ),
             const SizedBox(height: 16),
             // ── Display-only boxes — no TextField, no system keyboard ────
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: List.generate(_digitCount, (i) {
-                final hasDigit = i < _otpValue.length;
-                final isNext = i == _otpValue.length;
-                return Container(
-                  width: 42,
-                  height: 50,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: ZienaColors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: isNext
-                          ? ZienaColors.primary
-                          : ZienaColors.primary.withOpacity(0.4),
-                      width: isNext ? 1.5 : 1,
-                    ),
-                  ),
-                  child: Text(
-                    hasDigit ? _otpValue[i] : '',
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700,
-                      color: ZienaColors.primary,
-                    ),
-                  ),
-                );
-              }),
+            // Always left-to-right, even in Arabic, so digit 1 is leftmost.
+            Directionality(
+              textDirection: ui.TextDirection.ltr,
+              child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: List.generate(_digitCount, (i) {
+                    final hasDigit = i < _otpValue.length;
+                    final isNext = i == _otpValue.length;
+                    return Container(
+                      width: 42,
+                      height: 50,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: ZienaColors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: isNext
+                              ? ZienaColors.primary
+                              : ZienaColors.primary.withOpacity(0.4),
+                          width: isNext ? 1.5 : 1,
+                        ),
+                      ),
+                      child: Text(
+                        hasDigit ? _otpValue[i] : '',
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                          color: ZienaColors.primary,
+                        ),
+                      ),
+                    );
+                  }),
+                ),
             ),
             const SizedBox(height: 8),
             GestureDetector(
@@ -1390,7 +1395,11 @@ class _OtpBottomSheetState extends State<_OtpBottomSheet> {
             ),
             const SizedBox(height: 16),
             // ── Custom in-app numeric keypad ─────────────────────────────
-            _NumericKeypad(onDigit: _onDigitTap, onBackspace: _onBackspace),
+            // Phone-style keypad (1 2 3 left-to-right) in every language.
+            Directionality(
+              textDirection: ui.TextDirection.ltr,
+              child: _NumericKeypad(onDigit: _onDigitTap, onBackspace: _onBackspace),
+            ),
             const SizedBox(height: 16),
             Row(
               children: [

@@ -18,6 +18,7 @@ import '../cubit/home_cubti.dart';
 import '../../../../widgets/signin_required_widget.dart';
 import 'add_edit_address_screen.dart';
 import 'my_addresses_screen.dart';
+import '../../../notifications/presentation/cubit/unread_count_cubit.dart';
 import '../../../notifications/presentation/screens/notification_screen.dart';
 import '../../../main_screen.dart';
 
@@ -59,6 +60,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (SharedPrefHelper.isLoggedIn()) {
       final addressCubit = context.read<AddressCubit>();
       final profileCubit = context.read<ProfileCubit>();
+      context.read<UnreadCountCubit>().fetch();
       await addressCubit.fetchAddresses();
       profileCubit.fetchProfile();
     }
@@ -77,6 +79,7 @@ class _HomeScreenState extends State<HomeScreen> {
         body: RefreshIndicator(
           onRefresh: () async {
             context.read<HomeCubit>().fetchHomeData();
+            context.read<UnreadCountCubit>().fetch();
           },
           child: BlocBuilder<HomeCubit, HomeState>(
             builder: (context, state) {
@@ -344,19 +347,35 @@ class _HomeScreenState extends State<HomeScreen> {
                 _showAddressDialog();
                 return;
               }
+              final unreadCubit = context.read<UnreadCountCubit>();
               Navigator.push(context, MaterialPageRoute(
                 builder: (_) => const NotificationScreen(),
-              ));
+              )).then((_) => unreadCubit.fetch()); // items may have been read
             },
-            child: Container(
-              width: 44,
-              height: 44,
-              decoration: const BoxDecoration(
-                color: ZienaColors.bg2,
-                shape: BoxShape.circle,
-              ),
-              child: Image.asset('assets/images/notifications.png',
-                  color: ZienaColors.primary),
+            child: BlocBuilder<UnreadCountCubit, UnreadCount>(
+              builder: (context, unread) {
+                return Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: const BoxDecoration(
+                        color: ZienaColors.bg2,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Image.asset('assets/images/notifications.png',
+                          color: ZienaColors.primary),
+                    ),
+                    if (unread.total > 0)
+                      PositionedDirectional(
+                        top: -2,
+                        end: -2,
+                        child: _UnreadBadge(count: unread.total),
+                      ),
+                  ],
+                );
+              },
             ),
           ),
         ],
@@ -756,6 +775,34 @@ class _ServiceCard extends StatelessWidget {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+// ── Unread notifications badge (bell icon) ───────────────────────────────────
+class _UnreadBadge extends StatelessWidget {
+  final int count;
+  const _UnreadBadge({required this.count});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: ZienaColors.error,
+        borderRadius: BorderRadius.circular(9),
+        border: Border.all(color: ZienaColors.white, width: 1.5),
+      ),
+      child: Text(
+        count > 99 ? '99+' : '$count',
+        style: const TextStyle(
+          color: ZienaColors.white,
+          fontSize: 10,
+          fontWeight: FontWeight.w700,
+          height: 1.1,
         ),
       ),
     );

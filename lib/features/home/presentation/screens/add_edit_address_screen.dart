@@ -376,7 +376,7 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
     return SizedBox(
       width: double.infinity,
       child: ZienaButton(
-        text: _isEdit ? 'save'.tr() : 'save_address'.tr(),
+        text: _isEdit ? 'save_button'.tr() : 'save_address'.tr(),
         onTap: _isSaving ? null : _save,
         isLoading: _isSaving,
         disabledBackgroundColor: ZienaColors.primary.withOpacity(0.4),

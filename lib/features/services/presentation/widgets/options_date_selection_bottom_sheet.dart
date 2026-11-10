@@ -10,7 +10,9 @@ import '../../data/model/service_detail_model.dart';
 import '../../data/model/visit_type_model.dart';
 import '../../data/repository/services_repository.dart';
 import 'booking_calendar.dart';
-import 'coverage_error_dialog.dart';
+import 'package:hugeicons/hugeicons.dart';
+import '../../../../widgets/app_toast.dart';
+import '../../../../widgets/custom_icon.dart';
 
 /// Step 2 of the options-based booking flow (services 6-11): pick a date from
 /// whatever /bookings/available-dates returned for the chosen options, plus a
@@ -113,7 +115,9 @@ class _OptionsDateSelectionBottomSheetState
       setState(() => _isSubmitting = false);
       final message =
           e is BookingValidationException ? e.displayMessage : 'err_generic'.tr();
-      showCoverageErrorDialog(context, message: message);
+      // Light, self-dismissing toast (per Figma) instead of a blocking
+      // dialog — e.g. "dates must be in the same calendar week".
+      AppToast.showError(context, message);
     }
   }
 
@@ -225,7 +229,8 @@ class _OptionsDateSelectionBottomSheetState
       padding: const EdgeInsets.only(top: 6),
       child: Row(
         children: [
-          const Icon(Icons.error_outline, size: 16, color: ZienaColors.error),
+          const AppIcon(HugeIcons.strokeRoundedAlertCircle,
+              size: 16, width: 1.5, color: ZienaColors.error),
           const SizedBox(width: 6),
           Expanded(
             child: Text(

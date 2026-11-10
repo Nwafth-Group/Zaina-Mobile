@@ -1,3 +1,4 @@
+import 'dart:ui' as ui;
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -218,40 +219,44 @@ class _OtpScreenState extends State<OtpScreen> {
                   ),
                 ),
                 const SizedBox(height: 40),
-                // PIN Code Fields
-                PinInput(
-                  length: 6,
-                  pinController: _otpController,
-                  onChanged: (val) => _otp = val,
-                  onCompleted: (val) => _otp = val,
-                  keyboardType: TextInputType.number, builder: (context, cells) {
-                  return Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: cells.map((cell) {
-                      return Container(
-                        width: 45,
-                        height: 50,
-                        margin: EdgeInsets.symmetric(horizontal: 3),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                          color: ZienaColors.bg1,
-                          border: Border.all(
-                            color: cell.isFocused
-                                ? ZienaColors.primary
-                                : ZienaColors.primaryLight,
-                            width: cell.isFocused ? 1 : 0.5,
+                // PIN Code Fields — always left-to-right, even in Arabic,
+                // so digit 1 is the leftmost box.
+                Directionality(
+                  textDirection: ui.TextDirection.ltr,
+                  child: PinInput(
+                    length: 6,
+                    pinController: _otpController,
+                    onChanged: (val) => _otp = val,
+                    onCompleted: (val) => _otp = val,
+                    keyboardType: TextInputType.number, builder: (context, cells) {
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: cells.map((cell) {
+                        return Container(
+                          width: 45,
+                          height: 50,
+                          margin: EdgeInsets.symmetric(horizontal: 3),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(10),
+                            color: ZienaColors.bg1,
+                            border: Border.all(
+                              color: cell.isFocused
+                                  ? ZienaColors.primary
+                                  : ZienaColors.primaryLight,
+                              width: cell.isFocused ? 1 : 0.5,
+                            ),
                           ),
-                        ),
-                        child: Center(
-                          child: Text(
-                            cell.character ?? '',
-                            style: TextStyle(fontSize: 24),
+                          child: Center(
+                            child: Text(
+                              cell.character ?? '',
+                              style: TextStyle(fontSize: 24),
+                            ),
                           ),
-                        ),
-                      );
-                    }).toList(),
-                  );
-                },
+                        );
+                      }).toList(),
+                    );
+                  },
+                  ),
                 ),
                 const SizedBox(height: 16),
                 // Resend

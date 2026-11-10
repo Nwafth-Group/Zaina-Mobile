@@ -206,7 +206,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               // ── Buttons ───────────────────────────────────────────────────
               Row(children: [
                 Expanded(child: ZienaButton(
-                  text: 'save'.tr(),
+                  text: 'save_button'.tr(),
                   onTap: _isSaving ? null : _save,
                   isLoading: _isSaving,
                 )),

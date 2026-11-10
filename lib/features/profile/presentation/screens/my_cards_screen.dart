@@ -6,7 +6,7 @@ import '../../../../widgets/success_dialog.dart';
 import '../../../../widgets/ziena_button.dart';
 import '../../../wallet/data/models/wallet_model.dart';
 import '../cubit/cards_cubit.dart';
-import 'add_card_sheet.dart';
+import '../../../wallet/presentation/screens/add_card_screen.dart';
 
 class MyCardsScreen extends StatefulWidget {
   const MyCardsScreen({super.key});
@@ -78,7 +78,7 @@ class _MyCardsScreenState extends State<MyCardsScreen> {
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
                 child: ZienaButton(
                   text: 'add_card'.tr(),
-                  onTap: () => _openAddCardSheet(context),
+                  onTap: () => _openAddCard(context),
                 ),
               ),
             ]),
@@ -146,27 +146,18 @@ class _MyCardsScreenState extends State<MyCardsScreen> {
     );
   }
 
-  void _openAddCardSheet(BuildContext context) {
-    showModalBottomSheet(
+  Future<void> _openAddCard(BuildContext context) async {
+    final added = await AddCardScreen.open(
+      context,
+      cubit: context.read<CardsCubit>(),
+    );
+    if (!added || !context.mounted) return;
+    showDialog(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      useSafeArea: true,
-      builder: (_) => BlocProvider.value(
-        value: context.read<CardsCubit>(),
-        child: AddCardSheet(
-          onSuccess: () {
-            Navigator.pop(context); // close sheet
-            showDialog(
-              context: context,
-              builder: (_) => SuccessDialog(
-                title: 'card_added_title'.tr(),
-                message: 'card_added_desc'.tr(),
-                buttonText: 'done'.tr(),
-              ),
-            );
-          },
-        ),
+      builder: (_) => SuccessDialog(
+        title: 'card_added_title'.tr(),
+        message: 'card_added_desc'.tr(),
+        buttonText: 'done'.tr(),
       ),
     );
   }

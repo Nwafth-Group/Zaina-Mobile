@@ -1,6 +1,8 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../core/theme/theme.dart';
+import '../../features/notifications/presentation/cubit/unread_count_cubit.dart';
 import '../utils/app_navigator.dart';
 
 class FirebaseNotificationService {
@@ -29,6 +31,7 @@ class FirebaseNotificationService {
     // Foreground — app is open
     FirebaseMessaging.onMessage.listen((message) {
       _log('foreground', message);
+      _refreshUnreadCount();
       _showSnackbar(message);
     });
 
@@ -43,6 +46,17 @@ class FirebaseNotificationService {
     if (initialMessage != null) {
       _log('terminated-tap', initialMessage);
       _onNotificationTap(initialMessage);
+    }
+  }
+
+  /// A new push means a new unread item — refresh the home bell badge.
+  static void _refreshUnreadCount() {
+    final context = AppNavigator.navigatorKey.currentContext;
+    if (context == null) return;
+    try {
+      context.read<UnreadCountCubit>().fetch();
+    } catch (_) {
+      // Provider not in tree yet (e.g. during splash) — ignore.
     }
   }
 

@@ -12,6 +12,7 @@ import 'features/home/presentation/cubit/address_cubit.dart';
 import 'features/home/presentation/cubit/filter_cubit.dart';
 import 'features/home/presentation/cubit/home_cubti.dart';
 import 'features/notifications/presentation/cubit/notifications_cubit.dart';
+import 'features/notifications/presentation/cubit/unread_count_cubit.dart';
 import 'features/profile/presentation/cubit/cards_cubit.dart';
 import 'features/profile/presentation/cubit/coupons_cubit.dart';
 import 'features/profile/presentation/cubit/points_cubit.dart';
@@ -61,6 +62,8 @@ void setupDependencies() {
   );
   sl.registerFactory<NotificationsCubit>(
           () => NotificationsCubit(sl<ApiClient>()));
+  sl.registerFactory<UnreadCountCubit>(
+          () => UnreadCountCubit(sl<ApiClient>()));
   sl.registerFactory<BookingsCubit>(() => BookingsCubit(sl<ApiClient>()));
   sl.registerFactory<BookingDetailCubit>(
           () => BookingDetailCubit(sl<ApiClient>(), sl<ServicesRepository>()));

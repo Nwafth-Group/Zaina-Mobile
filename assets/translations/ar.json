@@ -211,6 +211,7 @@
   "set_as_default": "تعيين كعنوان افتراضي",
   "save_address": "حفظ العنوان",
   "edit_address": "تعديل العنوان",
+  "edit": "تعديل",  
   "select_from_map": "اختر من الخريطة",
   "address_added": "تمت إضافة العنوان بنجاح",
   "address_updated": "تم تحديث العنوان بنجاح",
@@ -346,6 +347,7 @@
   "proceed_to_payment": "المتابعة إلى الدفع",
   "checkout": "الدفع",
   "service": "الخدمة",
+  "duration": "المدة",
   "days": "الأيام",
   "start_end_time": "وقت البدء - الانتهاء",
   "service_cost": "تكلفة الخدمة",
@@ -446,5 +448,6 @@
   "egp": "جنيه",
   "per_hour_suffix": "/ ساعة",
   "please_select_period": "يرجى اختيار فترة الخدمة للمتابعة",
-  "please_select_required_days": "يرجى اختيار {} أيام للمتابعة"
+  "please_select_required_days": "يرجى اختيار {} أيام للمتابعة",
+  "please_select_card": "يرجى اختيار بطاقة أو إضافة بطاقة جديدة"
 }
