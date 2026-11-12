@@ -1,16 +1,15 @@
-
 // ── Reusable success dialog ───────────────────────────────────────────────────
 import 'package:flutter/material.dart';
+import 'package:hugeicons/hugeicons.dart';
 
 import '../core/theme/theme.dart';
-import 'ziena_button.dart';
-
-import 'package:flutter/material.dart';
-import '../core/theme/theme.dart';
+import 'custom_icon.dart';
 import 'ziena_button.dart';
 
 class SuccessDialog extends StatelessWidget {
   final IconData? icon;
+  /// Hugeicons icon for the header badge — preferred over [icon].
+  final List<List<dynamic>>? hugeIcon;
   final String? imageAsset; // Accepts a custom vector/image asset path
   final String title;
   final String message;
@@ -20,6 +19,7 @@ class SuccessDialog extends StatelessWidget {
   const SuccessDialog({
     super.key,
     this.icon,
+    this.hugeIcon,
     this.imageAsset,
     required this.title,
     required this.message,
@@ -108,7 +108,15 @@ class SuccessDialog extends StatelessWidget {
       child: Stack(
         alignment: Alignment.center,
         children: [
-          Icon(icon ?? Icons.check_circle_outline_rounded, size: 55, color: ZienaColors.primary),
+          if (hugeIcon == null && icon != null)
+            Icon(icon, size: 55, color: ZienaColors.primary)
+          else
+            AppIcon(
+              hugeIcon ?? HugeIcons.strokeRoundedCheckmarkCircle02,
+              size: 52,
+              width: 1.5,
+              color: ZienaColors.primary,
+            ),
           Positioned(
             bottom: 10,
             right: 10,
@@ -119,7 +127,9 @@ class SuccessDialog extends StatelessWidget {
                 color: ZienaColors.primary,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.check, color: Colors.white, size: 16),
+              alignment: Alignment.center,
+              child: const AppIcon(HugeIcons.strokeRoundedTick02,
+                  color: ZienaColors.white, size: 16, width: 2.5),
             ),
           ),
         ],

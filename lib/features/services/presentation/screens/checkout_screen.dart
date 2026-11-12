@@ -9,6 +9,7 @@ import 'package:zeina/features/wallet/presentation/screens/add_card_screen.dart'
 import 'package:zeina/features/wallet/data/models/wallet_model.dart';
 import '../../../../widgets/app_toast.dart';
 import '../../../../widgets/custom_icon.dart';
+import '../../../../widgets/success_dialog.dart';
 import 'package:zeina/features/contract/presentation/screens/contract_preview_screen.dart';
 import 'package:zeina/features/profile/presentation/cubit/points_cubit.dart';
 import 'package:zeina/features/services/data/model/booking_selection_data.dart';
@@ -311,19 +312,18 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('booking_confirmed'.tr()),
-        content: Text('booking_confirmed_desc'.tr()),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(ctx).pop();
-              Navigator.of(context).popUntil((route) => route.isFirst);
-            },
-            child: Text('done'.tr()),
-          ),
-        ],
+      builder: (ctx) => PopScope(
+        canPop: false,
+        child: SuccessDialog(
+          hugeIcon: HugeIcons.strokeRoundedCalendarCheckIn01,
+          title: 'booking_confirmed'.tr(),
+          message: 'booking_confirmed_desc'.tr(),
+          buttonText: 'done'.tr(),
+          onButtonTap: () {
+            Navigator.of(ctx).pop();
+            Navigator.of(context).popUntil((route) => route.isFirst);
+          },
+        ),
       ),
     );
   }

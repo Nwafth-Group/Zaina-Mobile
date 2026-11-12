@@ -453,5 +453,6 @@
   "please_select_required_days": "Please select {} days to continue",
   "please_select_card": "Please select a card or add a new one",
   "email": "Email",
-  "gender": "Gender"
+  "gender": "Gender",
+  "providers_exceed_persons": "Number of service providers can't be more than the number of persons"
 }

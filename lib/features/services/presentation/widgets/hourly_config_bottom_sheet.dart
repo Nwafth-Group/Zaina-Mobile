@@ -56,6 +56,16 @@ class _HourlyConfigBottomSheetState extends State<HourlyConfigBottomSheet> {
   /// bounded by the service's overall max worker capacity, NOT by whichever
   /// worker count is currently selected — number of persons and number of
   /// service providers are independent steppers for this service.
+  /// Upper bound for the "service providers" stepper. For the persons-based
+  /// service, the provider count can never exceed the number of persons
+  /// (one provider can't serve zero people); otherwise it's the API's
+  /// max_workers.
+  int get _maxWorkersAllowed {
+    final apiMax = widget.service.maxWorkers;
+    if (_hasPersonsCount && _numberOfPersons < apiMax) return _numberOfPersons;
+    return apiMax;
+  }
+
   int get _maxPersons =>
       widget.service.coveredPersonsPerWorker * widget.service.maxWorkers;
 
@@ -241,7 +251,16 @@ class _HourlyConfigBottomSheetState extends State<HourlyConfigBottomSheet> {
 
   void _changeWorkersCount(int delta) {
     final next = _workersCount + delta;
-    if (next < _minWorkersRequired || next > widget.service.maxWorkers) {
+    if (next < _minWorkersRequired) return;
+    if (next > _maxWorkersAllowed) {
+      if (delta > 0 && _hasPersonsCount && next > _numberOfPersons) {
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(SnackBar(
+            behavior: SnackBarBehavior.floating,
+            content: Text('providers_exceed_persons'.tr()),
+          ));
+      }
       return;
     }
     setState(() => _workersCount = next);
@@ -274,6 +293,10 @@ class _HourlyConfigBottomSheetState extends State<HourlyConfigBottomSheet> {
       // Fewer/more persons may now need fewer/more workers to cover them
       // within one worker's 8-hour day — track the requirement either way.
       _syncWorkersCount(oldRequiredMin);
+      // Providers can never exceed persons — pull them down with it.
+      if (_workersCount > _maxWorkersAllowed) {
+        _workersCount = _maxWorkersAllowed;
+      }
     });
   }
 
