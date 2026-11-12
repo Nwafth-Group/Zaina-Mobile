@@ -192,6 +192,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: profile?.image != null
                       ? CachedNetworkImage(
                     imageUrl: profile!.image!,
+                    cacheKey: profile.imageCacheKey,
                     width: 50,
                     height: 50,
                     fit: BoxFit.cover,

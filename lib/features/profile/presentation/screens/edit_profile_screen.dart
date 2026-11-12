@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
@@ -81,9 +81,38 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       )),
     );
     if (source == null) return;
+    // Resized + re-encoded so camera photos stay well under the backend's
+    // 4 MB limit (rule: nullable|image|mimes:jpeg,png,jpg,webp|max:4096).
     final picked = await ImagePicker().pickImage(
-        source: source, imageQuality: 85);
-    if (picked != null) setState(() => _pickedImage = File(picked.path));
+        source: source, imageQuality: 85, maxWidth: 1600, maxHeight: 1600);
+    if (picked == null || !mounted) return;
+
+    final error = await _validateProfileImage(File(picked.path));
+    if (!mounted) return;
+    if (error != null) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(error),
+        backgroundColor: ZienaColors.error,
+      ));
+      return;
+    }
+    setState(() => _pickedImage = File(picked.path));
+  }
+
+  static const _allowedImageExtensions = ['jpg', 'jpeg', 'png', 'webp'];
+  static const _maxImageBytes = 4096 * 1024; // backend max:4096 (KB)
+
+  /// Mirrors the backend rule so the user gets a clear message instead of
+  /// a server 422. Returns a translated error, or null when valid.
+  Future<String?> _validateProfileImage(File file) async {
+    final ext = file.path.split('.').last.toLowerCase();
+    if (!_allowedImageExtensions.contains(ext)) {
+      return 'image_invalid_type'.tr();
+    }
+    if (await file.length() > _maxImageBytes) {
+      return 'image_too_large'.tr();
+    }
+    return null;
   }
 
   Future<void> _save() async {
@@ -110,12 +139,21 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       phoneNumber: _phoneCtrl.text.trim(),
       email:       _emailCtrl.text.trim(),
       gender:      _selectedGender ?? '',
+      idNumber:    widget.profile.idNumber,
       image:       _pickedImage,
     );
 
     if (mounted) {
       setState(() => _isSaving = false);
-      if (success) Navigator.pop(context);
+      if (success) {
+        Navigator.pop(context);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(context.read<ProfileCubit>().lastUpdateError ??
+              'err_generic'.tr()),
+          backgroundColor: ZienaColors.error,
+        ));
+      }
     }
   }
 
@@ -250,6 +288,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   : widget.profile.image != null
                   ? CachedNetworkImage(
                 imageUrl: widget.profile.image!,
+                cacheKey: widget.profile.imageCacheKey,
                 width: 100, height: 100,
                 fit: BoxFit.cover,
                 placeholder: (_, __) => _avatarPlaceholder(),
@@ -293,58 +332,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
   }
 
-  // ── Phone field with flag ──────────────────────────────────────────────────
+  // ── Phone (read-only) ──────────────────────────────────────────────────────
+  // The mobile number is the login identity (verified by OTP), so it's shown
+  // as a plain read-only field styled like the others. It already carries
+  // its country code, so no separate flag/code picker. Always LTR.
   Widget _buildPhoneField() {
-    return Container(
-      decoration: BoxDecoration(
-        color: ZienaColors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: ZienaColors.greyBorder, width: 0.8),
-      ),
-      child: Row(children: [
-        // Flag + code
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-          decoration: const BoxDecoration(
-            border: Border(
-                right: BorderSide(color: ZienaColors.greyBorder, width: 0.8)),
-          ),
-          child: Row(mainAxisSize: MainAxisSize.min, children: [
-            const Text('🇪🇬', style: TextStyle(fontSize: 18)),
-            const SizedBox(width: 6),
-            const Text('+21',
-                style: TextStyle(
-                    fontSize: 13, fontWeight: FontWeight.w500,
-                    color: ZienaColors.textSecondary)),
-            const SizedBox(width: 4),
-            const Icon(Icons.keyboard_arrow_down,
-                size: 14, color: ZienaColors.textSecondary),
-          ]),
-        ),
-        // Input
-        Expanded(child: TextFormField(
-          controller: _phoneCtrl,
-          keyboardType: TextInputType.phone,
-          style: const TextStyle(
-              fontSize: 14, color: ZienaColors.textPrimary),
-          decoration: InputDecoration(
-            hintText: '55 555 6666',
-            hintStyle: const TextStyle(
-                fontSize: 13, color: ZienaColors.textHint),
-            border: InputBorder.none,
-            errorBorder: InputBorder.none,
-            filled: false,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 12),
-            isDense: true,
-          ),
-          validator: (v) {
-            if (v == null || v.trim().isEmpty) return 'this_field_required'.tr();
-            final digits = v.trim().replaceAll(RegExp(r'\D'), '');
-            if (digits.length < 7) return 'invalid_phone'.tr();
-            return null;
-          },
-        )),
-      ]),
+    return _buildTextField(
+      ctrl: _phoneCtrl,
+      hint: '+20 100 000 0000',
+      keyboardType: TextInputType.phone,
+      readOnly: true,
+      ltr: true,
     );
   }
 
@@ -368,7 +366,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               color: ZienaColors.textSecondary, size: 20),
           items: _genders.map((g) => DropdownMenuItem(
             value: g,
-            child: Text(g, style: const TextStyle(fontSize: 14)),
+            child: Text(g.tr(), style: const TextStyle(fontSize: 14)),
           )).toList(),
           onChanged: (v) => setState(() {
             _selectedGender = v;
@@ -428,12 +426,21 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     bool required = false,
     bool isEmail = false,
     TextInputType keyboardType = TextInputType.text,
+    bool readOnly = false,
+    bool ltr = false,
   }) {
     return TextFormField(
       controller: ctrl,
       keyboardType: keyboardType,
-      style: const TextStyle(
-          fontSize: 14, color: ZienaColors.textPrimary),
+      readOnly: readOnly,
+      enableInteractiveSelection: !readOnly,
+      textDirection: ltr ? TextDirection.ltr : null,
+      textAlign: ltr && Directionality.of(context) == TextDirection.rtl
+          ? TextAlign.end
+          : TextAlign.start,
+      style: TextStyle(
+          fontSize: 14,
+          color: readOnly ? ZienaColors.textSecondary : ZienaColors.textPrimary),
       decoration: InputDecoration(
         hintText: hint,
         hintStyle: const TextStyle(
@@ -451,8 +458,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(
-              color: ZienaColors.primary, width: 1.5),
+          borderSide: readOnly
+              ? const BorderSide(color: ZienaColors.greyBorder, width: 0.8)
+              : const BorderSide(color: ZienaColors.primary, width: 1.5),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),

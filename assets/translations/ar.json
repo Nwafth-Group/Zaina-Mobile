@@ -134,6 +134,12 @@
   "rating_submitted": "تم إرسال تقييمك بنجاح.",
   "report_details": "تفاصيل البلاغ",
   "report_status": "حالة البلاغ",
+  "report_status_submitted": "تم الإرسال",
+  "report_status_under_review": "قيد المراجعة",
+  "report_status_resolved": "تم الحل",
+  "report_desc_submitted": "تم إرسال بلاغك وهو بانتظار المراجعة.",
+  "report_desc_under_review": "نقوم حالياً بمراجعة بلاغك.",
+  "report_desc_resolved": "تم حل بلاغك.",
   "no_services_found": "لا توجد خدمات",
   "no_subcategories_found": "لا توجد فئات فرعية",
   "try_different_search": "جرب البحث عن خدمة مختلفة.",
@@ -175,6 +181,8 @@
   "err_agree_terms": "يرجى الموافقة على الشروط والأحكام",
   "err_enter_phone": "يرجى إدخال رقم هاتف صحيح",
   "err_generic": "حدث خطأ ما. يرجى المحاولة مرة أخرى.",
+  "image_invalid_type": "يرجى اختيار صورة بصيغة JPG أو PNG أو WEBP",
+  "image_too_large": "يجب أن يكون حجم الصورة أقل من 4 ميجابايت",
   "err_invalid_otp": "رمز غير صحيح. يرجى المحاولة مرة أخرى.",
   "select_date": "اختر التاريخ",
   "select_time_slot": "اختر الوردية",
@@ -449,5 +457,7 @@
   "per_hour_suffix": "/ ساعة",
   "please_select_period": "يرجى اختيار فترة الخدمة للمتابعة",
   "please_select_required_days": "يرجى اختيار {} أيام للمتابعة",
-  "please_select_card": "يرجى اختيار بطاقة أو إضافة بطاقة جديدة"
+  "please_select_card": "يرجى اختيار بطاقة أو إضافة بطاقة جديدة",
+  "email": "البريد الإلكتروني",
+  "gender": "الجنس"
 }

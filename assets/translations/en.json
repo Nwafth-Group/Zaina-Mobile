@@ -231,6 +231,12 @@
   "rating_submitted": "Your rating has been submitted.",
   "report_details": "Report Details",
   "report_status": "Report Status",
+  "report_status_submitted": "Submitted",
+  "report_status_under_review": "Under Review",
+  "report_status_resolved": "Resolved",
+  "report_desc_submitted": "Your report has been submitted and is pending review.",
+  "report_desc_under_review": "We are currently reviewing your report.",
+  "report_desc_resolved": "Your report has been resolved.",
   "worker_no_show": "Worker Didn't Show Up",
   "late_arrival": "Late Arrival",
   "poor_quality": "Poor Service Quality",
@@ -281,6 +287,8 @@
   "err_agree_terms": "Please agree to Terms & Conditions",
   "err_enter_phone": "Please enter a valid phone number",
   "err_generic": "Something went wrong. Please try again.",
+  "image_invalid_type": "Please choose a JPG, PNG or WEBP image",
+  "image_too_large": "Image must be smaller than 4 MB",
   "err_invalid_otp": "Invalid code. Please try again.",
   "welcome_to_ziena": "Welcome to Zeina",
   "verify_identity_desc": "To ensure a safe and trusted experience for everyone, please verify your identity.",
@@ -443,5 +451,7 @@
   "per_hour_suffix": "/ Hour",
   "please_select_period": "Please select a service period to continue",
   "please_select_required_days": "Please select {} days to continue",
-  "please_select_card": "Please select a card or add a new one"
+  "please_select_card": "Please select a card or add a new one",
+  "email": "Email",
+  "gender": "Gender"
 }

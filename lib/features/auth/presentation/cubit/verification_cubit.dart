@@ -1,6 +1,7 @@
 import '../../data/models/verification_model.dart';
 import 'dart:io';
 import 'package:dio/dio.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/network/failure.dart';
@@ -61,6 +62,9 @@ class ProfileCubit extends Cubit<ProfileState> {
   UserProfile? _profile;
   UserProfile? get profile => _profile;
 
+  /// Message of the last failed [updateProfile] call, for the UI to show.
+  String? lastUpdateError;
+
   Future<UserProfile?> fetchProfile() async {
     emit(ProfileLoading());
     try {
@@ -77,7 +81,16 @@ class ProfileCubit extends Cubit<ProfileState> {
     }
   }
 
-  // Add to ProfileCubit class:
+  /// Re-fetches the profile without emitting [ProfileLoading], so the UI
+  /// doesn't flash a loading state. Failures keep the current profile.
+  Future<void> _refreshSilently() async {
+    try {
+      final res = await _api.get('customer/profile/');
+      _profile = UserProfile.fromJson(res['data']);
+      if (!isClosed) emit(ProfileLoaded(_profile!));
+    } catch (_) {}
+  }
+
 
   Future<bool> updateProfile({
     required String firstName,
@@ -89,6 +102,7 @@ class ProfileCubit extends Cubit<ProfileState> {
     File? image,
   }) async {
     emit(ProfileLoading());
+    lastUpdateError = null;
     try {
       final fields = <String, dynamic>{
         'first_name':   firstName,
@@ -103,32 +117,39 @@ class ProfileCubit extends Cubit<ProfileState> {
       if (image != null) {
         formData = FormData.fromMap({
           ...fields,
-          'files': [
-            await MultipartFile.fromFile(
-              image.path,
-              filename: image.path.split('/').last,
-            ),
-          ],
+          // Single file under the `image` key — matches the backend's
+          // curl spec (not `files`, which the server silently ignores).
+          'image': await MultipartFile.fromFile(
+            image.path,
+            filename: image.path.split('/').last,
+          ),
         });
       } else {
         formData = FormData.fromMap(fields);
       }
 
+      // No explicit contentType: Dio sets "multipart/form-data; boundary=..."
+      // itself for FormData (same as the Postman request).
       final res = await _api.dio.post(
         'customer/profile/complete',
         data: formData,
-        options: Options(contentType: 'multipart/form-data'),
       );
 
       _profile = UserProfile.fromJson(res.data['data']);
       emit(ProfileLoaded(_profile!));
+      // Re-read the profile in the background so every screen listening to
+      // this cubit (home header, More tab) gets the server's final image
+      // URL, even if the update response omits or delays it.
+      _refreshSilently();
       return true;
     } on DioException catch (e) {
-      emit(ProfileError(handleDioError(e).message));
+      lastUpdateError = handleDioError(e).message;
+      emit(ProfileError(lastUpdateError!));
       // Restore previous profile
       if (_profile != null) emit(ProfileLoaded(_profile!));
       return false;
     } catch (_) {
+      lastUpdateError = 'err_generic'.tr();
       if (_profile != null) emit(ProfileLoaded(_profile!));
       return false;
     }

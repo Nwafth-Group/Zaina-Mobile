@@ -1,3 +1,4 @@
+import 'dart:ui' as ui;
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -50,26 +51,7 @@ class NotificationDetailScreen extends StatelessWidget {
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 30),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(item.title,
-                      style: const TextStyle(
-                        fontSize: 20, fontWeight: FontWeight.w700,
-                        color: ZienaColors.primary,
-                      )),
-                  const SizedBox(height: 14),
-                  Text(item.body,
-                      style: const TextStyle(
-                        fontSize: 14, color: ZienaColors.textSecondary,
-                        height: 1.7,
-                      )),
-                  const SizedBox(height: 16),
-                  Text(item.createdAt,
-                      style: const TextStyle(
-                          fontSize: 12, color: ZienaColors.textHint)),
-                ],
-              ),
+              child: _NotificationContent(item: item, large: true),
             ),
           ),
         ]),
@@ -93,26 +75,50 @@ class NotificationDetailScreen extends StatelessWidget {
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 30),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(item.title,
-                style: const TextStyle(
-                  fontSize: 18, fontWeight: FontWeight.w700,
-                  color: ZienaColors.textPrimary,
-                )),
-            const SizedBox(height: 12),
-            Text(item.body,
-                style: const TextStyle(
-                  fontSize: 14, color: ZienaColors.textSecondary,
-                  height: 1.7,
-                )),
-            const SizedBox(height: 16),
-            Text(item.createdAt,
-                style: const TextStyle(
-                    fontSize: 12, color: ZienaColors.textHint)),
-          ],
-        ),
+        child: _NotificationContent(item: item),
+      ),
+    );
+  }
+}
+
+/// Title, body and time of a notification. Fills the full width and takes
+/// its text direction from the notification's own content, so Arabic
+/// notifications are right-aligned (RTL) even when the app is in English,
+/// and vice versa.
+class _NotificationContent extends StatelessWidget {
+  final NotificationModel item;
+  final bool large;
+  const _NotificationContent({required this.item, this.large = false});
+
+  @override
+  Widget build(BuildContext context) {
+    final isRtl = Bidi.detectRtlDirectionality('${item.title} ${item.body}');
+    return Directionality(
+      textDirection: isRtl ? ui.TextDirection.rtl : ui.TextDirection.ltr,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(item.title,
+              textAlign: TextAlign.start,
+              style: TextStyle(
+                fontSize: large ? 20 : 18,
+                fontWeight: FontWeight.w700,
+                color: large ? ZienaColors.primary : ZienaColors.textPrimary,
+              )),
+          SizedBox(height: large ? 14 : 12),
+          Text(item.body,
+              textAlign: TextAlign.start,
+              style: const TextStyle(
+                fontSize: 14,
+                color: ZienaColors.textSecondary,
+                height: 1.7,
+              )),
+          const SizedBox(height: 16),
+          Text(item.createdAt,
+              textAlign: TextAlign.start,
+              style: const TextStyle(
+                  fontSize: 12, color: ZienaColors.textHint)),
+        ],
       ),
     );
   }

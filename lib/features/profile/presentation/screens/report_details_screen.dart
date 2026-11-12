@@ -29,7 +29,11 @@ class _ReportDetailView extends StatelessWidget {
   final ReportModel initialReport;
   const _ReportDetailView({required this.initialReport});
 
-  static const _steps = ['Submitted', 'Under Review', 'Resolved'];
+  static const _stepKeys = [
+    'report_status_submitted',
+    'report_status_under_review',
+    'report_status_resolved',
+  ];
 
   Future<void> _openWhatsAppSupport() async {
     final uri = Uri.parse('https://wa.me/966567181328');
@@ -38,6 +42,7 @@ class _ReportDetailView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final locale = context.locale.languageCode;
     return Scaffold(
       backgroundColor: ZienaColors.bg1,
       appBar: AppBar(
@@ -178,7 +183,7 @@ class _ReportDetailView extends StatelessWidget {
 
                         // Stepper
                         ZienaStepIndicator(
-                          steps: _steps,
+                          steps: _stepKeys.map((k) => k.tr()).toList(),
                           currentStep: report.statusStep,
                         ),
                         const SizedBox(height: 20),
@@ -215,7 +220,7 @@ class _ReportDetailView extends StatelessWidget {
                                     size: 12, color: ZienaColors.textSecondary),
                                 const SizedBox(width: 5),
                                 Text(
-                                    '${'submitted_on'.tr()}: ${report.longCreatedAtLabel}',
+                                    '${'submitted_on'.tr()}: ${report.longCreatedAtLabel(locale)}',
                                     style: const TextStyle(
                                         fontSize: 11,
                                         color: ZienaColors.textSecondary)),
@@ -228,7 +233,7 @@ class _ReportDetailView extends StatelessWidget {
                                       color: ZienaColors.textSecondary),
                                   const SizedBox(width: 5),
                                   Text(
-                                      '${'last_update'.tr()}: ${report.longUpdatedAtLabel}',
+                                      '${'last_update'.tr()}: ${report.longUpdatedAtLabel(locale)}',
                                       style: const TextStyle(
                                           fontSize: 11,
                                           color: ZienaColors.textSecondary)),
@@ -376,7 +381,7 @@ class _HistoryTile extends StatelessWidget {
                   ],
                   const SizedBox(height: 2),
                   Text(
-                    item.formattedDateTime,
+                    item.formattedDateTime(context.locale.languageCode),
                     style: const TextStyle(
                       fontSize: 11,
                       color: ZienaColors.textHint,

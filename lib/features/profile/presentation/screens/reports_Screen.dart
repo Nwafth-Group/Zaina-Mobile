@@ -153,7 +153,7 @@ class _ReportTile extends StatelessWidget {
                 color: ZienaColors.primary,
                 padding: const EdgeInsets.symmetric(horizontal: 4),
                 child: Text(
-                  report.shortDateLabel,
+                  report.shortDateLabel(context.locale.languageCode),
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     fontSize: 14,

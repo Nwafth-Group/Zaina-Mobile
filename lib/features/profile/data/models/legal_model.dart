@@ -52,11 +52,11 @@ class ReportHistoryItem {
 
   DateTime? get _createdAtDate => DateTime.tryParse(createdAt);
 
-  /// e.g. "14 Jul 2026 • 02:51 PM"
-  String get formattedDateTime {
+  /// e.g. "14 Jul 2026 • 02:51 PM" — month/AM-PM in the app language.
+  String formattedDateTime(String locale) {
     final d = _createdAtDate;
     if (d == null) return createdAt;
-    return DateFormat('d MMM yyyy • hh:mm a').format(d);
+    return DateFormat('d MMM yyyy • hh:mm a', locale).format(d);
   }
 }
 
@@ -127,11 +127,11 @@ class ReportModel {
   static String labelForStatus(String status) {
     switch (status.toLowerCase()) {
       case 'submitted':
-        return 'Submitted';
+        return 'report_status_submitted'.tr();
       case 'under_review':
-        return 'Under Review';
+        return 'report_status_under_review'.tr();
       case 'resolved':
-        return 'Resolved';
+        return 'report_status_resolved'.tr();
       default:
         return status;
     }
@@ -194,20 +194,20 @@ class ReportModel {
   DateTime? get _updatedAtDate => DateTime.tryParse(updatedAt);
 
   /// Short label for the list tile's date strip, e.g. "Jan 10".
-  String get shortDateLabel {
+  String shortDateLabel(String locale) {
     final d = _createdAtDate;
-    return d == null ? '' : DateFormat('MMM d').format(d);
+    return d == null ? '' : DateFormat('MMM d', locale).format(d);
   }
 
   /// Long label for the detail screen, e.g. "20 Nov 2026".
-  String get longCreatedAtLabel {
+  String longCreatedAtLabel(String locale) {
     final d = _createdAtDate;
-    return d == null ? createdAt : DateFormat('d MMM yyyy').format(d);
+    return d == null ? createdAt : DateFormat('d MMM yyyy', locale).format(d);
   }
 
-  String get longUpdatedAtLabel {
+  String longUpdatedAtLabel(String locale) {
     final d = _updatedAtDate;
-    return d == null ? updatedAt : DateFormat('d MMM yyyy').format(d);
+    return d == null ? updatedAt : DateFormat('d MMM yyyy', locale).format(d);
   }
 
   /// Whether the report was updated after it was submitted, so the detail
@@ -229,11 +229,11 @@ class ReportModel {
     }
     switch (status.toLowerCase()) {
       case 'submitted':
-        return 'Your report has been submitted and is pending review.';
+        return 'report_desc_submitted'.tr();
       case 'under_review':
-        return 'We are currently reviewing your report.';
+        return 'report_desc_under_review'.tr();
       case 'resolved':
-        return 'Your report has been resolved.';
+        return 'report_desc_resolved'.tr();
       default:
         return '';
     }

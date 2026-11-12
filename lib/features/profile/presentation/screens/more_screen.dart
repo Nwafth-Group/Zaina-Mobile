@@ -432,6 +432,7 @@ class _ProfileCard extends StatelessWidget {
       return ClipOval(
         child: CachedNetworkImage(
           imageUrl: profile!.image!,
+          cacheKey: profile!.imageCacheKey,
           width: 56, height: 56,
           fit: BoxFit.cover,
           placeholder: (_, __) => _avatarFallback(),

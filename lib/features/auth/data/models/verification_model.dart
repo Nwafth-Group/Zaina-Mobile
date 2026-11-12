@@ -29,6 +29,8 @@ class UserProfile {
   final String mobileNumber;
   final String? email;
   final String? image;
+  final String? idNumber;
+  final String? updatedAt;
   final String? gender;
   final double? walletBalance;
   final String? preferredLanguage;
@@ -43,6 +45,8 @@ class UserProfile {
     required this.mobileNumber,
     this.email,
     this.image,
+    this.idNumber,
+    this.updatedAt,
     this.gender,
     this.walletBalance,
     this.preferredLanguage,
@@ -64,12 +68,20 @@ class UserProfile {
       mobileNumber: data['mobile_number'] ?? '',
       email: data['email'],
       image: data['image'],
+      idNumber: data['id_number']?.toString(),
+      updatedAt: data['updated_at']?.toString(),
       walletBalance: data['wallet_balance'] != null
           ? double.tryParse(data['wallet_balance'].toString())
           : null,
       preferredLanguage: data['preferred_language'],
     );
   }
+
+  /// Cache key for the avatar. Changes whenever the profile is updated, so
+  /// a newly uploaded image shows immediately even if the server keeps the
+  /// same image URL (CachedNetworkImage would otherwise keep the old file).
+  String? get imageCacheKey =>
+      image == null ? null : '$image#${updatedAt ?? ''}';
 
   String get displayName {
     if (fullName != null && fullName!.isNotEmpty) return fullName!;

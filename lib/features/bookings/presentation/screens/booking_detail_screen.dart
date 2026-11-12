@@ -158,26 +158,31 @@ class _LoadedBody extends StatelessWidget {
                       ),
                     ),
                   ),
-                  Positioned(
+                  // Title only — the back button is pinned in the outer
+                  // Stack below so it never scrolls away. The shadow keeps
+                  // white text readable over light service photos.
+                  PositionedDirectional(
                     top: MediaQuery.of(context).padding.top + 8,
-                    left: 16,
-                    right: 16,
-                    child: Row(
-                      children: [
-                        GestureDetector(
-                          onTap: () => Navigator.pop(context),
-                          child: const Icon(Icons.arrow_back, color: Colors.white),
-                        ),
-                        const SizedBox(width: 12),
-                        Text(
+                    start: 16 + 40 + 12, // after the pinned back button
+                    end: 16,
+                    child: SizedBox(
+                      height: 40,
+                      child: Align(
+                        alignment: AlignmentDirectional.centerStart,
+                        child: Text(
                           'booking_details'.tr(),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w700,
                             color: Colors.white,
+                            shadows: [
+                              Shadow(color: Colors.black54, blurRadius: 6),
+                            ],
                           ),
                         ),
-                      ],
+                      ),
                     ),
                   ),
                 ],
@@ -448,6 +453,29 @@ class _LoadedBody extends StatelessWidget {
           right: 0,
           bottom: 0,
           child: _BottomActions(booking: booking),
+        ),
+        // Pinned back button: solid circle so it's visible over any image
+        // (light photos made the old bare white arrow invisible) and stays
+        // on screen while scrolling.
+        PositionedDirectional(
+          top: MediaQuery.of(context).padding.top + 8,
+          start: 16,
+          child: Material(
+            color: ZienaColors.white,
+            shape: const CircleBorder(),
+            elevation: 3,
+            shadowColor: Colors.black26,
+            child: InkWell(
+              customBorder: const CircleBorder(),
+              onTap: () => Navigator.maybePop(context),
+              child: const SizedBox(
+                width: 40,
+                height: 40,
+                child: Icon(Icons.arrow_back,
+                    size: 20, color: ZienaColors.textPrimary),
+              ),
+            ),
+          ),
         ),
       ],
     );
